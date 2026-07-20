@@ -41,13 +41,13 @@
     "goal": "推进大数据、销售转介、Partner/KOL获客",
     "progress": 10,
     "status": "Next",
-    "owner": "Sera / Siyuan / Oscar",
+    "owner": "Sera / Simon / Oscar",
     "target": "销售对接≥6，Partner≥7，KOL≥10"
   },
   {
     "id": "WS06",
     "name": "私密看板线",
-    "goal": "交付仅思源哥可访问的私密进度看板",
+    "goal": "交付仅 Simon 可访问的私密进度看板",
     "progress": 65,
     "status": "Doing",
     "owner": "Sera / Kimi",

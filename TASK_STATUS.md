@@ -1,9 +1,9 @@
 # TASK_STATUS — HTX OTC BD Progress Hub 升级任务状态
 
 - **项目**：HTX OTC BD Progress Hub（仓库名 `htx-otc-progress-hub`）
-- **用途**：给思源哥（Siyuan.C）查看的 HTX OTC BD / PIP 工作进度看板
+- **用途**：给 Simon（Primary Reviewer）查看的 HTX OTC BD / PIP 工作进度看板
 - **更新日期**：2026-07-21
-- **当前轮次（v0.3）**：① 部署目标从公网 GitHub Pages 转为私密访问——仓库已转 PRIVATE、公网 Pages 已删除（旧链接 404），推荐方案 Cloudflare Pages + Cloudflare Access（仅放行思源哥邮箱，邮箱 OTP / Google 登录，禁止前端 JS 假登录）；② 看板升级为 PIP 进度管理 Dashboard（Executive Summary / 甘特图 / 依赖图 / 任务树 / Weekly To Do）
+- **当前轮次（v0.3）**：① 部署目标从公网 GitHub Pages 转为私密访问——仓库已转 PRIVATE、公网 Pages 已删除（旧链接 404），推荐方案 Cloudflare Pages + Cloudflare Access（仅放行 Simon 邮箱，邮箱 OTP / Google 登录，禁止前端 JS 假登录）；② 看板升级为 PIP 进度管理 Dashboard（Executive Summary / 甘特图 / 依赖图 / 任务树 / Weekly To Do）
 - **历史轮次（v0.2，已完结）**：从「本地深色静态看板」升级为「日间/夜间双主题、带 Live Task Progress 的进度看板」；当日曾上线 GitHub Pages 公网版，已于同日下线（见 v0.3 阶段 10）
 
 ---
@@ -60,7 +60,7 @@
 
 ### 9. 输出最终访问链接 [Done]
 
-- [Done] 已确认 `https://78tyih.github.io/htx-otc-progress-hub/` 可访问（启用后轮询，第 2 次检查返回 HTTP 200），并已更新 `README.md` 访问链接章节，链接可发给思源哥。
+- [Done] 已确认 `https://78tyih.github.io/htx-otc-progress-hub/` 可访问（启用后轮询，第 2 次检查返回 HTTP 200），并已更新 `README.md` 访问链接章节，链接可发给 Simon。
 - [Files] `README.md`。
 - [Next] 本轮升级收尾；进入每周五数据更新节奏（见 README「每周更新建议」）。
 
@@ -76,7 +76,7 @@
 
 ### 11. 私密部署方案与安全文档 [Done]
 
-- [Done] 确定推荐方案 **Cloudflare Pages + Cloudflare Access**：Pages 托管静态站点，Access 在边缘网关做真实身份验证（邮箱 OTP 一次性验证码 / Google 登录），策略仅放行思源哥邮箱；明确禁止前端 JS 假登录。新增操作清单 `docs/04_private_deployment.md`、访问控制说明 `docs/05_access_control.md`、环境变量模板 `.env.example`、安全规范 `SECURITY.md`。
+- [Done] 确定推荐方案 **Cloudflare Pages + Cloudflare Access**：Pages 托管静态站点，Access 在边缘网关做真实身份验证（邮箱 OTP 一次性验证码 / Google 登录），策略仅放行 Simon 邮箱；明确禁止前端 JS 假登录。新增操作清单 `docs/04_private_deployment.md`、访问控制说明 `docs/05_access_control.md`、环境变量模板 `.env.example`、安全规范 `SECURITY.md`。
 - [Files] `docs/04_private_deployment.md`、`docs/05_access_control.md`、`.env.example`、`SECURITY.md`。
 - [Next] 执行看板 PIP 升级开发。
 
@@ -88,7 +88,7 @@
 
 ### 13. 数据脱敏确认 [Done]
 
-- [Done] 全量扫描通过（含 5 个新 JSON 与全部新页面模块）：无真实客户姓名、HTX UID、TG 用户名/路径、银行账户、邮箱、电话（同事名 Sera / 思源哥 / 静格 / Oscar 除外）；客户均为脱敏占位编号 + 汇总统计。私密部署后脱敏规则不放松，规范见 `SECURITY.md`。
+- [Done] 全量扫描通过（含 5 个新 JSON 与全部新页面模块）：无真实客户姓名、HTX UID、TG 用户名/路径、银行账户、邮箱、电话（同事名 Sera / Simon / 静格 / Oscar / Kimi 除外）；客户均为脱敏占位编号 + 汇总统计。私密部署后脱敏规则不放松，规范见 `SECURITY.md`。
 - [Files] `data/*.json`（10 个）、`index.html`、`app.js`、全部文档。
 - [Next] git 提交并推送。
 
@@ -100,15 +100,51 @@
 
 ### 15. Cloudflare 私密部署 [待执行]
 
-- [待执行] **前置条件：需 Sera 提供 Cloudflare 账号**；随后按 `docs/04_private_deployment.md` 操作清单执行：Cloudflare Pages 接入仓库 → 配置 Access 应用与策略（仅放行思源哥邮箱，OTP / Google 登录）→ 验证未登录访问被拦截、授权邮箱可正常进入。
+- [待执行] **前置条件：需 Sera 提供 Cloudflare 账号**；随后按 `docs/04_private_deployment.md` 操作清单执行：Cloudflare Pages 接入仓库 → 配置 Access 应用与策略（仅放行 Simon 邮箱，OTP / Google 登录）→ 验证未登录访问被拦截、授权邮箱可正常进入。
 - [Files] `docs/04_private_deployment.md`（操作清单）、`.env.example`（变量模板）。
 - [Next] 部署完成后输出私密链接。
 
-### 16. 发送私密链接给思源哥 [待执行]
+### 16. 发送私密链接给 Simon [待执行]
 
-- [待执行] 私密部署验证通过后，将私密链接发给思源哥，并**单独告知用于验证的邮箱地址**（链接与邮箱分开发送，降低转发泄露风险）；同步更新 `README.md` 访问链接章节状态。
+- [待执行] 私密部署验证通过后，将私密链接发给 Simon，并**单独告知用于验证的邮箱地址**（链接与邮箱分开发送，降低转发泄露风险）；同步更新 `README.md` 访问链接章节状态。
 - [Files] `README.md`。
 - [Next] 进入每周五数据更新节奏（见 README「每周更新建议」与 `docs/06` 第 7 节）。
+
+---
+
+---
+
+## v0.4（2026-07-21）品牌升级 + 动态 KPI + 页面收敛中文化 — 阶段日志
+
+### 17. 品牌升级（双焰 SVG 四件套）[Done]
+
+- [Done] 接入 `assets/brand/` 四件套（logo-icon / logo-wordmark-light / logo-wordmark-dark / favicon，纯 SVG 原创）；顶栏升级为品牌锁标，字标随 `data-theme` 亮暗自动切换；`<head>` 接入 favicon；默认日间主题由 head 内联脚本在 CSS 加载前确定，无主题闪烁。
+- [Files] `index.html`、`style.css`、`assets/brand/*.svg`（4 个）。
+- [Next] Cloudflare 部署后在真实域名下复验 favicon 与字标。
+
+### 18. 动态 KPI + 甘特 / 依赖图 / 拓扑区重构 [Done]
+
+- [Done] KPI 由 8 张静态卡收敛为 6 张动态图形卡（segments / water / money / ring / funnel / multi，按 `kpi.json` 的 `component` 字段渲染）；新增主任务流玻璃拓扑区（7 节点 + 渐变贝塞尔主链）；甘特重构为玻璃胶囊条（9 条、W1–W6、悬浮详情含 owner/progress/next/依赖）；依赖图升级为三链 SVG 曲线（串行主链 / 并行获客汇聚 / 私密看板链）；执行摘要重排为 4 卡自动计算。
+- [Files] `index.html`、`style.css`、`app.js`、`data/kpi.json`。
+- [Next] 首单测试后按真实数据刷新 KPI。
+
+### 19. 页面收敛中文化 + Simon 命名替换 [Done]
+
+- [Done] 删除设计交付清单独立区块、本周柱状图子区；下周计划并入里程碑双栏；页面主文案中文化；汇报对象全站统一为 Simon / Primary Reviewer / Supervisor，占位邮箱统一 `simon@example.com`。
+- [Files] `index.html`、`app.js`、`docs/07_brand_and_interaction_upgrade.md`。
+- [Next] 无。
+
+### 20. QA 独立验收 [Done（含 2 处最小修复）]
+
+- [Done] QA 按 17 项清单独立复核：临时服务 17 项资源全 200 且无残留进程；真实浏览器（agent-browser + Chrome）实测 1280 / 768 / 560 / 390px 四档、主题切换、甘特悬浮、任务树展开、搜索筛选联动、过期标红（注入法验证）、console 零报错；FALLBACK 与 9 个 JSON 逐字一致；敏感信息扫描与原称呼/拼音终扫均为 0 命中。**发现并已最小修复 2 处**：① 390px 顶栏标题 nowrap 导致页面级横向溢出（scrollWidth 610>390）——`style.css` 仅改 `.title-block` 与 h1 两行规则，修复后四档复测无溢出；② 6.3 子区标题「Live Task Progress」英文残留——`index.html` 改为「实时任务进度」（两处），修复后回归通过。修复明细见 `本轮页面优化说明.md` 第 3 节与本次汇报。
+- [Files] `本轮页面优化说明.md`（新建）、`style.css`（2 行规则级修复）、`index.html`（2 处文案修复）。
+- [Next] git 提交本轮全部变更。
+
+### 21. Git 提交 [进行中]
+
+- [进行中] 待提交：v0.4 全部变更 + QA 修复 + 三份文档（优化说明 / 本日志 / CHANGELOG）。
+- [Files] 见上各阶段。
+- [Next] 提交后进入 Cloudflare 私密部署（阶段 15）。
 
 ---
 

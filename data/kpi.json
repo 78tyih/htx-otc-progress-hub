@@ -1,74 +1,91 @@
 [
   {
     "label": "机构注册",
-    "target": "≥6家",
-    "current": "待推进",
-    "trend": "待从CRM和销售转介中筛选",
-    "status": "next",
+    "component": "segments",
     "done": 0,
-    "total": 6
+    "total": 6,
+    "unit": "家",
+    "target": "≥6家",
+    "current": "0/6",
+    "trend": "待从CRM和销售转介中筛选",
+    "next": "从 CRM 与销售转介中筛选机构线索",
+    "status": "next"
   },
   {
     "label": "个人注册",
-    "target": "≥19人",
-    "current": "待推进",
-    "trend": "TG存量客户优先唤醒",
-    "status": "next",
+    "component": "water",
     "done": 0,
-    "total": 19
+    "total": 19,
+    "unit": "人",
+    "target": "≥19人",
+    "current": "0/19",
+    "trend": "TG存量客户优先唤醒",
+    "next": "按客户等级逐个推进注册",
+    "status": "next"
   },
   {
     "label": "交易收入",
-    "target": "≥26,000 USDT",
-    "current": "待首单",
-    "trend": "优先推进五星客户",
-    "status": "next",
+    "component": "money",
     "done": 0,
-    "total": 26000
+    "total": 26000,
+    "unit": "USDT",
+    "target": "≥26,000 USDT",
+    "current": "0 / 26,000",
+    "trend": "优先推进五星客户",
+    "next": "配合首单测试完成首批成交",
+    "status": "next"
   },
   {
     "label": "设计交付包",
-    "target": "1套",
-    "current": "已完成",
+    "component": "ring",
+    "done": 8,
+    "total": 8,
+    "unit": "项",
+    "target": "8项资料",
+    "current": "8/8",
     "trend": "明天提交设计团队",
-    "status": "done",
-    "done": 1,
-    "total": 1
+    "next": "提交设计团队并确认排期",
+    "status": "done"
   },
   {
     "label": "客户Pipeline",
-    "target": "1套",
-    "current": "已完成初版",
-    "trend": "TG客户资料已汇总",
-    "status": "done",
+    "component": "funnel",
     "done": 1,
-    "total": 1
+    "total": 1,
+    "unit": "套",
+    "target": "1套",
+    "current": "已建初版",
+    "trend": "TG客户资料已汇总",
+    "next": "筛选五星重点客户",
+    "status": "done"
   },
   {
-    "label": "Partner/中介",
-    "target": "≥7家",
-    "current": "待推进",
-    "trend": "从Partner线索池筛选",
-    "status": "next",
+    "label": "渠道拓展",
+    "component": "multi",
     "done": 0,
-    "total": 7
-  },
-  {
-    "label": "KOL",
-    "target": "≥10位",
-    "current": "待启动",
-    "trend": "需制定外部获客计划",
+    "total": 23,
+    "unit": "个",
+    "target": "Partner≥7 · KOL≥10 · 销售≥6",
+    "current": "0/23",
+    "trend": "需大数据名单与销售名单",
+    "next": "制定站外获客计划并开始触达",
     "status": "next",
-    "done": 0,
-    "total": 10
-  },
-  {
-    "label": "销售对接",
-    "target": "≥6次",
-    "current": "待启动",
-    "trend": "需Oscar/销售团队名单",
-    "status": "next",
-    "done": 0,
-    "total": 6
+    "sub": [
+      {
+        "label": "Partner",
+        "done": 0,
+        "total": 7
+      },
+      {
+        "label": "KOL",
+        "done": 0,
+        "total": 10
+      },
+      {
+        "label": "销售对接",
+        "done": 0,
+        "total": 6
+      }
+    ]
   }
 ]

@@ -14,7 +14,7 @@
     "status": "Doing"
   },
   {
-    "task": "确认思源哥访问方式",
+    "task": "确认 Simon 访问方式",
     "owner": "Sera",
     "due": "2026-07-23",
     "priority": "P0",
@@ -28,8 +28,8 @@
     "status": "Next"
   },
   {
-    "task": "请思源哥协助调取大数据客户名单",
-    "owner": "Sera / 思源哥",
+    "task": "请 Simon 协助调取大数据客户名单",
+    "owner": "Sera / Simon",
     "due": "2026-07-26",
     "priority": "P1",
     "status": "Blocked"

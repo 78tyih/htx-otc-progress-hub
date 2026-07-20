@@ -7,7 +7,9 @@
     "end": "2026-07-22",
     "progress": 100,
     "status": "Done",
-    "dependsOn": []
+    "dependsOn": [],
+    "owner": "Sera",
+    "next": "提交设计团队"
   },
   {
     "id": "G002",
@@ -17,7 +19,9 @@
     "end": "2026-07-23",
     "progress": 60,
     "status": "Doing",
-    "dependsOn": ["G001"]
+    "dependsOn": ["G001"],
+    "owner": "Sera",
+    "next": "确认设计排期与反馈时间"
   },
   {
     "id": "G003",
@@ -27,7 +31,9 @@
     "end": "2026-07-21",
     "progress": 100,
     "status": "Done",
-    "dependsOn": []
+    "dependsOn": [],
+    "owner": "Sera",
+    "next": "筛选五星重点客户"
   },
   {
     "id": "G004",
@@ -37,7 +43,9 @@
     "end": "2026-07-25",
     "progress": 30,
     "status": "Doing",
-    "dependsOn": ["G003"]
+    "dependsOn": ["G003"],
+    "owner": "Sera",
+    "next": "输出五星重点客户名单"
   },
   {
     "id": "G005",
@@ -47,7 +55,9 @@
     "end": "2026-08-08",
     "progress": 0,
     "status": "Next",
-    "dependsOn": ["G004"]
+    "dependsOn": ["G004"],
+    "owner": "Sera",
+    "next": "按名单逐个推进注册与KYC"
   },
   {
     "id": "G006",
@@ -57,7 +67,9 @@
     "end": "2026-07-25",
     "progress": 0,
     "status": "Next",
-    "dependsOn": ["G002"]
+    "dependsOn": ["G002"],
+    "owner": "Sera / 静格",
+    "next": "周四/周五配合完成首单测试"
   },
   {
     "id": "G007",
@@ -67,7 +79,9 @@
     "end": "2026-07-26",
     "progress": 20,
     "status": "Blocked",
-    "dependsOn": []
+    "dependsOn": [],
+    "owner": "Sera / Simon",
+    "next": "请 Simon 协助调取大数据名单"
   },
   {
     "id": "G008",
@@ -77,7 +91,9 @@
     "end": "2026-08-01",
     "progress": 0,
     "status": "Next",
-    "dependsOn": []
+    "dependsOn": [],
+    "owner": "Sera / Oscar",
+    "next": "获取高价值客户名单"
   },
   {
     "id": "G009",
@@ -87,6 +103,8 @@
     "end": "2026-07-23",
     "progress": 70,
     "status": "Doing",
-    "dependsOn": []
+    "dependsOn": [],
+    "owner": "Sera / Kimi",
+    "next": "完成 Cloudflare 私密部署与 Access 配置"
   }
 ]

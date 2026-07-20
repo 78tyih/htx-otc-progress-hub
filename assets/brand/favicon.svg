@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="HTX OTC BD">
+  <title>HTX OTC BD</title>
+  <defs>
+    <linearGradient id="flameL" x1="0" y1="1" x2="0.7" y2="0">
+      <stop offset="0" stop-color="#1C2350"/>
+      <stop offset="0.55" stop-color="#232B67"/>
+      <stop offset="1" stop-color="#39427F"/>
+    </linearGradient>
+    <linearGradient id="flameR" x1="1" y1="1" x2="0.3" y2="0">
+      <stop offset="0" stop-color="#0E8CCB"/>
+      <stop offset="0.55" stop-color="#18A7E3"/>
+      <stop offset="1" stop-color="#4CC0F0"/>
+    </linearGradient>
+  </defs>
+  <rect x="0.5" y="0.5" width="63" height="63" rx="14" fill="#F6F7FA" stroke="#E5E8EF" stroke-width="1"/>
+  <g transform="translate(10 10) scale(0.6875)">
+    <path fill="url(#flameL)" d="M39.5 6C31.5 8.5 23 14 18.3 22 13.8 29.8 14.3 40.8 20.8 48.2 24 52.2 27.8 54.8 31.2 54.2 33.4 53.7 34.3 50.3 33.4 45.8 32.5 41 30.7 35.3 31.3 29.8 31.9 23.3 34.2 13 39.5 6Z"/>
+    <path fill="url(#flameR)" d="M24.5 6C32.5 8.5 41 14 45.7 22 50.2 29.8 49.7 40.8 43.2 48.2 40 52.2 36.2 54.8 32.8 54.2 30.6 53.7 29.7 50.3 30.6 45.8 31.5 41 33.3 35.3 32.7 29.8 32.1 23.3 29.8 13 24.5 6Z"/>
+    <path fill="#FFE000" d="M32 33.5Q33.2 37.3 37 38.5 33.2 39.7 32 43.5 30.8 39.7 27 38.5 30.8 37.3 32 33.5Z"/>
+  </g>
+</svg>

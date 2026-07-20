@@ -7,9 +7,9 @@
 
 ## 1. 安全政策概述
 
-本仓库是 Sera 向思源哥汇报 HTX OTC BD / PIP 进度的**内部看板**，不作为公开网站。核心原则：
+本仓库是 Sera 向 Simon 汇报 HTX OTC BD / PIP 进度的**内部看板**，不作为公开网站。核心原则：
 
-- **最小暴露面**：仓库 PRIVATE、站点仅思源哥可访问、数据只放脱敏汇总。
+- **最小暴露面**：仓库 PRIVATE、站点仅 Simon 可访问、数据只放脱敏汇总。
 - **真实客户信息零入库**：任何可定位到具体客户身份的信息一律不进 git、不上页面。
 - **密钥零入库**：密码 / Token 只存在于平台环境变量或本地 `.env`。
 - **出问题可止损**：访问可即时撤销、凭据可随时轮换、应急流程见 `docs/05_access_control.md` 第 7 节。
@@ -18,7 +18,7 @@
 
 | 级别 | 内容 | 存放位置 |
 | --- | --- | --- |
-| ✅ 可入仓库（脱敏） | 汇总 KPI 数字、Pipeline 状态与进度、漏斗汇总数量、设计交付清单、客户占位编号（Client-001 等）、同事名（Sera / 思源哥 / 静格 / Oscar） | 本仓库 + 私密站点 |
+| ✅ 可入仓库（脱敏） | 汇总 KPI 数字、Pipeline 状态与进度、漏斗汇总数量、设计交付清单、客户占位编号（Client-001 等）、同事名（Sera / Simon / 静格 / Oscar / Kimi） | 本仓库 + 私密站点 |
 | 🔒 仅本地（永不入库） | 真实 CRM 明细、客户身份信息（见第 3 节清单） | Sera 本地加密目录 / 公司私有云盘 |
 
 ## 3. 禁止入库清单（红线）
@@ -29,7 +29,7 @@
 - HTX UID
 - TG 用户名、TG 群组 / 私聊路径、聊天记录截图或导出
 - 银行账户、收款地址等资金信息
-- 邮箱、电话等联系方式（思源哥邮箱仅存在于 Cloudflare Access 后台名单与本地 `.env`，不进仓库；仓库模板中用 `siyuan@example.com` 占位）
+- 邮箱、电话等联系方式（Simon 的邮箱仅存在于 Cloudflare Access 后台名单与本地 `.env`，不进仓库；仓库模板中用 `simon@example.com` 占位）
 - KYC / KYB 文件、身份证件
 - 客户原话（可能包含可识别信息的引述）
 
@@ -39,14 +39,14 @@
 
 - 客户一律使用占位编号：**`Client-001`、`Client-002`、……**，按真实 CRM 表行序固定分配，编号与真人的映射表只保存在本地 CRM 文件中。
 - 编号一旦分配不复用、不换绑，保证各周数据可对齐。
-- 页面与文档中不出现编号以外的任何客户标识；需要讨论具体客户时，Sera 与思源哥线下对照本地 CRM 表。
+- 页面与文档中不出现编号以外的任何客户标识；需要讨论具体客户时，Sera 与 Simon 线下对照本地 CRM 表。
 
 ## 5. 密钥与环境变量管理
 
 1. 密码 / API Token 只允许存在于：**平台环境变量**（Cloudflare / Render / Railway 后台）或 **本地 `.env`**。
 2. `.env` **必须加入 `.gitignore`**，永不提交；仓库内只维护 `.env.example` 模板（占位值 + 注释）。
 3. 前端文件（`index.html` / `app.js` / `style.css`）严禁包含任何密钥或密码——纯静态站源码对访客完全可见。
-4. 密码口头或加密渠道单独告知，不写在 git、文档、聊天截图中；Basic Auth 密码约定由 Sera 单独告知思源哥。
+4. 密码口头或加密渠道单独告知，不写在 git、文档、聊天截图中；Basic Auth 密码约定由 Sera 单独告知 Simon。
 5. 凭据定期轮换；怀疑泄露立即轮换并按应急流程处理。
 
 ## 6. 当前访问控制现状（截至 2026-07-21）
@@ -55,14 +55,14 @@
 | --- | --- |
 | GitHub 仓库 `78tyih/htx-otc-progress-hub` | **PRIVATE** |
 | 公网 GitHub Pages | **已下线删除**，旧链接已 404 |
-| 目标访问控制 | **Cloudflare Access，Policy 仅放行思源哥一个邮箱**（配置步骤见 `docs/04_private_deployment.md` 第 5 节） |
+| 目标访问控制 | **Cloudflare Access，Policy 仅放行 Simon 一个邮箱**（配置步骤见 `docs/04_private_deployment.md` 第 5 节） |
 | 认证方式 | 邮箱一次性验证码（OTP），可叠加 Google 登录；由 Cloudflare 托管，**禁止前端 JS 假登录** |
 
 ## 7. 每周安全检查清单（建议并入周五更新节奏）
 
 - [ ] **扫描敏感信息**：对仓库全量（重点 `data/*.json`、`docs/`、`app.js`）按第 3 节清单自查一遍，确认无真实客户姓名 / UID / TG 信息 / 账户 / 邮箱 / 电话。
 - [ ] **确认仓库私有**：GitHub 仓库页面显示 Private；Settings 中无多余 collaborator / Deploy Key。
-- [ ] **确认 Access 名单只有一人**：Zero Trust → Access → Applications → Policy，Include 名单中只有思源哥一个邮箱，无泛域名 / 群组规则。
+- [ ] **确认 Access 名单只有一人**：Zero Trust → Access → Applications → Policy，Include 名单中只有 Simon 一个邮箱，无泛域名 / 群组规则。
 - [ ] **确认无密钥入库**：`git log` 与当前文件中无真实密码 / Token；`.env` 未入库且已在 `.gitignore`。
 - [ ] **抽查访问有效性**：无痕窗口打开私密链接，确认需验证才能进入。
 

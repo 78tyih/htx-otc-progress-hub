@@ -24,9 +24,42 @@
 
 ---
 
+## [v0.4] — 2026-07-21
+
+本轮三大变更：① 品牌接入（双焰 SVG 四件套 + 默认日间防闪烁）；② 交互升级（主任务流玻璃拓扑区、6 张动态图形 KPI、玻璃胶囊甘特、轻 3D 曲线依赖图）；③ 页面收敛中文化（删重复区块、KPI 8→6 卡、Simon 命名全站统一）。
+
+### 新增
+- `assets/brand/` 品牌四件套（纯 SVG 原创）：`logo-icon.svg`、`logo-wordmark-light.svg`、`logo-wordmark-dark.svg`、`favicon.svg`；顶栏品牌锁标随 `data-theme` 亮暗自动切换。
+- 「主任务流总览」玻璃拓扑区：7 节点 + 黄色渐变贝塞尔主链 + 次要线，替代原 Hero。
+- 甘特悬浮详情层：状态·进度 / 负责人 / 起止 / 下一步 / 依赖。
+- `docs/07_brand_and_interaction_upgrade.md`（设计动机与维护方式）、`本轮页面优化说明.md`（改动点 / 收敛逻辑 / 布局与组件设计逻辑）。
+
+### 变更
+- KPI 由 8 张静态卡收敛为 6 张动态图形卡：`kpi.json` 新增 `component` 字段（segments / water / money / ring / funnel / multi），`app.js` 按组件分发渲染，数字 count-up 先落终值后动画。
+- 甘特重构为玻璃胶囊条：W1–W6 周列、9 根任务条按 42 天时间轴百分比定位，窄屏容器内横向滚动。
+- 依赖图升级为三链 SVG 曲线：串行主链路（黄）/ 并行获客链（四线汇入客户池）/ 私密看板链（淡蓝）。
+- 执行摘要重排为 4 卡（总体进度 / 本周完成 / 当前阻塞 / 下一里程碑），由 roadmap / todo / gantt / pipeline / milestones 自动计算。
+- 页面结构由 11 区块收敛为 10 区块主文案中文化；「下周计划」并入 10「里程碑与下周计划」双栏。
+- 汇报对象全站统一抽象化为 Simon / Primary Reviewer / Supervisor，占位邮箱统一 `simon@example.com`。
+- 布局：12 栅格响应式（3→2→1 列）、clamp 流式字号、两线标题、卡片底部「下一步」对齐、间距整体收紧。
+
+### 移除
+- 「设计交付清单」独立区块（与任务树 T001 子任务、KPI 进度环信息同源重复）；`data/design-delivery.json` 不再被页面加载。
+- 「本周进展柱状图」子区（被甘特图 + 执行摘要「本周完成」卡取代）。
+
+### 修复
+- 390px 视口顶栏标题（nowrap）导致页面级横向溢出（QA 实测 scrollWidth 610 > 390）：`.title-block` 补 `min-width: 0`，h1 补省略号截断；修复后 390 / 560 / 768 / 1280px 四档复测均无溢出。
+- 6.3 子区标题「Live Task Progress」英文残留，改为「实时任务进度」（含 06 区块副标题引用）。
+
+### 安全
+- QA 独立终扫通过（排除 `.git`）：无真实客户姓名、HTX UID、TG 用户名 / t.me 路径、银行账户、邮箱、手机号（`simon@example.com` 与 `git@github.com` 为允许占位）；原称呼/拼音命名终扫 0 命中。
+- QA 校验 FALLBACK 与 9 个被加载 JSON 逐字一致；临时服务 17 项资源全 200、进程无残留；浏览器 console 零报错。
+
+---
+
 ## [v0.3] — 2026-07-21
 
-本轮两大变更：① 部署目标从公网 GitHub Pages 转为**私密访问**（仅思源哥本人，真实身份验证，禁止前端 JS 假登录）；② 看板升级为 **PIP 进度管理 Dashboard**。
+本轮两大变更：① 部署目标从公网 GitHub Pages 转为**私密访问**（仅 Simon 本人，真实身份验证，禁止前端 JS 假登录）；② 看板升级为 **PIP 进度管理 Dashboard**。
 
 ### 新增
 - 4 个新页面模块：**02 Executive Summary**（总体进度 / 本周完成 / 阻塞数 / 下一节点）、**04 Trial Timeline Gantt Chart**（W1 07/21 – W6 08/31 六周时间轴、6 条业务主线泳道、任务条按状态着色）、**05 Workstream Dependency Map**（串行主链路：设计交付包 → 提交设计团队 → 客户资料字段确认 → 客户唤醒 → 注册/KYC → 首单 → CRIB 复盘；并行获客：大数据名单 / 销售转介 / Partner / KOL → 客户池；私密看板链）、**08 Weekly To Do List**（P0 高亮、过期标红、可搜索）。
@@ -46,8 +79,8 @@
 
 ### 安全
 - GitHub 仓库 `78tyih/htx-otc-progress-hub` 可见性已转为 **PRIVATE**。
-- 私密部署方案确定：**Cloudflare Pages + Cloudflare Access**，Access 策略仅放行思源哥邮箱，支持邮箱 OTP 一次性验证码 / Google 登录，身份验证在边缘网关完成（非前端 JS 假登录）。
-- 数据脱敏终扫通过（含 5 个新 JSON 与全部新模块）：无真实客户姓名、HTX UID、TG 用户名/路径、银行账户、邮箱、电话（同事名 Sera / 思源哥 / 静格 / Oscar 除外）。
+- 私密部署方案确定：**Cloudflare Pages + Cloudflare Access**，Access 策略仅放行 Simon 邮箱，支持邮箱 OTP 一次性验证码 / Google 登录，身份验证在边缘网关完成（非前端 JS 假登录）。
+- 数据脱敏终扫通过（含 5 个新 JSON 与全部新模块）：无真实客户姓名、HTX UID、TG 用户名/路径、银行账户、邮箱、电话（同事名 Sera / Simon / 静格 / Oscar / Kimi 除外）。
 
 ### 提交结果
 - 本轮变更已提交并推送至 `main`：commit `16755d1`（20 个文件，+2317/-232 行），推送时间 2026-07-21 05:45（本地）。
@@ -55,7 +88,7 @@
 ### 待办（下一版本）
 - ~~Git 提交推送~~（已完成，见上）。
 - Cloudflare 私密部署：需 Sera 提供 Cloudflare 账号，按 `docs/04_private_deployment.md` 操作清单执行。
-- 部署验证通过后，将私密链接发给思源哥并单独告知验证邮箱。
+- 部署验证通过后，将私密链接发给 Simon 并单独告知验证邮箱。
 
 ---
 

@@ -4,163 +4,239 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HTX OTC BD Progress Hub</title>
-  <meta name="description" content="OTC USD 大宗业务 · PIP 进度看板 · 汇报对象：思源哥">
+  <meta name="description" content="OTC USD 大宗业务 · PIP 进度看板 · 汇报对象：Simon（Primary Reviewer）">
   <script>
     // 防主题闪烁：在 CSS 加载前确定主题（默认日间 light，读取 localStorage 记忆）
     document.documentElement.dataset.theme = localStorage.getItem('theme') || 'light';
   </script>
+  <link rel="icon" href="assets/brand/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- ========== 01 顶部导航 ========== -->
+  <!-- ========== 01 顶部导航（品牌锁标） ========== -->
   <header class="topbar">
     <div class="topbar-left">
       <button class="icon-btn" id="menuBtn" type="button" aria-label="菜单" title="菜单">☰</button>
+      <div class="brand-lockup" title="HTX OTC BD">
+        <img class="brand-logo brand-logo-light" src="assets/brand/logo-wordmark-light.svg" alt="HTX OTC BD" width="220" height="56">
+        <img class="brand-logo brand-logo-dark" src="assets/brand/logo-wordmark-dark.svg" alt="HTX OTC BD" width="220" height="56">
+      </div>
       <div class="title-block">
         <h1>HTX OTC BD Progress Hub</h1>
-        <p class="subtitle">OTC USD 大宗业务 · PIP 进度看板 · 汇报对象：思源哥</p>
+        <p class="subtitle">OTC USD 大宗业务 · PIP 进度看板 · 汇报对象：Simon（Primary Reviewer）</p>
       </div>
     </div>
     <div class="topbar-right">
       <div class="theme-toggle" id="themeToggle" role="group" aria-label="主题切换">
-        <button class="theme-btn" type="button" data-mode="day" title="日间主题">Day</button>
-        <button class="theme-btn" type="button" data-mode="night" title="夜间主题">Night</button>
+        <button class="theme-btn" type="button" data-mode="day" title="日间主题">日间 <i>Day</i></button>
+        <button class="theme-btn" type="button" data-mode="night" title="夜间主题">夜间 <i>Night</i></button>
       </div>
       <div class="search-box">
         <span class="search-icon" aria-hidden="true">⌕</span>
-        <input type="search" id="searchInput" placeholder="搜索 Pipeline / To Do / PIP 目标…" autocomplete="off">
+        <input type="search" id="searchInput" placeholder="搜索 Pipeline / 待办 / PIP 目标…" autocomplete="off">
       </div>
       <span class="updated-at">数据更新：<b id="updatedAt">2026-07-21</b></span>
       <div class="actions">
-        <button class="btn btn-outline" id="btnUpdate" type="button" title="数据由 data/*.json 驱动，每周更新">Update</button>
-        <button class="btn btn-outline" id="btnExport" type="button" title="导出 Pipeline JSON">Export</button>
-        <button class="btn btn-primary" id="btnNew" type="button" title="新增工作项（占位样式）">New Item</button>
+        <button class="btn btn-outline" id="btnUpdate" type="button" title="数据由 data/*.json 驱动，每周更新">更新数据</button>
+        <button class="btn btn-outline" id="btnExport" type="button" title="导出 Pipeline JSON">导出</button>
+        <button class="btn btn-primary" id="btnNew" type="button" title="新增工作项（占位样式）">新建工作项</button>
       </div>
     </div>
   </header>
 
   <main class="container">
 
-    <!-- Hero 细条（无编号装饰条，不占 11 大区块）：有参考图则显示图，否则显示占位文案 -->
-    <section class="hero-strip" id="heroStrip" aria-label="OTC BD Progress Hub">
-      <img class="hero-img" id="heroImg" alt="OTC BD Progress Hub · USD Bulk Trading Pipeline" hidden>
-      <div class="hero-fallback" id="heroFallback">
-        <p class="hero-line1">OTC BD Progress Hub</p>
-        <p class="hero-line2">USD Bulk Trading Pipeline</p>
-        <p class="hero-line3">Design Delivery · CRM · KYC · First Trade</p>
+    <!-- ========== 主任务流总览区（紧凑 Soft Glass 节点拓扑，替代原 Hero） ========== -->
+    <section class="flow-strip" aria-label="主任务流总览">
+      <div class="flow-head">
+        <span class="flow-title">主任务流总览</span>
+        <span class="flow-sub">评估立项 → 文档沉淀 → 转化交付 → 复盘沉淀 · 黄色为主链路</span>
+      </div>
+      <div class="flow-stage">
+        <svg class="flow-links" viewBox="0 0 1260 96" preserveAspectRatio="none" aria-hidden="true">
+          <defs>
+            <linearGradient id="flowMainGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#FFE000"/>
+              <stop offset="1" stop-color="#FFB800"/>
+            </linearGradient>
+          </defs>
+          <!-- 并行 / 次要线：浅灰与淡黄半透明 -->
+          <path class="fl-secondary" d="M90 48 C 330 -8 570 -8 810 48"/>
+          <path class="fl-secondary fl-secondary-y" d="M810 48 C 940 102 1050 102 1170 48"/>
+          <!-- 主链路：黄色渐变 -->
+          <path class="fl-main" d="M90 48 C 150 33 210 33 270 48 S 390 63 450 48 S 570 33 630 48 S 750 63 810 48 S 930 33 990 48 S 1110 63 1170 48"/>
+        </svg>
+        <div class="flow-nodes">
+          <div class="flow-cell"><div class="flow-node st-done">
+            <span class="fn-dot" aria-hidden="true"></span>
+            <div class="fn-title">评估表目标</div><div class="fn-meta">PIP 已立项</div>
+          </div></div>
+          <div class="flow-cell"><div class="flow-node st-done">
+            <span class="fn-dot" aria-hidden="true"></span>
+            <div class="fn-title">BD计划文档</div><div class="fn-meta">已完成</div>
+          </div></div>
+          <div class="flow-cell"><div class="flow-node st-done">
+            <span class="fn-dot" aria-hidden="true"></span>
+            <div class="fn-title">客户手册/FAQ</div><div class="fn-meta">8/8 已交付</div>
+          </div></div>
+          <div class="flow-cell"><div class="flow-node st-doing">
+            <span class="fn-dot" aria-hidden="true"></span>
+            <div class="fn-title">客户Pipeline</div><div class="fn-meta">初版已建</div>
+          </div></div>
+          <div class="flow-cell"><div class="flow-node st-next">
+            <span class="fn-dot" aria-hidden="true"></span>
+            <div class="fn-title">注册/KYC</div><div class="fn-meta">待推进</div>
+          </div></div>
+          <div class="flow-cell"><div class="flow-node st-next">
+            <span class="fn-dot" aria-hidden="true"></span>
+            <div class="fn-title">首单转化</div><div class="fn-meta">周四/五测试</div>
+          </div></div>
+          <div class="flow-cell"><div class="flow-node st-next">
+            <span class="fn-dot" aria-hidden="true"></span>
+            <div class="fn-title">CRIB复盘</div><div class="fn-meta">08-31</div>
+          </div></div>
+        </div>
       </div>
     </section>
 
-    <!-- ========== 02 Executive Summary ========== -->
+    <!-- ========== 02 执行摘要 Executive Summary ========== -->
     <section class="section" id="sec-summary">
       <div class="section-head">
         <span class="sec-no">02</span>
         <div>
-          <h2>Executive Summary</h2>
-          <p class="section-sub">PIP 整体健康度一览 · 数据由 roadmap / todo / gantt / pipeline / milestones 自动计算</p>
+          <h2>执行摘要</h2>
+          <p class="section-sub">Executive Summary · PIP 整体健康度 · 由 roadmap / todo / gantt / pipeline / milestones 自动计算</p>
         </div>
       </div>
       <div class="sum-grid" id="sumGrid"></div>
     </section>
 
-    <!-- ========== 03 PIP KPI Overview ========== -->
+    <!-- ========== 03 核心 KPI 总览（动态图形组件） ========== -->
     <section class="section" id="sec-kpi">
       <div class="section-head">
         <span class="sec-no">03</span>
         <div>
-          <h2>PIP KPI Overview</h2>
-          <p class="section-sub">PIP 核心目标进度一览 · 含 done/total 进度条</p>
+          <h2>核心 KPI 总览</h2>
+          <p class="section-sub">PIP 六大目标动态进度 · 组件随 data/kpi.json 的 component 字段渲染</p>
         </div>
       </div>
       <div class="kpi-grid" id="kpiGrid"></div>
     </section>
 
-    <!-- ========== 04 Trial Timeline 甘特图 ========== -->
+    <!-- ========== 04 甘特图 · 玻璃时间推进图 ========== -->
     <section class="section" id="sec-gantt">
       <div class="section-head">
         <span class="sec-no">04</span>
         <div>
-          <h2>Trial Timeline 甘特图</h2>
-          <p class="section-sub">2026-07-21 ～ 2026-08-31 · 6 周视图 · 颜色 = 状态（Done 绿 / Doing 蓝 / Next 黄 / Blocked 红）</p>
+          <h2>甘特图 · 时间推进</h2>
+          <p class="section-sub">2026-07-21 ～ 2026-08-31 · 6 周视图 · 悬浮查看负责人 / 进度 / 下一步</p>
         </div>
       </div>
       <div class="panel gantt-panel">
-        <div class="gantt" id="ganttChart"></div>
+        <div class="gantt-scroll">
+          <div class="gantt" id="ganttChart"></div>
+        </div>
         <div class="gantt-legend" id="ganttLegend"></div>
+        <div class="gantt-tip" id="ganttTip" hidden></div>
       </div>
     </section>
 
-    <!-- ========== 05 Workstream 依赖关系图 ========== -->
+    <!-- ========== 05 依赖关系图 + 主线进度卡 ========== -->
     <section class="section" id="sec-depmap">
       <div class="section-head">
         <span class="sec-no">05</span>
         <div>
-          <h2>Workstream 依赖关系图</h2>
-          <p class="section-sub">串行主链路 · 并行获客链 · 私密看板链</p>
+          <h2>依赖关系图</h2>
+          <p class="section-sub">串行主链路（黄） · 并行获客链（浅色） · 私密看板链（淡蓝）</p>
         </div>
       </div>
       <div class="panel dep-panel">
 
         <div class="dep-chain">
           <div class="dep-chain-title">串行主链路：交付 → 唤醒 → 转化 → 复盘</div>
-          <div class="dep-flow">
-            <div class="dep-node dn-done"><div class="dn-title">设计交付包</div><div class="dn-meta">Done</div></div>
-            <span class="dep-arrow" aria-hidden="true"></span>
-            <div class="dep-node dn-doing"><div class="dn-title">提交设计团队</div><div class="dn-meta">Doing · 07-22</div></div>
-            <span class="dep-arrow" aria-hidden="true"></span>
-            <div class="dep-node dn-next"><div class="dn-title">客户资料字段确认</div><div class="dn-meta">Next</div></div>
-            <span class="dep-arrow" aria-hidden="true"></span>
-            <div class="dep-node dn-next"><div class="dn-title">客户唤醒</div><div class="dn-meta">Next</div></div>
-            <span class="dep-arrow" aria-hidden="true"></span>
-            <div class="dep-node dn-next"><div class="dn-title">注册 / KYC</div><div class="dn-meta">Next</div></div>
-            <span class="dep-arrow" aria-hidden="true"></span>
-            <div class="dep-node dn-next"><div class="dn-title">首单</div><div class="dn-meta">Next</div></div>
-            <span class="dep-arrow" aria-hidden="true"></span>
-            <div class="dep-node dn-next"><div class="dn-title">CRIB 复盘</div><div class="dn-meta">Next · 08-31</div></div>
+          <div class="dep-stage dep-stage-main">
+            <svg class="dep-links" viewBox="0 0 1260 92" preserveAspectRatio="none" aria-hidden="true">
+              <defs>
+                <linearGradient id="depMainGrad" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0" stop-color="#FFE000"/>
+                  <stop offset="1" stop-color="#FFB800"/>
+                </linearGradient>
+              </defs>
+              <path class="dl-main" d="M90 46 C 150 31 210 31 270 46 S 390 61 450 46 S 570 31 630 46 S 750 61 810 46 S 930 31 990 46 S 1110 61 1170 46"/>
+            </svg>
+            <div class="dep-row dep-row-7">
+              <div class="dep-cell"><div class="dep-node dn-done"><div class="dn-title">设计交付包</div><div class="dn-meta">Done</div></div></div>
+              <div class="dep-cell"><div class="dep-node dn-doing"><div class="dn-title">提交设计团队</div><div class="dn-meta">Doing · 07-22</div></div></div>
+              <div class="dep-cell"><div class="dep-node dn-next"><div class="dn-title">客户资料字段确认</div><div class="dn-meta">Next</div></div></div>
+              <div class="dep-cell"><div class="dep-node dn-next"><div class="dn-title">客户唤醒</div><div class="dn-meta">Next</div></div></div>
+              <div class="dep-cell"><div class="dep-node dn-next"><div class="dn-title">注册 / KYC</div><div class="dn-meta">Next</div></div></div>
+              <div class="dep-cell"><div class="dep-node dn-next"><div class="dn-title">首单</div><div class="dn-meta">Next</div></div></div>
+              <div class="dep-cell"><div class="dep-node dn-next"><div class="dn-title">CRIB 复盘</div><div class="dn-meta">Next · 08-31</div></div></div>
+            </div>
           </div>
         </div>
 
         <div class="dep-chain">
-          <div class="dep-chain-title">并行获客链：三条线索并行汇入客户池</div>
-          <div class="dep-parallel">
-            <div class="dep-node dn-blocked"><div class="dn-title">大数据名单</div><div class="dn-meta">Blocked · 待思源哥协助</div></div>
-            <div class="dep-node dn-next"><div class="dn-title">销售转介</div><div class="dn-meta">Next · 对接 Oscar</div></div>
-            <div class="dep-node dn-next"><div class="dn-title">Partner / KOL</div><div class="dn-meta">Next · ≥7 家 / ≥10 位</div></div>
-          </div>
-          <div class="dep-parallel dep-down-row">
-            <span class="dep-down" aria-hidden="true"></span>
-            <span class="dep-down" aria-hidden="true"></span>
-            <span class="dep-down" aria-hidden="true"></span>
-          </div>
-          <div class="dep-parallel">
-            <div class="dep-node dn-pool dep-merge"><div class="dn-title">客户池</div><div class="dn-meta">汇总分级 → 进入串行主链路「客户唤醒」</div></div>
+          <div class="dep-chain-title">并行获客链：四条线索并行汇入客户池</div>
+          <div class="dep-stage dep-stage-parallel">
+            <svg class="dep-links" viewBox="0 0 1260 150" preserveAspectRatio="none" aria-hidden="true">
+              <path class="dl-pale" d="M157.5 34 C 157.5 82 630 66 630 112"/>
+              <path class="dl-pale" d="M472.5 34 C 472.5 76 630 68 630 112"/>
+              <path class="dl-pale" d="M787.5 34 C 787.5 76 630 68 630 112"/>
+              <path class="dl-pale" d="M1102.5 34 C 1102.5 82 630 66 630 112"/>
+            </svg>
+            <div class="dep-row dep-row-4">
+              <div class="dep-cell"><div class="dep-node dn-blocked"><div class="dn-title">大数据名单</div><div class="dn-meta">Blocked · 待 Simon 协助</div></div></div>
+              <div class="dep-cell"><div class="dep-node dn-next"><div class="dn-title">销售转介</div><div class="dn-meta">Next · 对接 Oscar</div></div></div>
+              <div class="dep-cell"><div class="dep-node dn-next"><div class="dn-title">Partner</div><div class="dn-meta">Next · ≥7 家</div></div></div>
+              <div class="dep-cell"><div class="dep-node dn-next"><div class="dn-title">KOL</div><div class="dn-meta">Next · ≥10 位</div></div></div>
+            </div>
+            <div class="dep-row dep-row-pool">
+              <div class="dep-cell"><div class="dep-node dn-pool dep-merge"><div class="dn-title">客户池</div><div class="dn-meta">汇总分级 → 进入串行主链路「客户唤醒」</div></div></div>
+            </div>
           </div>
         </div>
 
         <div class="dep-chain">
           <div class="dep-chain-title">私密看板链：本地 → 私密 → 汇报 → 节奏</div>
-          <div class="dep-flow">
-            <div class="dep-node dn-done"><div class="dn-title">本地看板</div><div class="dn-meta">Done</div></div>
-            <span class="dep-arrow" aria-hidden="true"></span>
-            <div class="dep-node dn-doing"><div class="dn-title">私密访问控制</div><div class="dn-meta">Doing · Cloudflare Access</div></div>
-            <span class="dep-arrow" aria-hidden="true"></span>
-            <div class="dep-node dn-next"><div class="dn-title">思源哥访问</div><div class="dn-meta">Next · 邮箱 OTP / Google 登录</div></div>
-            <span class="dep-arrow" aria-hidden="true"></span>
-            <div class="dep-node dn-next"><div class="dn-title">每周更新</div><div class="dn-meta">Next · 数据节奏</div></div>
+          <div class="dep-stage dep-stage-board">
+            <svg class="dep-links" viewBox="0 0 1260 88" preserveAspectRatio="none" aria-hidden="true">
+              <defs>
+                <linearGradient id="depBoardGrad" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0" stop-color="#18A7E3" stop-opacity="0.55"/>
+                  <stop offset="1" stop-color="#232B67" stop-opacity="0.55"/>
+                </linearGradient>
+              </defs>
+              <path class="dl-board" d="M157.5 44 C 260 28 370 28 472.5 44 S 685 60 787.5 44 S 1000 28 1102.5 44"/>
+            </svg>
+            <div class="dep-row dep-row-4">
+              <div class="dep-cell"><div class="dep-node dn-done"><div class="dn-title">本地看板</div><div class="dn-meta">Done</div></div></div>
+              <div class="dep-cell"><div class="dep-node dn-doing"><div class="dn-title">访问控制</div><div class="dn-meta">Doing · Cloudflare Access</div></div></div>
+              <div class="dep-cell"><div class="dep-node dn-next"><div class="dn-title">Simon 访问</div><div class="dn-meta">Next · 邮箱 OTP / Google 登录</div></div></div>
+              <div class="dep-cell"><div class="dep-node dn-next"><div class="dn-title">每周更新</div><div class="dn-meta">Next · 数据节奏</div></div></div>
+            </div>
           </div>
         </div>
 
       </div>
+
+      <!-- Workstream Progress Cards（data/roadmap.json 6 条主线） -->
+      <div class="sub-head">
+        <span class="sub-no">5.1</span>
+        <h3>主线进度</h3>
+        <span class="sub-desc">Workstream Progress · 6 条主线实时进度</span>
+      </div>
+      <div class="ws-grid" id="wsGrid"></div>
     </section>
 
-    <!-- ========== 06 Main Tasks & Subtasks ========== -->
+    <!-- ========== 06 主任务与子任务 ========== -->
     <section class="section" id="sec-maintasks">
       <div class="section-head">
         <span class="sec-no">06</span>
         <div>
-          <h2>Main Tasks &amp; Subtasks</h2>
-          <p class="section-sub">主任务树 + Pipeline 看板 + 进展图表 + 设计交付 + Live Task Progress</p>
+          <h2>主任务与子任务</h2>
+          <p class="section-sub">任务树（可展开） + Pipeline 看板（搜索/筛选联动） + 实时任务进度</p>
         </div>
       </div>
 
@@ -178,85 +254,47 @@
         <h3 class="sub-head-main">工作 Pipeline 看板</h3>
         <div class="status-filters" id="statusFilters" role="group" aria-label="状态筛选">
           <button class="filter-btn active" type="button" data-status="all">全部</button>
-          <button class="filter-btn" type="button" data-status="Done">Done</button>
-          <button class="filter-btn" type="button" data-status="Doing">Doing</button>
-          <button class="filter-btn" type="button" data-status="Next">Next</button>
-          <button class="filter-btn" type="button" data-status="Blocked">Blocked</button>
+          <button class="filter-btn" type="button" data-status="Done">Done 已完成</button>
+          <button class="filter-btn" type="button" data-status="Doing">Doing 进行中</button>
+          <button class="filter-btn" type="button" data-status="Next">Next 待启动</button>
+          <button class="filter-btn" type="button" data-status="Blocked">Blocked 已阻塞</button>
         </div>
       </div>
       <div class="kanban" id="kanban">
         <div class="kanban-col" data-col="Done">
           <div class="kanban-col-head">
-            <span class="dot dot-done"></span><span class="col-name">Done</span>
+            <span class="dot dot-done"></span><span class="col-name">Done 已完成</span>
             <span class="col-count" id="count-Done">0</span>
           </div>
           <div class="kanban-col-body" id="col-Done"></div>
         </div>
         <div class="kanban-col" data-col="Doing">
           <div class="kanban-col-head">
-            <span class="dot dot-doing"></span><span class="col-name">Doing</span>
+            <span class="dot dot-doing"></span><span class="col-name">Doing 进行中</span>
             <span class="col-count" id="count-Doing">0</span>
           </div>
           <div class="kanban-col-body" id="col-Doing"></div>
         </div>
         <div class="kanban-col" data-col="Next">
           <div class="kanban-col-head">
-            <span class="dot dot-next"></span><span class="col-name">Next</span>
+            <span class="dot dot-next"></span><span class="col-name">Next 待启动</span>
             <span class="col-count" id="count-Next">0</span>
           </div>
           <div class="kanban-col-body" id="col-Next"></div>
         </div>
         <div class="kanban-col" data-col="Blocked">
           <div class="kanban-col-head">
-            <span class="dot dot-blocked"></span><span class="col-name">Blocked</span>
+            <span class="dot dot-blocked"></span><span class="col-name">Blocked 已阻塞</span>
             <span class="col-count" id="count-Blocked">0</span>
           </div>
           <div class="kanban-col-body" id="col-Blocked"></div>
         </div>
       </div>
 
-      <!-- 6.3 本周核心进展图表（纯 CSS 柱状图） -->
+      <!-- 6.3 Live Task Progress -->
       <div class="sub-head">
         <span class="sub-no">6.3</span>
-        <h3>本周核心进展</h3>
-        <span class="sub-desc">Pipeline 工作项状态分布</span>
-      </div>
-      <div class="panel chart-panel">
-        <div class="chart-head">
-          <div class="chart-title-block">
-            <div class="chart-big" id="chartTotal">–</div>
-            <div class="chart-sub">Pipeline 工作项总数</div>
-          </div>
-          <span class="badge" id="chartBadge">–</span>
-        </div>
-        <div class="bar-chart" id="statusChart"></div>
-        <div class="chart-legend" id="chartLegend"></div>
-      </div>
-
-      <!-- 6.4 设计交付清单 -->
-      <div class="sub-head">
-        <span class="sub-no">6.4</span>
-        <h3>设计交付清单</h3>
-        <span class="sub-desc">OTC USD 大宗交易设计交付包 · 8 项交付物</span>
-      </div>
-      <div class="panel table-panel">
-        <table class="data-table" id="designTable">
-          <thead>
-            <tr>
-              <th class="col-status">状态</th>
-              <th>交付物</th>
-              <th>分类</th>
-              <th>备注</th>
-            </tr>
-          </thead>
-          <tbody id="designTableBody"></tbody>
-        </table>
-      </div>
-
-      <!-- 6.5 Live Task Progress -->
-      <div class="sub-head">
-        <span class="sub-no">6.5</span>
-        <h3>Live Task Progress</h3>
+        <h3>实时任务进度</h3>
         <span class="sub-desc">看板升级与本周执行任务实时进度</span>
       </div>
       <div class="panel table-panel">
@@ -264,12 +302,12 @@
           <thead>
             <tr>
               <th>ID</th>
-              <th>Task</th>
-              <th>Owner</th>
-              <th>Status</th>
-              <th class="col-progress">Progress</th>
-              <th>Next</th>
-              <th>Updated</th>
+              <th>任务</th>
+              <th>负责人</th>
+              <th>状态</th>
+              <th class="col-progress">进度</th>
+              <th>下一步</th>
+              <th>更新时间</th>
             </tr>
           </thead>
           <tbody id="taskProgressBody"></tbody>
@@ -277,12 +315,12 @@
       </div>
     </section>
 
-    <!-- ========== 07 客户转化漏斗 ========== -->
+    <!-- ========== 07 CRM 转化漏斗 ========== -->
     <section class="section" id="sec-funnel">
       <div class="section-head">
         <span class="sec-no">07</span>
         <div>
-          <h2>CRM Conversion Funnel</h2>
+          <h2>CRM 转化漏斗</h2>
           <p class="section-sub">咨询 → 信息收集 → 注册 → KYC/KYB → 报价 → 首单 → 长期维护 · 含转化率与下一步</p>
         </div>
       </div>
@@ -301,13 +339,13 @@
       </div>
     </section>
 
-    <!-- ========== 08 Weekly To Do List ========== -->
+    <!-- ========== 08 每周待办 ========== -->
     <section class="section" id="sec-todo">
       <div class="section-head">
         <span class="sec-no">08</span>
         <div>
-          <h2>Weekly To Do List</h2>
-          <p class="section-sub">按优先级排序（P0 高亮）· 支持顶栏搜索过滤 · 过期任务标红</p>
+          <h2>每周待办</h2>
+          <p class="section-sub">Weekly To Do · 按优先级排序（P0 高亮） · 支持顶栏搜索过滤 · 过期任务标红</p>
         </div>
       </div>
       <div class="panel table-panel">
@@ -316,8 +354,8 @@
             <tr>
               <th>优先级</th>
               <th>任务</th>
-              <th>Owner</th>
-              <th>Due</th>
+              <th>负责人</th>
+              <th>截止</th>
               <th>状态</th>
             </tr>
           </thead>
@@ -331,37 +369,44 @@
       <div class="section-head">
         <span class="sec-no">09</span>
         <div>
-          <h2>Blockers &amp; Support Needed</h2>
-          <p class="section-sub">自动汇总 Pipeline 中 Blocked 项 + 需要思源哥协助的事项</p>
+          <h2>阻塞事项与所需协助</h2>
+          <p class="section-sub">自动汇总 Pipeline 中 Blocked 项 + 需要 Supervisor 协助的事项</p>
         </div>
       </div>
       <div class="blocked-layout">
         <div class="blocked-cards" id="blockedCards"></div>
         <div class="panel asks-panel">
-          <h3 class="asks-title">需要思源哥协助的 5 件事</h3>
+          <h3 class="asks-title">需要 Supervisor 协助的 5 件事</h3>
           <ol class="asks-list" id="fixedAsks"></ol>
         </div>
       </div>
     </section>
 
-    <!-- ========== 10 下周计划 ========== -->
-    <section class="section" id="sec-nextweek">
+    <!-- ========== 10 里程碑 + 下周计划 ========== -->
+    <section class="section" id="sec-milestones">
       <div class="section-head">
         <span class="sec-no">10</span>
         <div>
-          <h2>Next Week Plan</h2>
-          <p class="section-sub">按优先级排列</p>
+          <h2>里程碑与下周计划</h2>
+          <p class="section-sub">Next Milestones · 关键节点时间线 + 下周重点计划</p>
         </div>
       </div>
-      <div class="panel nextweek-panel">
-        <ol class="nextweek-list">
-          <li><span class="nw-no">1</span>明天提交设计团队并确认排期</li>
-          <li><span class="nw-no">2</span>从 CRM 筛出五星重点客户</li>
-          <li><span class="nw-no">3</span>按客户等级推进注册 / KYC</li>
-          <li><span class="nw-no">4</span>配合静格完成周四 / 周五首单测试</li>
-          <li><span class="nw-no">5</span>制定 Partner / KOL 站外获客计划</li>
-          <li><span class="nw-no">6</span>更新本周 Pipeline 与 CRIB 记录</li>
-        </ol>
+      <div class="nw-layout">
+        <div class="panel mstone-panel">
+          <h3 class="panel-title">关键里程碑</h3>
+          <ol class="mstone-list" id="milestoneList"></ol>
+        </div>
+        <div class="panel nextweek-panel">
+          <h3 class="panel-title">下周计划</h3>
+          <ol class="nextweek-list">
+            <li><span class="nw-no">1</span>提交设计团队并确认排期</li>
+            <li><span class="nw-no">2</span>从 CRM 筛出五星重点客户</li>
+            <li><span class="nw-no">3</span>按客户等级推进注册 / KYC</li>
+            <li><span class="nw-no">4</span>配合静格完成周四 / 周五首单测试</li>
+            <li><span class="nw-no">5</span>制定 Partner / KOL 站外获客计划</li>
+            <li><span class="nw-no">6</span>更新本周 Pipeline 与 CRIB 记录</li>
+          </ol>
+        </div>
       </div>
     </section>
 
