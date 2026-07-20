@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HTX OTC BD Progress Hub</title>
+  <meta name="description" content="OTC USD 大宗业务 · PIP 进度看板 · 汇报对象：思源哥">
+  <script>
+    // 防主题闪烁：在 CSS 加载前确定主题（默认日间 light，读取 localStorage 记忆）
+    document.documentElement.dataset.theme = localStorage.getItem('theme') || 'light';
+  </script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ========== 01 顶部导航 ========== -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="icon-btn" id="menuBtn" type="button" aria-label="菜单" title="菜单">☰</button>
+      <div class="title-block">
+        <h1>HTX OTC BD Progress Hub</h1>
+        <p class="subtitle">OTC USD 大宗业务 · PIP 进度看板 · 汇报对象：思源哥</p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="theme-toggle" id="themeToggle" role="group" aria-label="主题切换">
+        <button class="theme-btn" type="button" data-mode="day" title="日间主题">Day</button>
+        <button class="theme-btn" type="button" data-mode="night" title="夜间主题">Night</button>
+      </div>
+      <div class="search-box">
+        <span class="search-icon" aria-hidden="true">⌕</span>
+        <input type="search" id="searchInput" placeholder="搜索 Pipeline 模块 / PIP 目标…" autocomplete="off">
+      </div>
+      <span class="updated-at">数据更新：<b id="updatedAt">2026-07-21</b></span>
+      <div class="actions">
+        <button class="btn btn-outline" id="btnUpdate" type="button" title="数据由 data/*.json 驱动，每周更新">Update</button>
+        <button class="btn btn-outline" id="btnExport" type="button" title="导出 Pipeline JSON">Export</button>
+        <button class="btn btn-primary" id="btnNew" type="button" title="新增工作项（占位样式）">New Item</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- Hero 细条（无编号装饰条，不占 10 大区块）：有参考图则显示图，否则显示占位文案 -->
+    <section class="hero-strip" id="heroStrip" aria-label="OTC BD Progress Hub">
+      <img class="hero-img" id="heroImg" alt="OTC BD Progress Hub · USD Bulk Trading Pipeline" hidden>
+      <div class="hero-fallback" id="heroFallback">
+        <p class="hero-line1">OTC BD Progress Hub</p>
+        <p class="hero-line2">USD Bulk Trading Pipeline</p>
+        <p class="hero-line3">Design Delivery · CRM · KYC · First Trade</p>
+      </div>
+    </section>
+
+    <!-- ========== 02 KPI 卡片 ========== -->
+    <section class="section" id="sec-kpi">
+      <div class="section-head">
+        <span class="sec-no">02</span>
+        <div>
+          <h2>KPI 总览</h2>
+          <p class="section-sub">PIP 核心目标进度一览</p>
+        </div>
+      </div>
+      <div class="kpi-grid" id="kpiGrid"></div>
+    </section>
+
+    <!-- ========== 03 本周核心进展图表（纯 CSS 柱状图） ========== -->
+    <section class="section" id="sec-chart">
+      <div class="section-head">
+        <span class="sec-no">03</span>
+        <div>
+          <h2>本周核心进展</h2>
+          <p class="section-sub">Pipeline 工作项状态分布</p>
+        </div>
+      </div>
+      <div class="panel chart-panel">
+        <div class="chart-head">
+          <div class="chart-title-block">
+            <div class="chart-big" id="chartTotal">–</div>
+            <div class="chart-sub">Pipeline 工作项总数</div>
+          </div>
+          <span class="badge" id="chartBadge">–</span>
+        </div>
+        <div class="bar-chart" id="statusChart"></div>
+        <div class="chart-legend" id="chartLegend"></div>
+      </div>
+    </section>
+
+    <!-- ========== 04 工作 Pipeline 看板 ========== -->
+    <section class="section" id="sec-pipeline">
+      <div class="section-head section-head-row">
+        <span class="sec-no">04</span>
+        <div class="section-head-main">
+          <h2>工作 Pipeline 看板</h2>
+          <p class="section-sub">Done / Doing / Next / Blocked 四列流转，支持搜索与状态筛选</p>
+        </div>
+        <div class="status-filters" id="statusFilters" role="group" aria-label="状态筛选">
+          <button class="filter-btn active" type="button" data-status="all">全部</button>
+          <button class="filter-btn" type="button" data-status="Done">Done</button>
+          <button class="filter-btn" type="button" data-status="Doing">Doing</button>
+          <button class="filter-btn" type="button" data-status="Next">Next</button>
+          <button class="filter-btn" type="button" data-status="Blocked">Blocked</button>
+        </div>
+      </div>
+      <div class="kanban" id="kanban">
+        <div class="kanban-col" data-col="Done">
+          <div class="kanban-col-head">
+            <span class="dot dot-done"></span><span class="col-name">Done</span>
+            <span class="col-count" id="count-Done">0</span>
+          </div>
+          <div class="kanban-col-body" id="col-Done"></div>
+        </div>
+        <div class="kanban-col" data-col="Doing">
+          <div class="kanban-col-head">
+            <span class="dot dot-doing"></span><span class="col-name">Doing</span>
+            <span class="col-count" id="count-Doing">0</span>
+          </div>
+          <div class="kanban-col-body" id="col-Doing"></div>
+        </div>
+        <div class="kanban-col" data-col="Next">
+          <div class="kanban-col-head">
+            <span class="dot dot-next"></span><span class="col-name">Next</span>
+            <span class="col-count" id="count-Next">0</span>
+          </div>
+          <div class="kanban-col-body" id="col-Next"></div>
+        </div>
+        <div class="kanban-col" data-col="Blocked">
+          <div class="kanban-col-head">
+            <span class="dot dot-blocked"></span><span class="col-name">Blocked</span>
+            <span class="col-count" id="count-Blocked">0</span>
+          </div>
+          <div class="kanban-col-body" id="col-Blocked"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 05 客户转化漏斗 ========== -->
+    <section class="section" id="sec-funnel">
+      <div class="section-head">
+        <span class="sec-no">05</span>
+        <div>
+          <h2>客户转化漏斗</h2>
+          <p class="section-sub">咨询 → 信息收集 → 注册 → KYC/KYB → 报价 → 首单 → 长期维护</p>
+        </div>
+      </div>
+      <div class="funnel-layout">
+        <div class="panel funnel-panel">
+          <div class="funnel-rows" id="funnelRows"></div>
+          <p class="note" id="crmNote"></p>
+        </div>
+        <aside class="panel crm-side">
+          <div class="crm-total-block">
+            <div class="crm-total-num" id="crmTotal">–</div>
+            <div class="crm-total-label">TG 存量客户总数</div>
+          </div>
+          <div class="crm-levels" id="crmLevels"></div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ========== 06 设计交付清单 ========== -->
+    <section class="section" id="sec-design">
+      <div class="section-head">
+        <span class="sec-no">06</span>
+        <div>
+          <h2>设计交付清单</h2>
+          <p class="section-sub">OTC USD 大宗交易设计交付包 · 6 大模块</p>
+        </div>
+      </div>
+      <div class="panel table-panel">
+        <table class="data-table" id="designTable">
+          <thead>
+            <tr>
+              <th class="col-status">状态</th>
+              <th>交付物</th>
+              <th>分类</th>
+              <th>备注</th>
+            </tr>
+          </thead>
+          <tbody id="designTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ========== 07 Live Task Progress ========== -->
+    <section class="section" id="sec-tasks">
+      <div class="section-head">
+        <span class="sec-no">07</span>
+        <div>
+          <h2>Live Task Progress</h2>
+          <p class="section-sub">看板升级与本周执行任务实时进度</p>
+        </div>
+      </div>
+      <div class="panel table-panel">
+        <table class="data-table task-progress-table" id="taskProgressTable">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Task</th>
+              <th>Owner</th>
+              <th>Status</th>
+              <th class="col-progress">Progress</th>
+              <th>Next</th>
+              <th>Updated</th>
+            </tr>
+          </thead>
+          <tbody id="taskProgressBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ========== 08 阻塞事项与所需协助 ========== -->
+    <section class="section" id="sec-blocked">
+      <div class="section-head">
+        <span class="sec-no">08</span>
+        <div>
+          <h2>阻塞事项与所需协助</h2>
+          <p class="section-sub">自动汇总 Pipeline 中 Blocked 项 + 需要思源哥协助的事项</p>
+        </div>
+      </div>
+      <div class="blocked-layout">
+        <div class="blocked-cards" id="blockedCards"></div>
+        <div class="panel asks-panel">
+          <h3 class="asks-title">需要思源哥协助的 5 件事</h3>
+          <ol class="asks-list" id="fixedAsks"></ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 09 下周计划 ========== -->
+    <section class="section" id="sec-nextweek">
+      <div class="section-head">
+        <span class="sec-no">09</span>
+        <div>
+          <h2>下周计划</h2>
+          <p class="section-sub">按优先级排列</p>
+        </div>
+      </div>
+      <div class="panel nextweek-panel">
+        <ol class="nextweek-list">
+          <li><span class="nw-no">1</span>明天提交设计团队并确认排期</li>
+          <li><span class="nw-no">2</span>从 CRM 筛出五星重点客户</li>
+          <li><span class="nw-no">3</span>按客户等级推进注册 / KYC</li>
+          <li><span class="nw-no">4</span>配合静格完成周四 / 周五首单测试</li>
+          <li><span class="nw-no">5</span>制定 Partner / KOL 站外获客计划</li>
+          <li><span class="nw-no">6</span>更新本周 Pipeline 与 CRIB 记录</li>
+        </ol>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========== 10 页脚 ========== -->
+  <footer class="footer">
+    <span class="sec-no footer-no">10</span>
+    <span>HTX OTC BD Progress Hub · 数据每周更新 · 仅供内部使用 · Last Updated：<b id="footerUpdated">2026-07-21</b></span>
+  </footer>
+
+  <script src="app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+[
+  {
+    "module": "设计交付包",
+    "pipGoal": "客户支持资料及跟进机制建设",
+    "progress": "已完成整理，准备提交设计团队",
+    "output": "业务背景、页面结构、COBO/POBO流程、FAQ、禁用词、参考图",
+    "next": "明天提交设计团队，确认排期",
+    "owner": "Sera",
+    "priority": "P0",
+    "status": "Done"
+  },
+  {
+    "module": "TG客户资料汇总",
+    "pipGoal": "客户Pipeline建设",
+    "progress": "已完成初版CRM表",
+    "output": "客户等级、UID、地区、方向、金额、KYC状态、当前阶段",
+    "next": "筛选五星重点客户，推动注册/KYC/首单",
+    "owner": "Sera",
+    "priority": "P0",
+    "status": "Done"
+  },
+  {
+    "module": "高价值客户筛选",
+    "pipGoal": "新增交易收入≥26,000 USDT",
+    "progress": "进行中",
+    "output": "五星客户、机构客户、Partner线索",
+    "next": "按金额和成交概率安排优先跟进",
+    "owner": "Sera",
+    "priority": "P0",
+    "status": "Doing"
+  },
+  {
+    "module": "注册/KYC推进",
+    "pipGoal": "新增个人注册≥19人；机构注册≥6家",
+    "progress": "待推进",
+    "output": "客户资料字段表、KYC状态表",
+    "next": "逐个确认UID、注册状态、KYC状态",
+    "owner": "Sera",
+    "priority": "P0",
+    "status": "Next"
+  },
+  {
+    "module": "首单交易测试",
+    "pipGoal": "推动首批交易转化",
+    "progress": "待执行",
+    "output": "COBO/POBO流程说明",
+    "next": "配合静格完成周四/周五首单测试",
+    "owner": "Sera / 静格",
+    "priority": "P0",
+    "status": "Next"
+  },
+  {
+    "module": "大数据客户名单",
+    "pipGoal": "内部获客路径",
+    "progress": "待协作",
+    "output": "客户筛选条件草案",
+    "next": "请思源哥协助调取名单",
+    "owner": "Sera / 思源哥",
+    "priority": "P1",
+    "status": "Blocked"
+  },
+  {
+    "module": "集团销售转介",
+    "pipGoal": "对接集团销售≥6次",
+    "progress": "待启动",
+    "output": "客户转介字段表",
+    "next": "联系Oscar/销售团队获取高价值名单",
+    "owner": "Sera / Oscar",
+    "priority": "P1",
+    "status": "Next"
+  },
+  {
+    "module": "Partner/KOL拓展",
+    "pipGoal": "Partner≥7家；KOL≥10位",
+    "progress": "待启动",
+    "output": "Partner/商家线索表",
+    "next": "制作合作介绍物料并开始触达",
+    "owner": "Sera",
+    "priority": "P1",
+    "status": "Next"
+  },
+  {
+    "module": "周报与CRIB复盘",
+    "pipGoal": "PIP过程管理",
+    "progress": "待固化",
+    "output": "Pipeline字段和周报结构",
+    "next": "每周更新进度，月底输出CRIB复盘",
+    "owner": "Sera",
+    "priority": "P1",
+    "status": "Next"
+  }
+]

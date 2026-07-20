@@ -1,0 +1,58 @@
+[
+  {
+    "label": "机构注册",
+    "target": "≥6家",
+    "current": "待推进",
+    "trend": "待从CRM和销售转介中筛选",
+    "status": "next"
+  },
+  {
+    "label": "个人注册",
+    "target": "≥19人",
+    "current": "待推进",
+    "trend": "TG存量客户优先唤醒",
+    "status": "next"
+  },
+  {
+    "label": "交易收入",
+    "target": "≥26,000 USDT",
+    "current": "待首单",
+    "trend": "优先推进五星客户",
+    "status": "next"
+  },
+  {
+    "label": "设计交付包",
+    "target": "1套",
+    "current": "已完成",
+    "trend": "明天提交设计团队",
+    "status": "done"
+  },
+  {
+    "label": "客户Pipeline",
+    "target": "1套",
+    "current": "已完成初版",
+    "trend": "TG客户资料已汇总",
+    "status": "done"
+  },
+  {
+    "label": "Partner/中介",
+    "target": "≥7家",
+    "current": "待推进",
+    "trend": "从Partner线索池筛选",
+    "status": "next"
+  },
+  {
+    "label": "KOL",
+    "target": "≥10位",
+    "current": "待启动",
+    "trend": "需制定外部获客计划",
+    "status": "next"
+  },
+  {
+    "label": "销售对接",
+    "target": "≥6次",
+    "current": "待启动",
+    "trend": "需Oscar/销售团队名单",
+    "status": "next"
+  }
+]

@@ -1,0 +1,47 @@
+[
+  {
+    "id": "T001",
+    "task": "设计交付包整理",
+    "status": "Done",
+    "progress": 100,
+    "owner": "Sera",
+    "updatedAt": "2026-07-21",
+    "next": "提交设计团队并确认排期"
+  },
+  {
+    "id": "T002",
+    "task": "TG客户CRM汇总",
+    "status": "Done",
+    "progress": 100,
+    "owner": "Sera",
+    "updatedAt": "2026-07-21",
+    "next": "筛选五星重点客户"
+  },
+  {
+    "id": "T003",
+    "task": "日间主题与主题切换",
+    "status": "Doing",
+    "progress": 60,
+    "owner": "Kimi",
+    "updatedAt": "2026-07-21",
+    "next": "完成 light/dark CSS 变量和切换按钮"
+  },
+  {
+    "id": "T004",
+    "task": "GitHub Pages 部署",
+    "status": "Next",
+    "progress": 0,
+    "owner": "Kimi / Sera",
+    "updatedAt": "2026-07-21",
+    "next": "确认仓库并部署"
+  },
+  {
+    "id": "T005",
+    "task": "首单交易测试",
+    "status": "Next",
+    "progress": 0,
+    "owner": "Sera / 静格",
+    "updatedAt": "2026-07-21",
+    "next": "周四/周五配合测试"
+  }
+]

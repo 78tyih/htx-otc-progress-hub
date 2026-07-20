@@ -1,0 +1,53 @@
+{
+  "updatedAt": "2026-07-21",
+  "total": 42,
+  "byLevel": [
+    {
+      "level": "五星",
+      "count": 6
+    },
+    {
+      "level": "四星",
+      "count": 12
+    },
+    {
+      "level": "三星",
+      "count": 15
+    },
+    {
+      "level": "待评估",
+      "count": 9
+    }
+  ],
+  "funnel": [
+    {
+      "stage": "咨询",
+      "count": 42
+    },
+    {
+      "stage": "信息收集",
+      "count": 30
+    },
+    {
+      "stage": "注册",
+      "count": 18
+    },
+    {
+      "stage": "KYC/KYB",
+      "count": 10
+    },
+    {
+      "stage": "报价",
+      "count": 5
+    },
+    {
+      "stage": "首单",
+      "count": 0
+    },
+    {
+      "stage": "长期维护",
+      "count": 0
+    }
+  ],
+  "note": "占位示例数据，请以实际 TG CRM 表为准，每周更新"
+}

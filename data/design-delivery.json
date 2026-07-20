@@ -1,0 +1,50 @@
+[
+  {
+    "item": "业务背景说明",
+    "category": "内容",
+    "status": "done",
+    "note": "已整理完成，2026-07-22 提交设计团队"
+  },
+  {
+    "item": "页面结构设计",
+    "category": "内容",
+    "status": "done",
+    "note": "已整理完成，2026-07-22 提交设计团队"
+  },
+  {
+    "item": "COBO 流程说明",
+    "category": "流程",
+    "status": "done",
+    "note": "已整理完成，2026-07-22 提交设计团队"
+  },
+  {
+    "item": "POBO 流程说明",
+    "category": "流程",
+    "status": "done",
+    "note": "已整理完成，2026-07-22 提交设计团队"
+  },
+  {
+    "item": "FAQ 文档",
+    "category": "内容",
+    "status": "done",
+    "note": "已整理完成，2026-07-22 提交设计团队"
+  },
+  {
+    "item": "禁用词清单",
+    "category": "合规",
+    "status": "done",
+    "note": "已整理完成，2026-07-22 提交设计团队"
+  },
+  {
+    "item": "漫画手绘风格参考图",
+    "category": "素材",
+    "status": "done",
+    "note": "已整理完成，2026-07-22 提交设计团队"
+  },
+  {
+    "item": "旧版手册参考素材",
+    "category": "素材",
+    "status": "done",
+    "note": "已整理完成，2026-07-22 提交设计团队"
+  }
+]
