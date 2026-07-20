@@ -286,20 +286,20 @@ const FALLBACK = {
     {
       "id": "T003",
       "task": "日间主题与主题切换",
-      "status": "Doing",
-      "progress": 60,
+      "status": "Done",
+      "progress": 100,
       "owner": "Kimi",
       "updatedAt": "2026-07-21",
-      "next": "完成 light/dark CSS 变量和切换按钮"
+      "next": "收集使用反馈，按需微调日间主题细节"
     },
     {
       "id": "T004",
       "task": "GitHub Pages 部署",
-      "status": "Next",
-      "progress": 0,
+      "status": "Done",
+      "progress": 100,
       "owner": "Kimi / Sera",
       "updatedAt": "2026-07-21",
-      "next": "确认仓库并部署"
+      "next": "每周更新数据后推送 main 即可自动发布"
     },
     {
       "id": "T005",

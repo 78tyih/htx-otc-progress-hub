@@ -46,6 +46,9 @@
 ### 待办（下一版本）
 - Git commit 与 GitHub Pages 部署（仓库 `htx-otc-progress-hub`），部署后回填 README 访问链接。
 
+### 部署结果（2026-07-21 回填）
+- 已完成部署：commit `38ccd75` 起推送至仓库 https://github.com/78tyih/htx-otc-progress-hub （可见性 public——因当前计划私有仓库不支持 Pages，经预先授权转为公开，内容已脱敏）；GitHub Pages 已启用（`main` / `/(root)`）并验证可访问（HTTP 200）：https://78tyih.github.io/htx-otc-progress-hub/
+
 ---
 
 ## [v0.1] — 2026-07-21

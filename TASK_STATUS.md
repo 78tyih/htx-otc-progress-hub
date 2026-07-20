@@ -45,21 +45,21 @@
 - [Files] 全站（只读验证，未改动）。
 - [Next] 执行 Git commit。
 
-### 7. Git commit [进行中]
+### 7. Git commit [Done]
 
-- [Done] 待完成：初始化仓库、提交本轮全部变更（目标提交信息：`HTX OTC BD Progress Hub v0.2`）。
+- [Done] 已初始化仓库（`git init -b main`）并完成首个提交：commit `38ccd75`「Add light theme, theme switcher, live task progress and GitHub Pages-ready dashboard」（main 分支，16 个文件，2866 行新增）。
 - [Files] 项目根目录全量、`TASK_STATUS.md`、`docs/CHANGELOG.md`、`README.md`。
 - [Next] 推送远端并开启 GitHub Pages。
 
-### 8. GitHub Pages 部署 [待执行]
+### 8. GitHub Pages 部署 [Done]
 
-- [Done] 待完成：推送 `main` 分支至 GitHub 仓库 `htx-otc-progress-hub`；Settings → Pages 选择 `main` / `/(root)`；仓库已内置 `.nojekyll`，纯静态原样托管。
+- [Done] 已推送 `main` 分支至 GitHub 仓库 `htx-otc-progress-hub`（https://github.com/78tyih/htx-otc-progress-hub ）；因当前免费计划私有仓库不支持 Pages（API 返回 422），仓库可见性已转为 public（内容已脱敏，预先授权），随后通过 API 启用 Pages（source = `main` / `/(root)`，HTTPS 强制开启）；仓库已内置 `.nojekyll`，纯静态原样托管。
 - [Files] `.nojekyll`、全站静态文件。
 - [Next] 验证 Pages 可访问，输出最终链接。
 
-### 9. 输出最终访问链接 [待执行]
+### 9. 输出最终访问链接 [Done]
 
-- [Done] 待完成：确认 `https://<用户名>.github.io/htx-otc-progress-hub/` 可访问后，更新 `README.md` 访问链接章节，并把链接发给思源哥。
+- [Done] 已确认 `https://78tyih.github.io/htx-otc-progress-hub/` 可访问（启用后轮询，第 2 次检查返回 HTTP 200），并已更新 `README.md` 访问链接章节，链接可发给思源哥。
 - [Files] `README.md`。
 - [Next] 本轮升级收尾；进入每周五数据更新节奏（见 README「每周更新建议」）。
 

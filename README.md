@@ -71,7 +71,8 @@ python3 -m http.server 8080
 
 ## 五、访问链接
 
-- GitHub Pages：**部署后更新**（部署完成后回填 `https://<用户名>.github.io/htx-otc-progress-hub/`）。
+- GitHub Pages：**https://78tyih.github.io/htx-otc-progress-hub/**（已上线，HTTP 200 验证通过）
+- 仓库地址：https://github.com/78tyih/htx-otc-progress-hub （public）
 
 ## 六、GitHub Pages 部署（发链接给思源哥）
 
