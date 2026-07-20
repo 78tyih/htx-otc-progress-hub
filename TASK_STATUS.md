@@ -92,11 +92,11 @@
 - [Files] `data/*.json`（10 个）、`index.html`、`app.js`、全部文档。
 - [Next] git 提交并推送。
 
-### 14. Git 提交推送 [进行中]
+### 14. Git 提交推送 [Done]
 
-- [进行中] 正在整理本轮全部变更并提交推送至 `main`（仓库已是 PRIVATE，推送不含公网暴露风险）。
-- [Files] 本轮全部变更文件。
-- [Next] 推送完成后进入 Cloudflare 私密部署。
+- [Done] 本轮全部变更已提交并推送至 `main`：commit `16755d1`「Pivot to private deployment; add PIP gantt, dependency map, task tree, todo and security docs」（20 个文件，+2317/-232 行）；推送前完成进程清理、防御性脱敏扫描（通过）、10 个 JSON 合法性与 FALLBACK 逐字一致性校验（全部 MATCH）、本地冒烟 13 项资源全 200。仓库保持 PRIVATE，推送无公网暴露风险。
+- [Files] 本轮全部变更文件（含 `.gitignore` 新增）。
+- [Next] 进入 Cloudflare 私密部署。
 
 ### 15. Cloudflare 私密部署 [待执行]
 
