@@ -1,0 +1,47 @@
+[
+  {
+    "id": "T001",
+    "title": "设计交付包",
+    "owner": "Sera",
+    "status": "Doing",
+    "progress": 90,
+    "children": [
+      { "title": "业务背景说明", "done": true },
+      { "title": "页面结构与模块", "done": true },
+      { "title": "COBO买币流程", "done": true },
+      { "title": "POBO卖币流程", "done": true },
+      { "title": "FAQ与客户话术", "done": true },
+      { "title": "设计禁用词与合规注意", "done": true },
+      { "title": "视觉参考图", "done": true },
+      { "title": "提交设计团队并确认排期", "done": false }
+    ]
+  },
+  {
+    "id": "T002",
+    "title": "TG客户CRM",
+    "owner": "Sera",
+    "status": "Doing",
+    "progress": 80,
+    "children": [
+      { "title": "解析TG压缩包", "done": true },
+      { "title": "生成客户CRM表", "done": true },
+      { "title": "提取UID与KYC状态", "done": true },
+      { "title": "五星客户筛选", "done": false },
+      { "title": "注册/KYC推进名单", "done": false }
+    ]
+  },
+  {
+    "id": "T003",
+    "title": "客户注册/KYC转化",
+    "owner": "Sera",
+    "status": "Next",
+    "progress": 15,
+    "children": [
+      { "title": "确认首批唤醒客户", "done": false },
+      { "title": "推动个人注册", "done": false },
+      { "title": "推动机构注册", "done": false },
+      { "title": "跟进KYC/KYB", "done": false },
+      { "title": "推动首单成交", "done": false }
+    ]
+  }
+]

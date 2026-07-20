@@ -1,0 +1,27 @@
+[
+  {
+    "date": "2026-07-22",
+    "title": "提交设计团队",
+    "status": "Doing"
+  },
+  {
+    "date": "2026-07-25",
+    "title": "首单交易测试",
+    "status": "Next"
+  },
+  {
+    "date": "2026-07-31",
+    "title": "第一批客户注册/KYC推进复盘",
+    "status": "Next"
+  },
+  {
+    "date": "2026-08-15",
+    "title": "机构/个人注册目标中期检查",
+    "status": "Next"
+  },
+  {
+    "date": "2026-08-31",
+    "title": "PIP阶段复盘与CRIB总结",
+    "status": "Next"
+  }
+]

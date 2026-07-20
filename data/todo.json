@@ -1,0 +1,37 @@
+[
+  {
+    "task": "提交设计交付包给设计团队",
+    "owner": "Sera",
+    "due": "2026-07-22",
+    "priority": "P0",
+    "status": "Doing"
+  },
+  {
+    "task": "从CRM筛选TOP五星客户",
+    "owner": "Sera",
+    "due": "2026-07-23",
+    "priority": "P0",
+    "status": "Doing"
+  },
+  {
+    "task": "确认思源哥访问方式",
+    "owner": "Sera",
+    "due": "2026-07-23",
+    "priority": "P0",
+    "status": "Doing"
+  },
+  {
+    "task": "配合静格完成首单测试",
+    "owner": "Sera / 静格",
+    "due": "2026-07-25",
+    "priority": "P0",
+    "status": "Next"
+  },
+  {
+    "task": "请思源哥协助调取大数据客户名单",
+    "owner": "Sera / 思源哥",
+    "due": "2026-07-26",
+    "priority": "P1",
+    "status": "Blocked"
+  }
+]

@@ -1,48 +1,61 @@
 # HTX OTC BD Progress Hub
 
-> 给思源哥（Siyuan.C）查看的 HTX OTC BD 工作进度看板
+> 给思源哥（Siyuan.C）查看的 HTX OTC BD / PIP 工作进度看板（**私密版本**）
 
 ## 一、项目说明
 
-这是一个**纯前端的业务战情室 Dashboard**，用于展示 Sera 围绕 PIP 目标推进的 HTX OTC BD 工作进度，包括：
+这是一个**纯前端的 PIP 进度管理 Dashboard**，用于展示 Sera 围绕 PIP 目标推进的 HTX OTC BD 工作进度，包括：
 
-- **OTC USD 大宗交易设计交付包**：设计交付物清单与状态跟踪
-- **TG 存量客户 CRM**：客户分层与转化漏斗（咨询 → 信息收集 → 注册 → KYC/KYB → 报价 → 首单 → 长期维护）
-- **注册 / KYC / 首单转化**：核心 KPI 与目标对比
-- **机构 / 个人 / Partner / KOL 拓展**：各业务线 Pipeline 进度
-- **Live Task Progress**：任务实时进度跟踪（07 区块）
-- **阻塞事项**：风险与卡点集中曝光
-- **每周 Pipeline 与 CRIB 复盘**：周度节奏管理
+- **Executive Summary**：总体进度、本周完成、阻塞数、下一节点
+- **Trial Timeline Gantt Chart**：W1 07/21 – W6 08/31 六周时间轴，6 条业务主线泳道，任务条按状态着色
+- **Workstream Dependency Map**：串行主链路（设计交付包 → 提交设计团队 → 客户资料字段确认 → 客户唤醒 → 注册/KYC → 首单 → CRIB 复盘）+ 并行获客线 + 私密看板线
+- **Main Tasks & Subtasks**：可展开任务树（含本周进展柱状图、Live Task Progress、Pipeline 四列看板、设计交付清单子区）
+- **PIP KPI**：核心指标 + done/total 进度条
+- **TG 存量客户 CRM 漏斗**：分层 + 转化漏斗（含转化率与下一步）
+- **Weekly To Do List**：P0 高亮、过期标红、可搜索
+- **阻塞事项 / 下周计划**：风险曝光与周度节奏管理
+
+6 条业务主线：设计交付线（90%）、CRM 客户线（80%）、客户转化线（15%）、交易测试线（20%）、渠道拓展线（10%）、私密看板线（65%）。结构设计详见 `docs/06_gantt_and_pipeline_structure.md`。
 
 技术特点：
 
 - **纯 HTML / CSS / JS**，无构建工具、无后端、无依赖安装
 - 数据与代码完全分离：所有业务数据放在 `data/*.json`，改数据不用改代码
-- **日间 / 夜间双主题**：默认日间（light），夜间（dark）战情室风格完整保留；状态语义统一：Done=绿、Doing=蓝、Next=灰、Blocked=红
+- **日间 / 夜间双主题**：默认日间（light），夜间（dark）战情室风格完整保留；状态语义统一：Done=绿、Doing=蓝、Next=黄、Blocked=红
 - 内置离线数据兜底：即使直接双击打开（`file://` 协议下无法 fetch JSON），页面也能用内置示例数据正常渲染
 
 ## 二、目录结构
 
 ```
 htx-otc-progress-hub/
-├── index.html                  # 主页面（看板入口，含右上角 Day/Night 切换）
+├── index.html                  # 主页面（11 区块看板入口，含右上角 Day/Night 切换）
 ├── style.css                   # 全局样式（日间/夜间双主题、色板、组件）
 ├── app.js                      # 前端逻辑（加载 JSON → 渲染各模块，含离线兜底数据）
 ├── data/                       # 业务数据（改这里即可更新看板，无需改代码）
-│   ├── kpi.json                # 核心 KPI（目标 / 当前 / 趋势 / 状态）
+│   ├── kpi.json                # 核心 KPI（目标 / 当前 / 趋势 / 状态 / done / total）
 │   ├── pipeline.json           # 各业务线 Pipeline（PIP 目标 / 进度 / 产出 / 下一步）
 │   ├── design-delivery.json    # OTC USD 大宗交易设计交付包清单
-│   ├── crm-summary.json        # TG 存量客户 CRM 汇总（分层 + 转化漏斗）
-│   └── task-progress.json      # Live Task Progress 任务进度（07 区块数据源）
-├── docs/                       # 设计说明、复盘文档等
+│   ├── crm-summary.json        # TG 存量客户 CRM 汇总（分层 + 漏斗转化率 + 下一步）
+│   ├── task-progress.json      # Live Task Progress 任务进度
+│   ├── roadmap.json            # 6 条 Workstream 主线（目标 / 进度 / 状态）
+│   ├── gantt.json              # 甘特图任务条（泳道 / 起止日期 / 依赖）
+│   ├── task-tree.json          # Main Tasks & Subtasks 任务树
+│   ├── todo.json               # Weekly To Do List（P0 / 截止日 / 状态）
+│   └── milestones.json         # 里程碑与下一节点
+├── docs/                       # 设计说明、部署清单、复盘文档等
 │   ├── 01_reference_breakdown.md
 │   ├── 02_project_brief.md
 │   ├── 03_design_spec.md
+│   ├── 04_private_deployment.md # Cloudflare Pages + Access 私密部署操作清单
+│   ├── 05_access_control.md     # 访问控制与身份验证说明（邮箱 OTP / Google 登录）
+│   ├── 06_gantt_and_pipeline_structure.md # 甘特图与 Pipeline 结构设计
 │   └── CHANGELOG.md            # 版本变更记录
 ├── assets/                     # 静态资源
 │   └── reference-dashboard.png # 视觉参考图（深色工地运营 Dashboard）
-├── TASK_STATUS.md              # 本轮升级任务状态日志（[Progress] 格式）
-├── .nojekyll                   # GitHub Pages 兼容文件（见下文）
+├── TASK_STATUS.md              # 升级任务状态日志（[Progress] 格式）
+├── SECURITY.md                 # 安全与数据脱敏规范
+├── .env.example                # 私密部署所需环境变量模板（不含真实值）
+├── .nojekyll                   # 历史遗留文件（原 GitHub Pages 兼容用，现已下线，保留无副作用）
 └── README.md                   # 本文件
 ```
 
@@ -71,120 +84,100 @@ python3 -m http.server 8080
 
 ## 五、访问链接
 
-- GitHub Pages：**https://78tyih.github.io/htx-otc-progress-hub/**（已上线，HTTP 200 验证通过）
-- 仓库地址：https://github.com/78tyih/htx-otc-progress-hub （public）
+- **私密部署后更新（仅授权邮箱可访问）**：Cloudflare Pages + Access 部署完成后，将把私密链接单独发给思源哥，验证邮箱另行告知，不写入本文档。
+- 仓库地址：https://github.com/78tyih/htx-otc-progress-hub （**PRIVATE**，仅授权成员可见）
+- ⚠️ 原公网 GitHub Pages 地址已**永久下线**（旧链接返回 404），请勿再使用或转发。
 
-## 六、GitHub Pages 部署（发链接给思源哥）
+## 六、私密部署（Cloudflare Pages + Access）
 
-```bash
-cd htx-otc-progress-hub
-git init
-git add .
-git commit -m "HTX OTC BD Progress Hub v0.2"
-git branch -M main
-git remote add origin git@github.com:<用户名>/htx-otc-progress-hub.git
-git push -u origin main
-```
+- **部署目标**：私密访问（仅思源哥本人）。任何访客必须通过真实身份验证（邮箱 OTP 一次性验证码 / Google 登录）才能打开页面；**禁止前端 JS 假登录**（纯前端校验可被绕过，不算数）。
+- **当前状态**：GitHub 仓库已转为 **PRIVATE**；公网 GitHub Pages 已删除（旧链接已 404）；私密部署方案与安全文档已就绪。
+- **推荐方案**：**Cloudflare Pages + Cloudflare Access**——Pages 托管静态站点，Access 在边缘网关做身份验证，策略仅放行思源哥的邮箱；访问者输入邮箱收取 OTP 验证码，或直接用 Google 账号登录，验证通过后方可访问。
+- **待执行**：待 Sera 提供 Cloudflare 账号后，按 `docs/04_private_deployment.md` 操作清单执行；访问控制细节见 `docs/05_access_control.md`；环境变量模板见 `.env.example`；安全规范见 `SECURITY.md`。
+- **部署完成后**：将私密链接发给思源哥，并单独告知用于验证的邮箱地址。
 
-然后在 GitHub 仓库页面：
+## 七、⚠️ 数据脱敏警示（公网 / 私网均适用，务必阅读）
 
-1. **Settings → Pages**
-2. **Source** 选择 `main` 分支、`/(root)` 目录，保存
-3. 等待约 1 分钟，访问 **https://<用户名>.github.io/htx-otc-progress-hub/** 即可
-
-**关于 `.nojekyll`**：GitHub Pages 默认用 Jekyll 引擎处理站点，Jekyll 会忽略以下划线开头的文件/目录，并可能干扰部分静态文件路径。仓库根目录放一个空的 `.nojekyll` 文件即可让 Pages 跳过 Jekyll、原样托管纯静态文件，保证 `data/*.json`、`assets/` 等路径都能正常访问。本仓库已内置该文件，无需额外操作。
-
-> 备选：若不想用命令行，也可在 GitHub 网页端手动新建仓库 `htx-otc-progress-hub` → 上传全部文件（保持目录结构）→ Settings → Pages 开启即可，效果相同。
-
-## 七、⚠️ 公网部署注意（务必阅读）
-
-> **本项目会部署到公网（GitHub Pages），任何人都能看到仓库内容。**
+> **即使已转为私密部署，脱敏规则不放松**：私密仓库同样可能被截图、转发或误开权限，敏感信息一律不入库、不入页。
 
 - ❌ **不要上传真实 CRM 明细或客户身份信息**：包括真实客户姓名、HTX UID、TG 用户名 / 群组路径、银行账户、邮箱、电话等。
-- ✅ **公网版只放汇总数据和脱敏编号**：客户一律使用占位编号（如 `Client-001`、`Client-002`），数字只放汇总统计。
+- ✅ **只放汇总数据和脱敏编号**：客户一律使用占位编号（如 `Client-001`、`Client-002`），数字只放汇总统计。
+- 👤 **同事名例外**：Sera / 思源哥 / 静格 / Oscar 可在页面与数据中出现。
 - 🔒 **真实 CRM 表留本地或私有文件夹**（如本地加密目录 / 公司私有云盘），每周从中统计汇总数据后再更新到本仓库。
-- 当前仓库内所有数据均为脱敏占位数据，已通过脱敏扫描；后续每次提交前请自查一遍 `data/*.json`。
+- 当前仓库内所有数据均为脱敏占位数据，已通过脱敏扫描；后续每次提交前请自查一遍 `data/*.json`，规范详见 `SECURITY.md`。
 
 ## 八、如何更新 data/*.json
 
-五个 JSON 文件与前端渲染一一对应，**改完 JSON 无需改任何代码，刷新页面即生效**。字段约定如下：
+十个 JSON 文件与前端渲染一一对应，**改完 JSON 无需改任何代码，刷新页面即生效**。
 
-> ⚠️ 注意：`app.js` 内置的 FALLBACK 离线兜底数据与 `data/*.json` 保持逐字一致。修改任何 JSON 后，请同步更新 `app.js` 中对应的 FALLBACK。
+> ⚠️ 硬规则：`app.js` 内置的 FALLBACK 离线兜底数据（键名：`kpi` / `pipeline` / `designDelivery` / `crmSummary` / `taskProgress` / `roadmap` / `gantt` / `taskTree` / `todo` / `milestones`）与 `data/*.json` 保持**逐字一致**。修改任何 JSON 后，必须同步更新 `app.js` 中对应的 FALLBACK，并用脚本比对验证两者逐字相同，不一致不允许提交。
 
-### 1. `data/kpi.json`（每周更新）
+| 文件 | 用途 | 更新频率 |
+| --- | --- | --- |
+| `kpi.json` | 03 PIP KPI 卡片 + 进度条 | 每周五 |
+| `pipeline.json` | 06 Pipeline 四列看板；09 阻塞事项来源 | 每周五 |
+| `crm-summary.json` | 07 客户分层 + 转化漏斗 | 每周五（按真实 CRM 表统计汇总后替换） |
+| `design-delivery.json` | 06 设计交付清单子区 | 提交设计团队后 / 验收反馈有变化时 |
+| `task-progress.json` | 06 Live Task Progress 子区 | 任务状态一变即更新 |
+| `roadmap.json` | 02 Executive Summary、04 甘特泳道框架 | 每周五 |
+| `gantt.json` | 04 甘特图 | 每周五 |
+| `task-tree.json` | 06 Main Tasks & Subtasks 任务树 | 每周五 |
+| `todo.json` | 08 Weekly To Do、10 下周计划 | 每周五（平时可随时增补） |
+| `milestones.json` | 02 「下一节点」及关键节点 | 里程碑达成 / 新增时 |
 
-数组，每个元素：
+### 字段说明
 
-| 字段 | 含义 |
-| --- | --- |
-| `label` | 指标名称（如「本周新增注册」） |
-| `target` | 目标值 |
-| `current` | 当前值 |
-| `trend` | 趋势描述（如「较上周 +12%」） |
-| `status` | 状态：`done`（达标，绿）/ `doing`（推进中，蓝）/ `next`（待启动，灰）/ `blocked`（受阻，红） |
+**1. `data/kpi.json`**（数组）— `label`（指标名）、`target`（目标值）、`current`（当前值）、`trend`（趋势）、`status`（done/doing/next/blocked）、`done`（已完成数值，进度条分子）、`total`（目标数值，进度条分母）。
 
-### 2. `data/pipeline.json`（每周更新）
+**2. `data/pipeline.json`**（数组）— `module`（业务线）、`pipGoal`（PIP 目标）、`progress`（进度描述）、`output`（本周产出）、`next`（下一步）、`owner`、`priority`（P0/P1）、`status`（Done/Doing/Next/Blocked）。
 
-数组，每个元素：
+**3. `data/crm-summary.json`**（对象）— `updatedAt`、`total`（客户总数）、`byLevel[]`（`level`/`count` 分层）、`funnel[]`（`stage`/`count`/`rate` 相对上阶段转化率/`next` 该阶段下一步）、`note`。只放汇总统计，客户身份一律脱敏为占位编号。
 
-| 字段 | 含义 |
-| --- | --- |
-| `module` | 业务线 / 模块名（如「机构客户拓展」） |
-| `pipGoal` | 该模块对应的 PIP 目标 |
-| `progress` | 当前进度描述或百分比 |
-| `output` | 本周实际产出 |
-| `next` | 下一步动作 |
-| `owner` | 负责人 |
-| `priority` | 优先级：`P0` / `P1` |
-| `status` | 状态：`Done`（绿）/ `Doing`（蓝）/ `Next`（灰）/ `Blocked`（红） |
+**4. `data/design-delivery.json`**（数组）— `item`（交付物）、`category`（分类）、`status`（done/doing/next）、`note`。
 
-### 3. `data/crm-summary.json`（每周更新，按实际 TG CRM 表统计汇总后替换）
+**5. `data/task-progress.json`**（数组）— `id`、`task`、`status`（Done/Doing/Next/Blocked）、`progress`（0–100）、`owner`、`updatedAt`、`next`。
 
-对象：
+**6. `data/roadmap.json`**（数组，6 条主线）— `id`（WS01–WS06）、`name`（主线名）、`goal`（目标）、`progress`（0–100）、`status`（Done/Doing/Next/Blocked）、`owner`、`target`（当前阶段目标）。
 
-| 字段 | 含义 |
-| --- | --- |
-| `updatedAt` | 数据更新时间 |
-| `total` | TG 存量客户总数 |
-| `byLevel` | 客户分层数组，元素为 `{"level", "count"}`（如 A/B/C 级客户数） |
-| `funnel` | 转化漏斗数组，元素为 `{"stage", "count"}`，阶段固定为：咨询 → 信息收集 → 注册 → KYC/KYB → 报价 → 首单 → 长期维护 |
-| `note` | 备注说明 |
+**7. `data/gantt.json`**（任务条扁平数组）— `id`（G001…）、`workstream`（泳道名，与 6 条主线一致）、`task`、`start`/`end`（起止日期 `YYYY-MM-DD`）、`progress`（0–100）、`status`、`dependsOn`（前置任务条 id 数组，无前置为 `[]`）。前端按 `workstream` 归泳道、按日期渲染到 W1 07/21 – W6 08/31 时间轴。
 
-> 本文件只放**汇总统计数字**，客户身份信息一律脱敏为占位编号（Client-001 等）；真实 CRM 明细不上传仓库。
+**8. `data/task-tree.json`**（树形数组）— 主任务节点：`id`、`title`、`owner`、`status`、`progress`（= 已完成子项数 / 子项总数）、`children[]`（子项为 `{ "title", "done" }`）。
 
-### 4. `data/design-delivery.json`（提交设计团队后更新状态）
+**9. `data/todo.json`**（数组）— `task`、`owner`、`due`（截止日，过期未完成自动标红）、`priority`（P0 高亮/P1）、`status`（Done/Doing/Next/Blocked）。
 
-数组，每个元素：
+**10. `data/milestones.json`**（数组）— `date`、`title`、`status`；Executive Summary 的「下一节点」取日期最近且未完成的里程碑。
 
-| 字段 | 含义 |
-| --- | --- |
-| `item` | 交付物名称 |
-| `category` | 分类（如 流程图 / 原型 / 文案） |
-| `status` | 状态：`done`（已交付）/ `doing`（进行中）/ `next`（待启动） |
-| `note` | 备注（如验收反馈、链接） |
+更完整的字段约定与设计动机见 `docs/06_gantt_and_pipeline_structure.md` 第 6 节。
 
-### 5. `data/task-progress.json`（任务有进展即更新，07 Live Task Progress 区块）
+## 九、如何调整甘特图时间范围与进度百分比
 
-数组，每个元素：
+### 调整时间范围
 
-| 字段 | 含义 |
-| --- | --- |
-| `task` | 任务名称 |
-| `progress` | 完成百分比（0–100） |
-| `status` | 状态：`done` / `doing` / `next` / `blocked` |
-| `note` | 进度说明 / 当前卡点 |
+甘特图的时间轴完全由 `data/gantt.json` 驱动（任务条扁平数组，前端按起止日期渲染到 W1 07/21 – W6 08/31 六周刻度），无需改代码：
 
-> 用于向思源哥实时同步手上任务的推进节奏，建议任务状态一变就更新。
+1. **移动某个任务条**：修改该任务的 `start` / `end` 日期（`YYYY-MM-DD`）；任务提前完成就把 `status` 改为 `Done`、`progress` 改为 `100`。
+2. **延长 PIP 周期 / 改整体范围**：把时间轴外的新任务条直接写进数组并填好 `start` / `end` 日期即可，前端按全部任务条的日期范围自动铺周刻度；同时建议在 `milestones.json` 里同步调整「PIP阶段复盘」节点日期。
+3. **新增任务条**：在数组中新增一个对象，填好 `id`（顺延 G 编号）/ `workstream`（6 条主线之一，决定归入哪条泳道）/ `task` / `start` / `end` / `status` / `progress`，有前置任务时在 `dependsOn` 填前置任务条 id（如 `["G002"]`，无前置填 `[]`）。
 
-## 九、每周更新建议（固定节奏）
+### 进度百分比口径（全站统一，禁止凭感觉填数）
 
-1. **每周五**：更新 `data/*.json`——KPI 进度、Pipeline 状态、客户转化漏斗、阻塞事项、下周计划 → 本地 `python3 -m http.server 8080` 自查一遍（顺手检查两种主题显示）→ `git commit && git push`
-2. **周五下班前**：把 GitHub Pages 链接或整页截图发给思源哥，附 3 行以内本周要点
+- 个人注册 = 已注册人数 / 19；机构注册 = 已注册家数 / 6；交易收入 = 累计收入 / 26,000 USDT
+- 设计交付包 = 已完成交付文件数 / 应交付文件总数（当前 8 项）
+- Partner = 已确认合作家数 / 7；KOL = 已确认合作位数 / 10；销售对接 = 已完成对接次数 / 6
+- Workstream 总进度 = 该主线全部任务进度按子项数加权平均（无子项：Done=100%、Next=0%、Doing 按子步骤估算、Blocked 按已完成部分计）
+- 甘特任务条进度 = 已完成子项数 / 子项总数，与 `task-tree.json` 同名节点保持一致
+- `kpi.json` 的 `done` / `total` 必须与上述口径一致，前端进度条直接渲染 `done / total`
+
+## 十、每周更新建议（固定节奏）
+
+1. **每周五**：按依赖顺序更新 `data/*.json`——`todo.json`（复盘本周）→ `task-progress.json` / `task-tree.json` → `kpi.json` → `roadmap.json` / `gantt.json` → `crm-summary.json` → `pipeline.json` → `milestones.json`（`design-delivery.json` 有变化时）→ 同步 `app.js` FALLBACK 并比对验证 → 本地 `python3 -m http.server 8080` 自查一遍（顺手检查两种主题显示）→ `git commit && git push`
+2. **周五下班前**：私密部署完成后，把整页截图发给思源哥（私密链接不适合转发），附 3 行以内本周要点；部署前用本地预览截图代替
 3. **每月底**：基于 `pipeline.json` 的 `output` / `next` / `Blocked` 项输出当月 **CRIB 复盘**，归档到 `docs/` 目录
 
-## 十、当前版本
+## 十一、当前版本
 
-- **v0.2（2026-07-21）**：日间/夜间双主题（默认日间）、右上角 Day/Night 切换（localStorage 记忆）、新增 07 Live Task Progress 区块、日间 Hero 占位条、数据脱敏扫描通过；即将部署 GitHub Pages。详见 `docs/CHANGELOG.md`。
+- **v0.3（2026-07-21）**：公网 GitHub Pages 下线、仓库转 PRIVATE；看板升级为 PIP 进度管理 Dashboard——新增 Executive Summary、甘特图（W1–W6、6 泳道）、依赖图、Main Tasks & Subtasks 任务树、Weekly To Do List（P0 高亮 / 过期标红 / 可搜索）、KPI 进度条、漏斗转化率与下一步列；新增 5 个数据 JSON；新增私密部署与安全文档（`docs/04-05`、`.env.example`、`SECURITY.md`）；README 重构为私密口径。详见 `docs/CHANGELOG.md`。
+- **v0.2（2026-07-21）**：日间/夜间双主题（默认日间）、右上角 Day/Night 切换（localStorage 记忆）、新增 07 Live Task Progress 区块。当日曾部署 GitHub Pages 公网版，已于同日下线，仅保留为历史记录。
 - **v0.1（2026-07-21）**：首个可用版本。看板框架、四大数据模块（KPI / Pipeline / 设计交付包 / CRM 漏斗）、深色战情室视觉均已就绪。
 - 视觉参考：`assets/reference-dashboard.png`（深色工地运营 Dashboard，1750×3602）。
 - 升级进度跟踪：见 `TASK_STATUS.md`。

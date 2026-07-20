@@ -3,7 +3,8 @@
 - **项目**：HTX OTC BD Progress Hub（仓库名 `htx-otc-progress-hub`）
 - **用途**：给思源哥（Siyuan.C）查看的 HTX OTC BD / PIP 工作进度看板
 - **更新日期**：2026-07-21
-- **本轮目标**：从「本地深色静态看板」升级为「可部署 GitHub Pages、日间/夜间双主题、带 Live Task Progress 的进度看板」
+- **当前轮次（v0.3）**：① 部署目标从公网 GitHub Pages 转为私密访问——仓库已转 PRIVATE、公网 Pages 已删除（旧链接 404），推荐方案 Cloudflare Pages + Cloudflare Access（仅放行思源哥邮箱，邮箱 OTP / Google 登录，禁止前端 JS 假登录）；② 看板升级为 PIP 进度管理 Dashboard（Executive Summary / 甘特图 / 依赖图 / 任务树 / Weekly To Do）
+- **历史轮次（v0.2，已完结）**：从「本地深色静态看板」升级为「日间/夜间双主题、带 Live Task Progress 的进度看板」；当日曾上线 GitHub Pages 公网版，已于同日下线（见 v0.3 阶段 10）
 
 ---
 
@@ -62,6 +63,52 @@
 - [Done] 已确认 `https://78tyih.github.io/htx-otc-progress-hub/` 可访问（启用后轮询，第 2 次检查返回 HTTP 200），并已更新 `README.md` 访问链接章节，链接可发给思源哥。
 - [Files] `README.md`。
 - [Next] 本轮升级收尾；进入每周五数据更新节奏（见 README「每周更新建议」）。
+
+---
+
+## v0.3（2026-07-21）私密化 + PIP 升级 — 阶段日志
+
+### 10. 公网 Pages 下线 + 仓库转私有 [Done]
+
+- [Done] 公网 GitHub Pages 已删除，旧链接 `https://78tyih.github.io/htx-otc-progress-hub/` 已 404；GitHub 仓库 `78tyih/htx-otc-progress-hub` 可见性已转为 **PRIVATE**。公网版本正式废弃，新目标为仅交付私密版本。
+- [Files] GitHub 仓库设置 / Pages 设置（线上操作，无本地文件变更）。
+- [Next] 输出私密部署方案与安全文档。
+
+### 11. 私密部署方案与安全文档 [Done]
+
+- [Done] 确定推荐方案 **Cloudflare Pages + Cloudflare Access**：Pages 托管静态站点，Access 在边缘网关做真实身份验证（邮箱 OTP 一次性验证码 / Google 登录），策略仅放行思源哥邮箱；明确禁止前端 JS 假登录。新增操作清单 `docs/04_private_deployment.md`、访问控制说明 `docs/05_access_control.md`、环境变量模板 `.env.example`、安全规范 `SECURITY.md`。
+- [Files] `docs/04_private_deployment.md`、`docs/05_access_control.md`、`.env.example`、`SECURITY.md`。
+- [Next] 执行看板 PIP 升级开发。
+
+### 12. PIP 甘特图 / 依赖图 / 任务树升级 [Done]
+
+- [Done] 看板升级为 PIP 进度管理 Dashboard，页面变为 11 区块：新增 **02 Executive Summary**（总体进度 / 本周完成 / 阻塞数 / 下一节点）、**04 Trial Timeline Gantt Chart**（W1 07/21 – W6 08/31 六周、6 条业务主线泳道、任务条按状态着色）、**05 Workstream Dependency Map**（串行主链路 + 并行获客线 + 私密看板线）、**06 Main Tasks & Subtasks** 可展开任务树（原本周图表、Live Task Progress、Pipeline 看板、设计交付清单收编为子区）、**08 Weekly To Do List**（P0 高亮 / 过期标红 / 可搜索）；KPI 卡片新增 done/total 进度条；CRM 漏斗新增转化率与下一步两列。新增数据文件 `roadmap.json` / `gantt.json` / `task-tree.json` / `todo.json` / `milestones.json`；结构与字段设计见 `docs/06_gantt_and_pipeline_structure.md`。
+- [Files] `index.html`、`style.css`、`app.js`、`data/kpi.json`、`data/crm-summary.json`、`data/roadmap.json`、`data/gantt.json`、`data/task-tree.json`、`data/todo.json`、`data/milestones.json`、`docs/06_gantt_and_pipeline_structure.md`、`README.md`。
+- [Next] 数据脱敏终扫。
+
+### 13. 数据脱敏确认 [Done]
+
+- [Done] 全量扫描通过（含 5 个新 JSON 与全部新页面模块）：无真实客户姓名、HTX UID、TG 用户名/路径、银行账户、邮箱、电话（同事名 Sera / 思源哥 / 静格 / Oscar 除外）；客户均为脱敏占位编号 + 汇总统计。私密部署后脱敏规则不放松，规范见 `SECURITY.md`。
+- [Files] `data/*.json`（10 个）、`index.html`、`app.js`、全部文档。
+- [Next] git 提交并推送。
+
+### 14. Git 提交推送 [进行中]
+
+- [进行中] 正在整理本轮全部变更并提交推送至 `main`（仓库已是 PRIVATE，推送不含公网暴露风险）。
+- [Files] 本轮全部变更文件。
+- [Next] 推送完成后进入 Cloudflare 私密部署。
+
+### 15. Cloudflare 私密部署 [待执行]
+
+- [待执行] **前置条件：需 Sera 提供 Cloudflare 账号**；随后按 `docs/04_private_deployment.md` 操作清单执行：Cloudflare Pages 接入仓库 → 配置 Access 应用与策略（仅放行思源哥邮箱，OTP / Google 登录）→ 验证未登录访问被拦截、授权邮箱可正常进入。
+- [Files] `docs/04_private_deployment.md`（操作清单）、`.env.example`（变量模板）。
+- [Next] 部署完成后输出私密链接。
+
+### 16. 发送私密链接给思源哥 [待执行]
+
+- [待执行] 私密部署验证通过后，将私密链接发给思源哥，并**单独告知用于验证的邮箱地址**（链接与邮箱分开发送，降低转发泄露风险）；同步更新 `README.md` 访问链接章节状态。
+- [Files] `README.md`。
+- [Next] 进入每周五数据更新节奏（见 README「每周更新建议」与 `docs/06` 第 7 节）。
 
 ---
 

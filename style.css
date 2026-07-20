@@ -580,11 +580,35 @@ button { font-family: inherit; cursor: pointer; }
 
 .funnel-rows { display: flex; flex-direction: column; gap: 12px; }
 
+/* 漏斗行：阶段 / 占比条 / 数量 / 转化率 / 下一步 五列 */
 .funnel-row {
   display: grid;
-  grid-template-columns: 92px 1fr 96px;
+  grid-template-columns: 92px 1fr 76px 64px 110px;
   align-items: center;
   gap: 12px;
+}
+
+.funnel-head {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding-bottom: 2px;
+  border-bottom: 1px solid var(--border);
+}
+.funnel-head span:nth-child(n+3) { text-align: right; }
+
+.funnel-conv {
+  font-size: 13px;
+  font-weight: 700;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.funnel-next {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: right;
+  white-space: nowrap;
 }
 
 .funnel-stage { font-size: 13px; color: var(--text-main); font-weight: 500; }
@@ -711,9 +735,10 @@ button { font-family: inherit; cursor: pointer; }
   min-width: 0;
   transition: width .4s ease;
 }
-.tp-fill.tp-done    { background: var(--accent-yellow); }
+/* 进度条状态色统一：Done 绿 / Doing 蓝 / Next 黄 / Blocked 红 */
+.tp-fill.tp-done    { background: var(--success); }
 .tp-fill.tp-doing   { background: var(--accent-blue); }
-.tp-fill.tp-next    { background: var(--gray-next); }
+.tp-fill.tp-next    { background: var(--accent-yellow); }
 .tp-fill.tp-blocked { background: var(--danger); }
 .tp-pct {
   font-size: 12px;
@@ -876,5 +901,404 @@ button { font-family: inherit; cursor: pointer; }
 @media (max-width: 560px) {
   .kpi-grid { grid-template-columns: 1fr; }
   .kanban { grid-template-columns: 1fr; }
-  .funnel-row { grid-template-columns: 76px 1fr 76px; gap: 8px; }
+  .funnel-row { grid-template-columns: 76px 1fr 60px 52px 76px; gap: 8px; }
+  .funnel-next { font-size: 11px; }
+}
+
+/* ============================================================
+   PIP 升级新增组件（02 Executive Summary / 03 KPI 进度条 /
+   04 甘特图 / 05 依赖图 / 06 任务树 / 08 To Do List）
+   ============================================================ */
+
+/* ---------- 02 Executive Summary 大数字卡 ---------- */
+.sum-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.sum-card {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--card-shadow);
+  padding: 18px 18px 16px 20px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sum-card::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: var(--gray-next);
+}
+.sum-card.ac-blue::before   { background: var(--accent-blue); }
+.sum-card.ac-green::before  { background: var(--success); }
+.sum-card.ac-red::before    { background: var(--danger); }
+.sum-card.ac-yellow::before { background: var(--accent-yellow); }
+
+.sum-label { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+
+.sum-value {
+  font-size: 48px;
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -1px;
+  color: var(--big-num-color);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.sum-card.ac-red .sum-value { color: var(--danger); }
+
+.sum-sub { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+/* ---------- 通用迷你进度条（KPI 卡 / 任务树共用） ----------
+   状态色语义统一：Done 绿 / Doing 蓝 / Next 黄 / Blocked 红 */
+.pbar { display: flex; align-items: center; gap: 10px; }
+.pbar-track {
+  flex: 1;
+  min-width: 60px;
+  height: 8px;
+  background: var(--track-bg);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.pbar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width .4s ease;
+}
+.pbar-fill.pf-done    { background: var(--success); }
+.pbar-fill.pf-doing   { background: var(--accent-blue); }
+.pbar-fill.pf-next    { background: var(--accent-yellow); }
+.pbar-fill.pf-blocked { background: var(--danger); }
+.pbar-text {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- 04 Trial Timeline 甘特图（纯 CSS Grid） ---------- */
+.gantt-panel { padding: 16px 20px 20px; overflow-x: auto; }
+
+.gantt { min-width: 960px; }
+
+.gantt-head,
+.gantt-row {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+}
+
+.gantt-head { padding-bottom: 6px; }
+
+.gantt-corner {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  display: flex;
+  align-items: flex-end;
+  padding-right: 12px;
+}
+
+.gantt-weeks {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+}
+.gantt-week {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 4px 2px;
+  border-left: 1px solid var(--border);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.gantt-week b { color: var(--text-main); font-weight: 700; }
+
+.gantt-row { border-top: 1px solid var(--border); }
+
+.gantt-label { padding: 10px 12px 10px 0; min-width: 0; }
+.gantt-label .gl-task {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gantt-label .gl-ws {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+.gantt-track {
+  position: relative;
+  height: 46px;
+  background-image: linear-gradient(to right, var(--border) 1px, transparent 1px);
+  background-size: calc(100% / 6) 100%;
+}
+
+.gantt-bar {
+  position: absolute;
+  top: 12px;
+  height: 22px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 4px;
+  cursor: default;
+}
+.gantt-bar.gb-done    { background: var(--success); color: #ffffff; }
+.gantt-bar.gb-doing   { background: var(--accent-blue); color: #ffffff; }
+.gantt-bar.gb-next    { background: var(--accent-yellow); color: #111111; }
+.gantt-bar.gb-blocked { background: var(--danger); color: #ffffff; }
+
+.gantt-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 14px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ---------- 05 Workstream 依赖关系图（纯 CSS 节点 + 箭头） ---------- */
+.dep-panel { display: flex; flex-direction: column; gap: 24px; }
+
+.dep-chain-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.dep-flow {
+  display: flex;
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.dep-node {
+  flex: 1 1 120px;
+  min-width: 120px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--gray-next);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--card-shadow);
+  padding: 10px 12px;
+}
+.dep-node .dn-title { font-size: 13px; font-weight: 700; color: var(--text-main); }
+.dep-node .dn-meta { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+
+.dep-node.dn-done    { border-left-color: var(--success); }
+.dep-node.dn-doing   { border-left-color: var(--accent-blue); }
+.dep-node.dn-next    { border-left-color: var(--gray-next); }
+.dep-node.dn-blocked { border-left-color: var(--danger); }
+.dep-node.dn-pool    { border-left-color: var(--accent-yellow); }
+
+/* 横向箭头：线段 + 三角箭头头（纯 CSS） */
+.dep-arrow {
+  align-self: center;
+  flex: 0 0 26px;
+  height: 2px;
+  background: var(--text-muted);
+  position: relative;
+}
+.dep-arrow::after {
+  content: "";
+  position: absolute;
+  right: -1px;
+  top: -4px;
+  border-left: 8px solid var(--text-muted);
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+}
+
+/* 并行链：三列节点 → 向下箭头 → 汇入客户池 */
+.dep-parallel {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.dep-parallel .dep-node { min-width: 0; }
+
+.dep-down-row { margin-top: 6px; }
+.dep-down {
+  justify-self: center;
+  width: 2px;
+  height: 24px;
+  background: var(--text-muted);
+  position: relative;
+}
+.dep-down::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: -4px;
+  border-top: 8px solid var(--text-muted);
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+}
+
+.dep-merge {
+  grid-column: 1 / -1;
+  justify-self: center;
+  width: min(460px, 100%);
+  margin-top: 6px;
+  text-align: center;
+}
+
+/* ---------- 06 子区标题 ---------- */
+.sub-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.sub-head-row { justify-content: space-between; }
+.sub-head-main { flex: 1; min-width: 200px; }
+.sub-head h3 { font-size: 17px; font-weight: 700; letter-spacing: 0.2px; }
+.sub-no {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--yellow-text);
+  border: 1px solid var(--yellow-border);
+  background: var(--yellow-dim);
+  border-radius: var(--radius-sm);
+  padding: 2px 7px;
+  font-variant-numeric: tabular-nums;
+  flex: 0 0 auto;
+}
+.sub-desc { font-size: 12px; color: var(--text-muted); }
+
+/* ---------- 06.1 主任务树（可展开卡片） ---------- */
+.task-tree { display: flex; flex-direction: column; gap: 12px; }
+
+.ttree-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+}
+
+.ttree-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px 16px;
+  background: transparent;
+  border: none;
+  text-align: left;
+  color: var(--text-main);
+  transition: background .15s;
+}
+.ttree-head:hover { background: var(--row-hover); }
+
+.ttree-chevron {
+  flex: 0 0 auto;
+  font-size: 12px;
+  color: var(--text-muted);
+  transition: transform .2s ease;
+}
+.ttree-card.open .ttree-chevron { transform: rotate(90deg); }
+
+.ttree-title { font-size: 15px; font-weight: 700; }
+.ttree-owner { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+
+.ttree-progress {
+  flex: 1 1 160px;
+  min-width: 140px;
+}
+
+.ttree-count {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.ttree-children {
+  display: none;
+  border-top: 1px solid var(--border);
+  padding: 8px 16px 12px;
+}
+.ttree-card.open .ttree-children { display: block; }
+
+.ttree-child {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0 7px 24px;
+  font-size: 13px;
+  color: var(--text-main);
+  border-bottom: 1px dashed var(--border);
+}
+.ttree-child:last-child { border-bottom: none; }
+
+.ttree-check { flex: 0 0 18px; text-align: center; font-weight: 800; }
+.ttree-check.done { color: var(--success); }
+.ttree-check.todo { color: var(--text-muted); }
+.ttree-child.is-done .ttree-child-title { color: var(--text-muted); }
+
+/* ---------- 08 Weekly To Do List ---------- */
+.todo-table { min-width: 720px; }
+
+.todo-table .todo-due { white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+/* P0 行高亮（黄系低透明度底，双主题通用） */
+.todo-table tbody tr.todo-p0 td { background: var(--yellow-dim); }
+.todo-table tbody tr.todo-p0:hover td { background: var(--yellow-dim); }
+
+.todo-overdue {
+  color: var(--danger);
+  font-weight: 700;
+  font-size: 12px;
+  margin-left: 6px;
+  white-space: nowrap;
+}
+
+.todo-row.is-hidden { display: none; }
+
+.todo-empty {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 24px 8px;
+}
+
+/* ---------- 新增组件响应式 ---------- */
+@media (max-width: 1200px) {
+  .sum-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 900px) {
+  .dep-parallel { grid-template-columns: 1fr; }
+  .dep-down-row { display: none; }
+  .dep-merge { width: 100%; margin-top: 10px; }
+  .gantt-head, .gantt-row { grid-template-columns: 180px 1fr; }
+}
+
+@media (max-width: 560px) {
+  .sum-grid { grid-template-columns: 1fr; }
+  .sum-value { font-size: 40px; }
+  .ttree-progress { flex: 1 1 100%; order: 5; }
 }

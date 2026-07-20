@@ -1,0 +1,29 @@
+# ============================================
+# HTX OTC BD Progress Hub - .gitignore
+# ============================================
+
+# .env 永不入库：私密部署目标（Cloudflare Pages + Access）
+# 真实密钥/Access 配置只存在于本地 .env 与 Cloudflare 控制台，
+# 任何情况下不得提交真实 .env，仓库只保留 .env.example 模板。
+.env
+.env.local
+.env.*.local
+
+# macOS 系统文件
+.DS_Store
+
+# 日志
+*.log
+
+# Node 依赖（本项目为纯静态站点，防御性忽略）
+node_modules/
+
+# 临时脚本与临时文件（如 .backfill_deploy.py 一类一次性脚本）
+*.tmp
+tmp/
+.backfill_deploy.py
+*.bak
+
+# 编辑器目录
+.idea/
+.vscode/

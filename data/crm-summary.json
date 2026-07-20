@@ -22,31 +22,38 @@
   "funnel": [
     {
       "stage": "咨询",
-      "count": 42
+      "count": 42,
+      "next": "初筛"
     },
     {
       "stage": "信息收集",
-      "count": 30
+      "count": 30,
+      "next": "补充字段"
     },
     {
       "stage": "注册",
-      "count": 18
+      "count": 18,
+      "next": "推动注册"
     },
     {
       "stage": "KYC/KYB",
-      "count": 10
+      "count": 10,
+      "next": "跟进审核"
     },
     {
       "stage": "报价",
-      "count": 5
+      "count": 5,
+      "next": "确认金额"
     },
     {
       "stage": "首单",
-      "count": 0
+      "count": 0,
+      "next": "交易测试"
     },
     {
       "stage": "长期维护",
-      "count": 0
+      "count": 0,
+      "next": "例行维护"
     }
   ],
   "note": "占位示例数据，请以实际 TG CRM 表为准，每周更新"

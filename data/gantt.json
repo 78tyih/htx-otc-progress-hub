@@ -1,0 +1,92 @@
+[
+  {
+    "id": "G001",
+    "workstream": "设计交付线",
+    "task": "整理设计交付包",
+    "start": "2026-07-21",
+    "end": "2026-07-22",
+    "progress": 100,
+    "status": "Done",
+    "dependsOn": []
+  },
+  {
+    "id": "G002",
+    "workstream": "设计交付线",
+    "task": "提交设计团队",
+    "start": "2026-07-22",
+    "end": "2026-07-23",
+    "progress": 60,
+    "status": "Doing",
+    "dependsOn": ["G001"]
+  },
+  {
+    "id": "G003",
+    "workstream": "CRM客户线",
+    "task": "TG客户CRM初版",
+    "start": "2026-07-20",
+    "end": "2026-07-21",
+    "progress": 100,
+    "status": "Done",
+    "dependsOn": []
+  },
+  {
+    "id": "G004",
+    "workstream": "CRM客户线",
+    "task": "五星客户筛选",
+    "start": "2026-07-22",
+    "end": "2026-07-25",
+    "progress": 30,
+    "status": "Doing",
+    "dependsOn": ["G003"]
+  },
+  {
+    "id": "G005",
+    "workstream": "客户转化线",
+    "task": "第一批注册/KYC推进",
+    "start": "2026-07-25",
+    "end": "2026-08-08",
+    "progress": 0,
+    "status": "Next",
+    "dependsOn": ["G004"]
+  },
+  {
+    "id": "G006",
+    "workstream": "交易测试线",
+    "task": "首单交易测试",
+    "start": "2026-07-24",
+    "end": "2026-07-25",
+    "progress": 0,
+    "status": "Next",
+    "dependsOn": ["G002"]
+  },
+  {
+    "id": "G007",
+    "workstream": "渠道拓展线",
+    "task": "大数据客户筛选条件",
+    "start": "2026-07-22",
+    "end": "2026-07-26",
+    "progress": 20,
+    "status": "Blocked",
+    "dependsOn": []
+  },
+  {
+    "id": "G008",
+    "workstream": "渠道拓展线",
+    "task": "Oscar大客户名单对接",
+    "start": "2026-07-25",
+    "end": "2026-08-01",
+    "progress": 0,
+    "status": "Next",
+    "dependsOn": []
+  },
+  {
+    "id": "G009",
+    "workstream": "私密看板线",
+    "task": "访问控制方案确认",
+    "start": "2026-07-21",
+    "end": "2026-07-23",
+    "progress": 70,
+    "status": "Doing",
+    "dependsOn": []
+  }
+]
