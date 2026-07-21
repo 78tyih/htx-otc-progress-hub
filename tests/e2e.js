@@ -129,6 +129,83 @@ check('validate: 全部操作后 schema 仍合法', r.status === 0 && /VALIDATE:
 // 15. 审计日志随操作增长
 check('audit: 每个写操作均有审计记录', auditCount() >= baseAudit + 10, `before=${baseAudit} after=${auditCount()}`);
 
-fs.rmSync(tmp, { recursive: true, force: true });
-console.log(`\nE2E: ${passed} passed, ${failed} failed`);
-process.exit(failed ? 1 : 0);
+// 16-22. Scheduler 企微提醒（webhook 桩在本进程内，须用异步 spawn 避免事件循环死锁）
+(async () => {
+  const http = require('http');
+  const { spawn } = require('child_process');
+  const WORKER = path.join(ROOT, 'scheduler', 'reminder-worker.js');
+  const runWorkerSync = (args, extraEnv) => {
+    const rr = spawnSync('node', [WORKER, ...args], { env: { ...env, ...(extraEnv || {}) }, encoding: 'utf8' });
+    return { code: rr.status, out: (rr.stdout || '') + (rr.stderr || '') };
+  };
+  const runWorker = (args, extraEnv) =>
+    new Promise((resolve) => {
+      const p = spawn('node', [WORKER, ...args], { env: { ...env, ...(extraEnv || {}) } });
+      let out = '';
+      p.stdout.on('data', (d) => (out += d));
+      p.stderr.on('data', (d) => (out += d));
+      p.on('close', (code) => resolve({ code, out }));
+    });
+
+  // 构造到期提醒点：T-0002（进行中）与新增出的 T-0006（待启动）remindAt 改到过去
+  const tfile = path.join(tmp, 'tasks.json');
+  const tdata = JSON.parse(fs.readFileSync(tfile, 'utf8'));
+  for (const id of ['T-0002', 'T-0006']) {
+    const tt = tdata.tasks.find((x) => x.id === id);
+    tt.remindAt = '2020-01-01T09:00:00+08:00';
+    tt.remindedAt = null;
+  }
+  fs.writeFileSync(tfile, JSON.stringify(tdata, null, 2) + '\n');
+
+  // 16. scan 扫描（只读）
+  let r2 = runWorkerSync(['scan']);
+  check('reminder scan: 发现 2 项到期任务', r2.code === 0 && r2.out.includes('T-0002') && r2.out.includes('T-0006'), r2.out);
+  check('reminder scan: 只读不写盘', task('T-0002').remindedAt === null);
+
+  // 17. test 预览（不发送、不写盘）
+  r2 = runWorkerSync(['test']);
+  check('reminder test: 生成 markdown 预览', r2.code === 0 && /预览模式/.test(r2.out) && r2.out.includes('"msgtype": "markdown"') && r2.out.includes('T-0002'), r2.out);
+  check('reminder test: 未标记 remindedAt', task('T-0002').remindedAt === null && task('T-0006').remindedAt === null);
+
+  // 18. send 未明确确认 → 拒绝
+  r2 = runWorkerSync(['send']);
+  check('reminder send: 未 --confirm 拒绝发送', r2.code !== 0 && /拒绝发送/.test(r2.out), r2.out);
+
+  // 19. send --confirm 经 HTTP 桩真实推送
+  const received = [];
+  const server = http.createServer((req, res) => {
+    let body = '';
+    req.on('data', (c) => (body += c));
+    req.on('end', () => {
+      received.push(JSON.parse(body));
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end('{"errcode":0,"errmsg":"ok"}');
+    });
+  });
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const hookUrl = `http://127.0.0.1:${server.address().port}/cgi-bin/webhook/send?key=test`;
+  r2 = await runWorker(['send', '--confirm'], { WECOM_WEBHOOK_URL: hookUrl });
+  check('reminder send: 推送成功且 webhook 收到 POST', r2.code === 0 && received.length === 1, r2.out);
+  check('reminder send: 消息体为 markdown 且含全部到期任务',
+    received.length === 1 && received[0].msgtype === 'markdown' && received[0].markdown.content.includes('T-0002') && received[0].markdown.content.includes('T-0006'));
+  check('reminder send: remindedAt 置位且状态迁移已提醒（含 待启动→已提醒）',
+    task('T-0002').status === '已提醒' && task('T-0002').remindedAt !== null && task('T-0006').status === '已提醒');
+  check('reminder send: 审计写入 scheduler remind',
+    JSON.parse(fs.readFileSync(path.join(tmp, 'audit-log.json'), 'utf8')).entries.filter((e) => e.actor === 'scheduler' && e.action === 'remind').length === 2);
+
+  // 20. remindedAt 去重：再次推送无任务、无新 POST
+  r2 = await runWorker(['send', '--confirm'], { WECOM_WEBHOOK_URL: hookUrl });
+  check('reminder send: remindedAt 防重复推送', r2.code === 0 && /无到期未提醒/.test(r2.out) && received.length === 1, r2.out);
+  server.close();
+
+  // 21. 推送后全量 schema 仍合法
+  r2 = spawnSync('node', [VALIDATE], { env, encoding: 'utf8' });
+  check('validate: 提醒推送后 schema 仍合法', r2.status === 0 && /VALIDATE: PASS/.test(r2.stdout || ''), r2.stderr || r2.stdout);
+
+  fs.rmSync(tmp, { recursive: true, force: true });
+  console.log(`\nE2E: ${passed} passed, ${failed} failed`);
+  process.exit(failed ? 1 : 0);
+})().catch((err) => {
+  console.error(`FAIL: scheduler 测试异常 ${err && err.stack}`);
+  process.exit(1);
+});

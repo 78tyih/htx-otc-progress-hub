@@ -8,6 +8,9 @@
     "validate": "node agent/validate.js",
     "test": "node tests/e2e.js",
     "sync": "python3 .dev-scripts/sync_fallback.py",
-    "sync:check": "python3 .dev-scripts/sync_fallback.py --check"
+    "sync:check": "python3 .dev-scripts/sync_fallback.py --check",
+    "reminder:scan": "node scheduler/reminder-worker.js scan",
+    "reminder:test": "node scheduler/reminder-worker.js test",
+    "reminder:send": "node scheduler/reminder-worker.js send"
   }
 }
