@@ -4,7 +4,9 @@
   "private": true,
   "description": "HTX OTC PIP 执行看板（纯前端看板 + 任务闭环 Agent/Scheduler，零外部依赖）",
   "scripts": {
+    "task": "node agent/cli.js",
     "validate": "node agent/validate.js",
+    "test": "node tests/e2e.js",
     "sync": "python3 .dev-scripts/sync_fallback.py",
     "sync:check": "python3 .dev-scripts/sync_fallback.py --check"
   }
