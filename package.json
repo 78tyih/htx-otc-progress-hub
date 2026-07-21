@@ -1,0 +1,11 @@
+{
+  "name": "htx-otc-progress-hub",
+  "version": "0.7.0",
+  "private": true,
+  "description": "HTX OTC PIP 执行看板（纯前端看板 + 任务闭环 Agent/Scheduler，零外部依赖）",
+  "scripts": {
+    "validate": "node agent/validate.js",
+    "sync": "python3 .dev-scripts/sync_fallback.py",
+    "sync:check": "python3 .dev-scripts/sync_fallback.py --check"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "ts": "2026-07-22T09:00:00+08:00",
+      "actor": "seed",
+      "action": "init",
+      "taskId": null,
+      "detail": "初始化 tasks.json：从 data/todo.json 迁移 5 项执行任务（T-0001 ~ T-0005），建立 任务新增 → 时间追踪 → 倒计时 → 提醒 → 结果输出 → Agent更新 闭环的数据底座。"
+    }
+  ]
+}
