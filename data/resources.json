@@ -1,0 +1,6 @@
+[
+  {"id":"R001","title":"客户 CRM 汇总表","type":"Excel","module":"客户 Pipeline","status":"已整理","updatedAt":"2026-07-21","description":"TG 存量客户汇总与分级结果，公网版本仅放脱敏摘要。","url":"assets/files/customer-crm-summary.xlsx"},
+  {"id":"R002","title":"OTC 设计交付包","type":"Markdown Pack","module":"设计交付","status":"待提交","updatedAt":"2026-07-21","description":"业务背景、页面结构、COBO/POBO、FAQ、禁用词与视觉参考。","url":"assets/files/design-brief/"},
+  {"id":"R003","title":"设计团队交互包","type":"Design Package","module":"UI交付","status":"待同步","updatedAt":"2026-07-21","description":"由设计团队提供或待设计团队确认的交互资料。","url":"assets/files/design-interaction-package/"},
+  {"id":"R004","title":"渠道拓展执行计划","type":"Document","module":"渠道拓展","status":"待完善","updatedAt":"2026-07-21","description":"集团销售、大数据名单、Partner/KOL 的触达计划与节奏。","url":"assets/files/channel-expansion-plan.md"}
+]

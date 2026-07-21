@@ -63,12 +63,12 @@
     "label": "渠道拓展",
     "component": "multi",
     "done": 0,
-    "total": 23,
+    "total": 26,
     "unit": "个",
-    "target": "Partner≥7 · KOL≥10 · 销售≥6",
-    "current": "0/23",
+    "target": "Partner≥7 · KOL≥10 · 销售≥6 · 活动≥3",
+    "current": "0/26",
     "trend": "需大数据名单与销售名单",
-    "next": "制定站外获客计划并开始触达",
+    "next": "确认名单来源并启动触达",
     "status": "next",
     "sub": [
       {
@@ -85,6 +85,11 @@
         "label": "销售对接",
         "done": 0,
         "total": 6
+      },
+      {
+        "label": "活动",
+        "done": 0,
+        "total": 3
       }
     ]
   }

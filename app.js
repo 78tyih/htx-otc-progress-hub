@@ -1,7 +1,7 @@
 /* ============================================================
    HTX OTC PIP 执行看板 — app.js
    纯原生 JS：fetch 加载 data/*.json，失败自动回退内置 FALLBACK
-   固定暗色主题 · 左侧目录 scroll-spy · 9 大模块 · 8 个数据源
+   日间 / 夜间双主题 · 左侧目录 scroll-spy · 10 大模块 · 9 个数据源
    ============================================================ */
 'use strict';
 
@@ -78,12 +78,12 @@ const FALLBACK = {
       "label": "渠道拓展",
       "component": "multi",
       "done": 0,
-      "total": 23,
+      "total": 26,
       "unit": "个",
-      "target": "Partner≥7 · KOL≥10 · 销售≥6",
-      "current": "0/23",
+      "target": "Partner≥7 · KOL≥10 · 销售≥6 · 活动≥3",
+      "current": "0/26",
       "trend": "需大数据名单与销售名单",
-      "next": "制定站外获客计划并开始触达",
+      "next": "确认名单来源并启动触达",
       "status": "next",
       "sub": [
         {
@@ -100,6 +100,11 @@ const FALLBACK = {
           "label": "销售对接",
           "done": 0,
           "total": 6
+        },
+        {
+          "label": "活动",
+          "done": 0,
+          "total": 3
         }
       ]
     }
@@ -570,7 +575,49 @@ const FALLBACK = {
       "确认访问权限方式",
       "必要时协调首单测试资源"
     ]
-  }
+  },
+  "resources": [
+    {
+      "id": "R001",
+      "title": "客户 CRM 汇总表",
+      "type": "Excel",
+      "module": "客户 Pipeline",
+      "status": "已整理",
+      "updatedAt": "2026-07-21",
+      "description": "TG 存量客户汇总与分级结果，公网版本仅放脱敏摘要。",
+      "url": "assets/files/customer-crm-summary.xlsx"
+    },
+    {
+      "id": "R002",
+      "title": "OTC 设计交付包",
+      "type": "Markdown Pack",
+      "module": "设计交付",
+      "status": "待提交",
+      "updatedAt": "2026-07-21",
+      "description": "业务背景、页面结构、COBO/POBO、FAQ、禁用词与视觉参考。",
+      "url": "assets/files/design-brief/"
+    },
+    {
+      "id": "R003",
+      "title": "设计团队交互包",
+      "type": "Design Package",
+      "module": "UI交付",
+      "status": "待同步",
+      "updatedAt": "2026-07-21",
+      "description": "由设计团队提供或待设计团队确认的交互资料。",
+      "url": "assets/files/design-interaction-package/"
+    },
+    {
+      "id": "R004",
+      "title": "渠道拓展执行计划",
+      "type": "Document",
+      "module": "渠道拓展",
+      "status": "待完善",
+      "updatedAt": "2026-07-21",
+      "description": "集团销售、大数据名单、Partner/KOL 的触达计划与节奏。",
+      "url": "assets/files/channel-expansion-plan.md"
+    }
+  ]
 };
 // __FALLBACK_SYNC_END__
 
@@ -659,7 +706,8 @@ const DEP_LABELS = [
 /* 全局状态：当前生效的数据 + 筛选条件 */
 const state = {
   kpi: [], gantt: [], roadmap: [], pipeline: [],
-  todo: [], milestones: [], weeklyLog: null, blockers: null
+  todo: [], milestones: [], weeklyLog: null, blockers: null,
+  resources: []
 };
 const filterState = { query: '' };
 
@@ -810,7 +858,7 @@ function renderSummary() {
         body.appendChild(num);
         body.appendChild(el('div', 'sum-sub', blockers ? blockerBrief : 'blockers.json 当前无阻塞'));
       },
-      next: blockers ? '详见 08 区「需要 Simon 协助」清单' : '无阻塞，保持推进节奏'
+      next: blockers ? '详见 09 区「需要 Simon 协助」清单' : '无阻塞，保持推进节奏'
     },
     {
       label: '下一里程碑',
@@ -1092,7 +1140,63 @@ function renderKpi(list) {
   });
 }
 
-/* ---------- 03 时间推进图（6 条主线 · 点击展开子任务 · 悬浮详情） ---------- */
+/* ---------- 03 资料访问中心（resources.json 驱动 · 文件存在性检测） ---------- */
+/* 资料卡状态 → badge 样式映射 */
+const RES_STATUS_CLS = { '已整理': 'done', '待提交': 'doing', '待同步': 'next', '待完善': 'next' };
+
+/* 目录型 url（以 / 结尾）默认打开其 README.md */
+function resTargetUrl(item) {
+  const url = item.url || '';
+  return url.endsWith('/') ? url + 'README.md' : url;
+}
+
+function renderResources(list) {
+  const grid = document.getElementById('resGrid');
+  grid.innerHTML = '';
+  // file:// 协议下跳过存在性检测直接打开；http(s) 下渲染时发 HEAD 检测
+  const canProbe = window.location.protocol === 'http:' || window.location.protocol === 'https:';
+
+  list.forEach((item) => {
+    const card = el('article', 'res-card');
+
+    const head = el('div', 'res-head');
+    head.appendChild(el('h3', 'res-title', item.title));
+    head.appendChild(el('span', 'res-type', item.type));
+    card.appendChild(head);
+
+    card.appendChild(el('div', 'res-desc', item.description || ''));
+
+    const meta = el('div', 'res-meta');
+    meta.appendChild(el('span', 'res-module', item.module));
+    meta.appendChild(el('span', 'res-updated', '更新 ' + (item.updatedAt || '—')));
+    card.appendChild(meta);
+
+    const foot = el('div', 'res-foot');
+    const statusBadge = el('span', 'badge badge-' + (RES_STATUS_CLS[item.status] || 'next'), item.status || '—');
+    foot.appendChild(statusBadge);
+    const btn = el('button', 'res-open', '打开');
+    btn.type = 'button';
+    btn.addEventListener('click', () => {
+      window.open(resTargetUrl(item), '_blank', 'noopener');
+    });
+    foot.appendChild(btn);
+    card.appendChild(foot);
+    grid.appendChild(card);
+
+    if (canProbe) {
+      fetch(resTargetUrl(item), { method: 'HEAD', cache: 'no-store' })
+        .then((res) => { if (!res.ok) throw new Error('HTTP ' + res.status); })
+        .catch(() => {
+          card.classList.add('res-missing');
+          statusBadge.className = 'badge badge-blocked';
+          statusBadge.textContent = '文件待上传';
+          btn.disabled = true;
+        });
+    }
+  });
+}
+
+/* ---------- 04 时间推进图（6 条主线 · 点击展开子任务 · 悬浮详情） ---------- */
 function ganttDayOffset(dateStr) {
   const base = new Date(GANTT_START + 'T00:00:00');
   const d = new Date(dateStr + 'T00:00:00');
@@ -1235,7 +1339,7 @@ function renderGantt(list) {
   legend.appendChild(el('span', 'legend-hint', '点击左侧主线名可展开 / 折叠子任务'));
 }
 
-/* ---------- 04 依赖关系图（SVG 贝塞尔曲线 + 玻璃节点） ---------- */
+/* ---------- 05 依赖关系图（SVG 贝塞尔曲线 + 玻璃节点） ---------- */
 function renderDepMap() {
   const canvas = document.getElementById('depCanvas');
   canvas.innerHTML = '';
@@ -1336,7 +1440,7 @@ function renderDepMap() {
   });
 }
 
-/* ---------- 05 主线任务进度（roadmap.json 5 条主线卡） ---------- */
+/* ---------- 06 主线任务进度（roadmap.json 5 条主线卡） ---------- */
 function renderWorkstreams(list) {
   const grid = document.getElementById('wsGrid');
   grid.innerHTML = '';
@@ -1392,7 +1496,7 @@ function renderWorkstreams(list) {
   });
 }
 
-/* ---------- 06 工作 Pipeline（折叠分组看板） ---------- */
+/* ---------- 07 工作 Pipeline（折叠分组看板） ---------- */
 /* 分组定义：本周重点（P0 合集）+ 四状态分组，defaultOpen 控制默认展开 */
 const PIPE_GROUPS = [
   { key: 'focus',   name: '本周重点 · P0', dot: 'next',    defaultOpen: true,
@@ -1529,7 +1633,7 @@ function applyFilters() {
   }
 }
 
-/* ---------- 07 本周待办（P0 高亮 / 过期标红 / 搜索过滤） ---------- */
+/* ---------- 08 本周待办（P0 高亮 / 过期标红 / 搜索过滤） ---------- */
 function renderTodo(list) {
   const tbody = document.getElementById('todoTableBody');
   tbody.innerHTML = '';
@@ -1560,7 +1664,7 @@ function renderTodo(list) {
   });
 }
 
-/* ---------- 08 阻塞事项与需要协助（blockers.json 双栏驱动） ---------- */
+/* ---------- 09 阻塞事项与需要协助（blockers.json 双栏驱动） ---------- */
 function renderBlocked() {
   const current = (state.blockers && state.blockers.current) || [];
   const asks = (state.blockers && state.blockers.asks) || [];
@@ -1588,7 +1692,7 @@ function renderBlocked() {
   });
 }
 
-/* ---------- 09 周更记录（轻量版：done bullets + cadence / 最近更新） ---------- */
+/* ---------- 10 周更记录（轻量版：done bullets + cadence / 最近更新） ---------- */
 function renderWeekly(log) {
   const list = document.getElementById('weeklyDone');
   list.innerHTML = '';
@@ -1672,6 +1776,22 @@ function initDrawer() {
   });
 }
 
+/* ---------- 主题切换（日间 / 夜间 · 当前主题高亮 · localStorage 持久化） ---------- */
+function initTheme() {
+  const root = document.documentElement;
+  const btns = Array.from(document.querySelectorAll('.theme-btn'));
+  const apply = (theme) => {
+    root.dataset.theme = theme;
+    btns.forEach((b) => b.classList.toggle('active', b.dataset.setTheme === theme));
+  };
+  btns.forEach((b) => b.addEventListener('click', () => {
+    const theme = b.dataset.setTheme;
+    try { localStorage.setItem('theme', theme); } catch (err) { /* 隐私模式下静默降级 */ }
+    apply(theme);
+  }));
+  apply(root.dataset.theme === 'dark' ? 'dark' : 'light');
+}
+
 /* ---------- 事件绑定 ---------- */
 function bindEvents() {
   // 搜索框：实时过滤（Pipeline 卡片 + 待办行）
@@ -1684,9 +1804,9 @@ function bindEvents() {
   document.getElementById('btnExport').addEventListener('click', exportPipeline);
 }
 
-/* ---------- 启动：加载 8 个 JSON，任一失败自动用 FALLBACK ---------- */
+/* ---------- 启动：加载 9 个 JSON，任一失败自动用 FALLBACK ---------- */
 async function init() {
-  const [kpi, gantt, roadmap, pipeline, todo, milestones, weeklyLog, blockers] = await Promise.all([
+  const [kpi, gantt, roadmap, pipeline, todo, milestones, weeklyLog, blockers, resources] = await Promise.all([
     loadJson('data/kpi.json', FALLBACK.kpi),
     loadJson('data/gantt.json', FALLBACK.gantt),
     loadJson('data/roadmap.json', FALLBACK.roadmap),
@@ -1694,7 +1814,8 @@ async function init() {
     loadJson('data/todo.json', FALLBACK.todo),
     loadJson('data/milestones.json', FALLBACK.milestones),
     loadJson('data/weekly-log.json', FALLBACK.weeklyLog),
-    loadJson('data/blockers.json', FALLBACK.blockers)
+    loadJson('data/blockers.json', FALLBACK.blockers),
+    loadJson('data/resources.json', FALLBACK.resources)
   ]);
   state.kpi = kpi;
   state.gantt = gantt;
@@ -1704,9 +1825,11 @@ async function init() {
   state.milestones = milestones;
   state.weeklyLog = weeklyLog;
   state.blockers = blockers;
+  state.resources = resources;
 
   renderSummary();
   renderKpi(state.kpi);
+  renderResources(state.resources);
   renderGantt(state.gantt);
   renderDepMap();
   renderWorkstreams(state.roadmap);
@@ -1715,6 +1838,7 @@ async function init() {
   renderBlocked();
   renderWeekly(state.weeklyLog);
   updateSidebarBlockedDot();
+  initTheme();
   bindEvents();
   initScrollSpy();
   initDrawer();
