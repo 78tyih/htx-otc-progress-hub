@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HTX OTC BD 绩效看板</title>
-  <meta name="description" content="OTC USD 大宗业务 · PIP 绩效进度 · 汇报对象：Simon（Primary Reviewer）">
+  <title>HTX OTC PIP 执行看板</title>
+  <meta name="description" content="Sera · OTC USD 大宗业务绩效任务进展 · 审核对象：Simon">
   <link rel="icon" href="assets/brand/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="style.css">
 </head>
@@ -18,17 +18,17 @@
         <img class="brand-logo" src="assets/brand/logo-wordmark-dark.svg" alt="HTX OTC BD" width="200" height="51">
       </div>
       <nav class="side-nav" id="sideNav">
-        <a class="nav-link" href="#sec-summary"><span class="nav-no">01</span>执行摘要</a>
-        <a class="nav-link" href="#sec-kpi"><span class="nav-no">02</span>KPI 概览</a>
-        <a class="nav-link" href="#sec-gantt"><span class="nav-no">03</span>时间推进图</a>
-        <a class="nav-link" href="#sec-depmap"><span class="nav-no">04</span>依赖关系图</a>
-        <a class="nav-link" href="#sec-roadmap"><span class="nav-no">05</span>主线任务进度</a>
-        <a class="nav-link" href="#sec-pipeline"><span class="nav-no">06</span>工作 Pipeline</a>
-        <a class="nav-link" href="#sec-todo"><span class="nav-no">07</span>本周待办</a>
-        <a class="nav-link" href="#sec-blocked"><span class="nav-no">08</span>阻塞事项</a>
-        <a class="nav-link" href="#sec-weekly"><span class="nav-no">09</span>周更记录</a>
+        <a class="nav-link" href="#sec-summary"><span class="nav-no">01</span>执行摘要<span class="nav-dot dot-yellow" aria-hidden="true"></span></a>
+        <a class="nav-link" href="#sec-kpi"><span class="nav-no">02</span>KPI 概览<span class="nav-dot dot-yellow" aria-hidden="true"></span></a>
+        <a class="nav-link" href="#sec-gantt"><span class="nav-no">03</span>时间推进图<span class="nav-dot dot-yellow" aria-hidden="true"></span></a>
+        <a class="nav-link" href="#sec-depmap"><span class="nav-no">04</span>任务依赖图<span class="nav-dot dot-gray" aria-hidden="true"></span></a>
+        <a class="nav-link" href="#sec-roadmap"><span class="nav-no">05</span>主线任务进度<span class="nav-dot dot-yellow" aria-hidden="true"></span></a>
+        <a class="nav-link" href="#sec-pipeline"><span class="nav-no">06</span>工作 Pipeline<span class="nav-dot dot-yellow" aria-hidden="true"></span></a>
+        <a class="nav-link" href="#sec-todo"><span class="nav-no">07</span>本周待办<span class="nav-dot dot-yellow" aria-hidden="true"></span></a>
+        <a class="nav-link" href="#sec-blocked"><span class="nav-no">08</span>阻塞事项<span class="nav-dot dot-red" id="navDotBlocked" aria-hidden="true"></span></a>
+        <a class="nav-link" href="#sec-weekly"><span class="nav-no">09</span>周更记录<span class="nav-dot dot-green" aria-hidden="true"></span></a>
       </nav>
-      <div class="side-foot">每周更新一次 · 本周更新：<b id="sideUpdated">2026-07-21</b></div>
+      <div class="side-foot"><span id="sideCadence">每周更新一次</span> · 本周更新：<b id="sideUpdated">2026-07-21</b></div>
     </aside>
     <div class="side-overlay" id="sideOverlay" hidden></div>
 
@@ -39,8 +39,8 @@
         <div class="topbar-left">
           <button class="icon-btn" id="menuBtn" type="button" aria-label="打开目录" title="目录">☰</button>
           <div class="title-block">
-            <h1>HTX OTC BD 绩效看板</h1>
-            <p class="subtitle">OTC USD 大宗业务 · PIP 绩效进度 · 汇报对象：Simon（Primary Reviewer）</p>
+            <h1>HTX OTC PIP 执行看板</h1>
+            <p class="subtitle">Sera · OTC USD 大宗业务绩效任务进展<span class="reviewer-badge">审核对象：Simon</span></p>
           </div>
         </div>
         <div class="topbar-right">
@@ -60,7 +60,7 @@
             <span class="sec-no">01</span>
             <div>
               <h2>执行摘要</h2>
-              <p class="section-sub">PIP 整体健康度 · 由 roadmap / todo / pipeline / milestones 自动计算</p>
+              <p class="section-sub">PIP 整体健康度 · 由 roadmap / todo / blockers / milestones 自动计算</p>
             </div>
           </div>
           <div class="sum-grid" id="sumGrid"></div>
@@ -83,7 +83,7 @@
           <div class="section-head">
             <span class="sec-no">03</span>
             <div>
-              <h2>时间推进图</h2>
+              <h2>主线任务时间推进图</h2>
               <p class="section-sub">2026-07-21 ～ 2026-08-31 · W1-W6 周视图 · 点击主线展开子任务 · 悬浮查看详情</p>
             </div>
           </div>
@@ -101,7 +101,7 @@
           <div class="section-head">
             <span class="sec-no">04</span>
             <div>
-              <h2>依赖关系图</h2>
+              <h2>任务依赖关系图</h2>
               <p class="section-sub">主链路（黄色渐变） · 支线 A 获客线索（浅色） · 支线 B 看板交付（淡蓝） · 支线 C 设计物料（浅灰）</p>
             </div>
           </div>
@@ -167,36 +167,43 @@
           </div>
         </section>
 
-        <!-- ========== 08 阻塞事项与所需协助 ========== -->
+        <!-- ========== 08 阻塞事项与需要协助（blockers.json 驱动 · 双栏） ========== -->
         <section class="section" id="sec-blocked">
           <div class="section-head">
             <span class="sec-no">08</span>
             <div>
-              <h2>阻塞事项</h2>
-              <p class="section-sub">自动汇总 Blocked 项 + 需要 Supervisor 协助的事项</p>
+              <h2>阻塞事项与需要协助</h2>
+              <p class="section-sub">当前阻塞与需要 Simon 协助事项 · 由 data/blockers.json 驱动</p>
             </div>
           </div>
           <div class="blocked-layout">
-            <div class="blocked-cards" id="blockedCards"></div>
-            <div class="panel asks-panel">
-              <h3 class="asks-title">需要 Supervisor 协助的 5 件事</h3>
-              <ol class="asks-list" id="fixedAsks"></ol>
+            <div class="panel blk-panel blk-panel-current">
+              <h3 class="blk-title">当前阻塞</h3>
+              <ul class="blk-list" id="currentBlockers"></ul>
+            </div>
+            <div class="panel blk-panel blk-panel-asks">
+              <h3 class="blk-title">需要 Simon 协助</h3>
+              <ul class="ask-list" id="simonAsks"></ul>
             </div>
           </div>
         </section>
 
-        <!-- ========== 09 周更记录 ========== -->
+        <!-- ========== 09 周更记录（轻量版：本周更新 + cadence / 最近更新） ========== -->
         <section class="section" id="sec-weekly">
           <div class="section-head">
             <span class="sec-no">09</span>
             <div>
               <h2>周更记录</h2>
-              <p class="section-sub">Weekly Log · 每周五更新 · 本周重点与历史时间线</p>
+              <p class="section-sub">Weekly Log · 每周更新一次 · 本周更新内容</p>
             </div>
           </div>
           <div class="panel weekly-panel">
-            <div class="weekly-top" id="weeklyTop"></div>
-            <div class="log-timeline" id="logTimeline"></div>
+            <div class="weekly-title">本周更新</div>
+            <ul class="weekly-list" id="weeklyDone"></ul>
+            <div class="weekly-foot">
+              <span class="weekly-cadence" id="weeklyCadence">每周更新一次</span>
+              <span class="weekly-updated">最近更新：<b id="weeklyUpdated">2026-07-21</b></span>
+            </div>
           </div>
         </section>
 
@@ -204,7 +211,7 @@
 
       <!-- ========== 页脚 / Last Updated ========== -->
       <footer class="footer">
-        <span>HTX OTC BD 绩效看板 · 数据每周更新 · 仅供内部使用 · Last Updated：<b id="footerUpdated">2026-07-21</b></span>
+        <span>HTX OTC PIP 执行看板 · 数据每周更新 · 仅供内部使用 · Last Updated：<b id="footerUpdated">2026-07-21</b></span>
       </footer>
 
     </div>

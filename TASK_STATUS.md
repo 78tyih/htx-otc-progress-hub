@@ -179,3 +179,12 @@
 ---
 
 > 状态图例：`[Done]` 已完成 / `[进行中]` 正在处理 / `[待执行]` 未开始。
+
+---
+
+## v0.6 阶段日志（2026-07-21）
+
+- [Done] 绩效口径精修：页面改名「HTX OTC PIP 执行看板」+ 审核对象：Simon 徽标、侧栏 9 项状态点（含阻塞动态红点）、甘特四态胶囊条（进行=黄色渐变）、依赖图 +Partner/KOL 节点、阻塞双栏（blockers.json）、周更轻量化、KPI 第 4/5 卡对齐、主线卡 subLabel、Pipeline 卡两行收敛
+- [Done] 数据层：kpi/gantt/roadmap/todo/weekly-log 对齐绩效表口径，新建 blockers.json，数据源 7→8
+- [Done] 前端实测：Playwright 双视口 31 项全 PASS、console 零报错、FALLBACK 8/8 逐字一致
+- [Next] git 提交推送（本阶段由主代理执行）

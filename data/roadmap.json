@@ -3,13 +3,14 @@
     "id": "WS01",
     "name": "业务资料建设",
     "goal": "业务手册/FAQ、BD 计划文档、设计交付包",
-    "progress": 75,
+    "progress": 80,
     "status": "Doing",
     "owner": "Sera",
+    "subLabel": "手册 / FAQ / 流程说明",
     "subDone": 9,
     "subTotal": 12,
-    "next": "提交设计团队并确认排期",
-    "risk": "设计团队排期未定，可能影响物料产出时间"
+    "next": "提交设计团队",
+    "risk": "设计排期待确认"
   },
   {
     "id": "WS02",
@@ -18,10 +19,11 @@
     "progress": 80,
     "status": "Doing",
     "owner": "Sera",
-    "subDone": 3,
+    "subLabel": "CRM / 分级 / UID / KYC状态",
+    "subDone": 4,
     "subTotal": 5,
-    "next": "筛选五星重点客户",
-    "risk": "部分客户 KYC 状态待确认"
+    "next": "筛选五星客户",
+    "risk": "数据需持续清洗"
   },
   {
     "id": "WS03",
@@ -30,10 +32,11 @@
     "progress": 15,
     "status": "Next",
     "owner": "Sera",
+    "subLabel": "注册 / KYC / 首单",
     "subDone": 0,
     "subTotal": 5,
-    "next": "确认首批唤醒客户名单",
-    "risk": "依赖五星名单与首单测试结果"
+    "next": "启动首批客户跟进",
+    "risk": "交易测试未完成"
   },
   {
     "id": "WS04",
@@ -42,10 +45,11 @@
     "progress": 10,
     "status": "Blocked",
     "owner": "Sera",
+    "subLabel": "销售 / Partner / KOL",
     "subDone": 0,
     "subTotal": 3,
-    "next": "请 Simon 协助调取大数据名单",
-    "risk": "大数据名单与销售名单未到位"
+    "next": "获取名单和资源",
+    "risk": "需 Simon 协助"
   },
   {
     "id": "WS05",
@@ -54,9 +58,10 @@
     "progress": 20,
     "status": "Doing",
     "owner": "Sera",
+    "subLabel": "周报 / CRIB / 反馈",
     "subDone": 1,
     "subTotal": 4,
-    "next": "本周五完成首次周更",
-    "risk": "无"
+    "next": "建立每周更新机制",
+    "risk": "需持续输入"
   }
 ]

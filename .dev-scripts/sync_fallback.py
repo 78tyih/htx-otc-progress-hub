@@ -5,8 +5,8 @@
   python3 .dev-scripts/sync_fallback.py          # 同步模式：重写 app.js 中的 FALLBACK 并验证
   python3 .dev-scripts/sync_fallback.py --check  # 校验模式：只比对、不写文件（CI / 提交前自查）
 
-v0.5 起加载的 7 个数据集：
-  kpi / gantt / roadmap / pipeline / todo / milestones / weekly-log
+v0.6 起加载的 8 个数据集：
+  kpi / gantt / roadmap / pipeline / todo / milestones / weekly-log / blockers
 已弃用（保留磁盘、不再加载、不纳入 FALLBACK）：
   design-delivery.json / crm-summary.json / task-progress.json / task-tree.json
 """
@@ -18,7 +18,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 APP = ROOT / "app.js"
 
-# FALLBACK 键 → data 文件名（7 个被加载的数据源，键序与 app.js FALLBACK 一致）
+# FALLBACK 键 → data 文件名（8 个被加载的数据源，键序与 app.js FALLBACK 一致）
 KEY_FILES = {
     "kpi": "kpi.json",
     "gantt": "gantt.json",
@@ -27,6 +27,7 @@ KEY_FILES = {
     "todo": "todo.json",
     "milestones": "milestones.json",
     "weeklyLog": "weekly-log.json",
+    "blockers": "blockers.json",
 }
 
 

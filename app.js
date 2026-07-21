@@ -1,7 +1,7 @@
 /* ============================================================
-   HTX OTC BD 绩效看板 — app.js
+   HTX OTC PIP 执行看板 — app.js
    纯原生 JS：fetch 加载 data/*.json，失败自动回退内置 FALLBACK
-   固定暗色主题 · 左侧目录 scroll-spy · 9 大模块 · 7 个数据源
+   固定暗色主题 · 左侧目录 scroll-spy · 9 大模块 · 8 个数据源
    ============================================================ */
 'use strict';
 
@@ -51,27 +51,27 @@ const FALLBACK = {
       "status": "next"
     },
     {
-      "label": "设计交付包",
+      "label": "客户资料 / 手册",
       "component": "ring",
-      "done": 8,
-      "total": 8,
-      "unit": "项",
-      "target": "8项资料",
-      "current": "8/8",
-      "trend": "明天提交设计团队",
-      "next": "提交设计团队并确认排期",
+      "done": 1,
+      "total": 1,
+      "unit": "套",
+      "target": "1套",
+      "current": "1/1",
+      "trend": "资料包已整理完成",
+      "next": "提交设计团队排版",
       "status": "done"
     },
     {
-      "label": "客户Pipeline",
+      "label": "客户 Pipeline",
       "component": "funnel",
       "done": 1,
       "total": 1,
       "unit": "套",
       "target": "1套",
-      "current": "已建初版",
-      "trend": "TG客户资料已汇总",
-      "next": "筛选五星重点客户",
+      "current": "1/1",
+      "trend": "TG 客户资料已汇总",
+      "next": "筛选五星客户",
       "status": "done"
     },
     {
@@ -110,7 +110,7 @@ const FALLBACK = {
       "name": "业务手册 / FAQ",
       "owner": "Sera",
       "status": "Doing",
-      "progress": 70,
+      "progress": 80,
       "start": "2026-07-21",
       "end": "2026-07-29",
       "next": "补充 FAQ 话术与禁用词审校",
@@ -143,7 +143,7 @@ const FALLBACK = {
       "name": "BD 计划文档",
       "owner": "Sera",
       "status": "Doing",
-      "progress": 60,
+      "progress": 70,
       "start": "2026-07-21",
       "end": "2026-07-31",
       "next": "完善渠道拓展与目标拆解章节",
@@ -309,13 +309,14 @@ const FALLBACK = {
       "id": "WS01",
       "name": "业务资料建设",
       "goal": "业务手册/FAQ、BD 计划文档、设计交付包",
-      "progress": 75,
+      "progress": 80,
       "status": "Doing",
       "owner": "Sera",
+      "subLabel": "手册 / FAQ / 流程说明",
       "subDone": 9,
       "subTotal": 12,
-      "next": "提交设计团队并确认排期",
-      "risk": "设计团队排期未定，可能影响物料产出时间"
+      "next": "提交设计团队",
+      "risk": "设计排期待确认"
     },
     {
       "id": "WS02",
@@ -324,10 +325,11 @@ const FALLBACK = {
       "progress": 80,
       "status": "Doing",
       "owner": "Sera",
-      "subDone": 3,
+      "subLabel": "CRM / 分级 / UID / KYC状态",
+      "subDone": 4,
       "subTotal": 5,
-      "next": "筛选五星重点客户",
-      "risk": "部分客户 KYC 状态待确认"
+      "next": "筛选五星客户",
+      "risk": "数据需持续清洗"
     },
     {
       "id": "WS03",
@@ -336,10 +338,11 @@ const FALLBACK = {
       "progress": 15,
       "status": "Next",
       "owner": "Sera",
+      "subLabel": "注册 / KYC / 首单",
       "subDone": 0,
       "subTotal": 5,
-      "next": "确认首批唤醒客户名单",
-      "risk": "依赖五星名单与首单测试结果"
+      "next": "启动首批客户跟进",
+      "risk": "交易测试未完成"
     },
     {
       "id": "WS04",
@@ -348,10 +351,11 @@ const FALLBACK = {
       "progress": 10,
       "status": "Blocked",
       "owner": "Sera",
+      "subLabel": "销售 / Partner / KOL",
       "subDone": 0,
       "subTotal": 3,
-      "next": "请 Simon 协助调取大数据名单",
-      "risk": "大数据名单与销售名单未到位"
+      "next": "获取名单和资源",
+      "risk": "需 Simon 协助"
     },
     {
       "id": "WS05",
@@ -360,10 +364,11 @@ const FALLBACK = {
       "progress": 20,
       "status": "Doing",
       "owner": "Sera",
+      "subLabel": "周报 / CRIB / 反馈",
       "subDone": 1,
       "subTotal": 4,
-      "next": "本周五完成首次周更",
-      "risk": "无"
+      "next": "建立每周更新机制",
+      "risk": "需持续输入"
     }
   ],
   "pipeline": [
@@ -478,35 +483,35 @@ const FALLBACK = {
   ],
   "todo": [
     {
-      "task": "提交设计交付包给设计团队",
+      "task": "提交设计交付包",
       "owner": "Sera",
       "due": "2026-07-22",
       "priority": "P0",
       "status": "Doing"
     },
     {
-      "task": "从CRM筛选TOP五星客户",
+      "task": "筛选 TOP 五星客户",
       "owner": "Sera",
       "due": "2026-07-23",
       "priority": "P0",
       "status": "Doing"
     },
     {
-      "task": "确认 Simon 访问方式",
-      "owner": "Sera",
+      "task": "确认访问权限",
+      "owner": "Sera / Simon",
       "due": "2026-07-23",
       "priority": "P0",
       "status": "Doing"
     },
     {
-      "task": "配合静格完成首单测试",
+      "task": "配合首单测试",
       "owner": "Sera / 静格",
       "due": "2026-07-25",
       "priority": "P0",
       "status": "Next"
     },
     {
-      "task": "请 Simon 协助调取大数据客户名单",
+      "task": "获取大数据名单",
       "owner": "Sera / Simon",
       "due": "2026-07-26",
       "priority": "P1",
@@ -541,43 +546,41 @@ const FALLBACK = {
     }
   ],
   "weeklyLog": {
-    "cadence": "每周更新一次（每周五）",
+    "cadence": "本看板每周更新一次",
     "updatedAt": "2026-07-21",
-    "focus": [
-      "提交设计交付包并确认排期",
-      "筛选五星重点客户",
-      "配合静格完成首单测试",
-      "确认 Simon 访问方式"
+    "done": [
+      "完成 OTC 设计交付包整理",
+      "完成 TG 客户 CRM 初版",
+      "重构 PIP 绩效看板信息架构",
+      "明确 KPI、甘特图、依赖关系图与 Pipeline 结构"
+    ]
+  },
+  "blockers": {
+    "updatedAt": "2026-07-21",
+    "current": [
+      "大数据客户名单待确认",
+      "设计团队排期待确认",
+      "首单测试需跨团队配合",
+      "访问权限方式待确认"
     ],
-    "logs": [
-      {
-        "week": "2026-W30",
-        "date": "2026-07-21",
-        "summary": "看板收敛为绩效主线视图；设计交付包就绪待提交；TG 客户 CRM 初版完成。",
-        "done": [
-          "设计交付包整理",
-          "TG 客户 CRM 初版",
-          "看板绩效化收敛"
-        ],
-        "next": [
-          "提交设计团队",
-          "五星客户筛选",
-          "首单交易测试"
-        ]
-      }
+    "asks": [
+      "确认客户名单筛选条件",
+      "协调 Oscar / 销售同步高价值客户",
+      "确认设计交付优先级",
+      "确认访问权限方式",
+      "必要时协调首单测试资源"
     ]
   }
 };
 // __FALLBACK_SYNC_END__
 
-/* 需要 Supervisor 协助的 5 件事（固定展示） */
-const FIXED_ASKS = [
-  '大数据客户名单',
-  'Oscar 大客户项目名单',
-  '设计团队排期确认',
-  '首单测试配合',
-  '客户 KYC 状态确认'
-];
+/* 执行摘要「当前阻塞」说明用短标签映射（blockers.json 原文 → 缩略） */
+const BLOCKER_SHORT = {
+  '大数据客户名单待确认': '名单调取',
+  '设计团队排期待确认': '设计排期',
+  '首单测试需跨团队配合': '首单协作',
+  '访问权限方式待确认': '访问方式'
+};
 
 /* 状态顺序与样式映射（Done 绿 / Doing 蓝 / Next 黄 / Blocked 红） */
 const STATUS_ORDER = ['Done', 'Doing', 'Next', 'Blocked'];
@@ -620,17 +623,18 @@ const DEP_NODES = [
   { id: 'c2', label: '提交设计团队', meta: 'Doing · 07-22', x: 340, y: 70, st: 'doing' },
   { id: 'c3', label: 'UI出图', meta: 'Next', x: 480, y: 70, st: 'next' },
   { id: 'c4', label: '反馈修改', meta: 'Next', x: 620, y: 70, st: 'next' },
-  // 支线 A：获客线索（汇入 客户 Pipeline）
+  // 支线 A：获客线索（四源并行汇入 客户筛选 → 客户 Pipeline）
   { id: 'a1', label: 'TG客户资料', meta: 'Done · CRM 初版', x: 484, y: 400, st: 'done' },
-  { id: 'a2', label: '销售转介', meta: 'Next · 对接 Oscar', x: 622, y: 400, st: 'next' },
-  { id: 'a3', label: '存量客户池', meta: 'Done · 已汇总分级', x: 760, y: 400, st: 'done' },
-  { id: 'a4', label: '客户筛选', meta: 'Doing · 五星名单', x: 622, y: 490, st: 'doing' },
+  { id: 'a2', label: '销售转介', meta: 'Next · 对接 Oscar', x: 760, y: 400, st: 'next' },
+  { id: 'a3', label: '存量客户池', meta: 'Done · 已汇总分级', x: 484, y: 556, st: 'done' },
+  { id: 'a4', label: 'Partner / KOL', meta: 'Next · 待触达', x: 760, y: 556, st: 'next' },
+  { id: 'a5', label: '客户筛选', meta: 'Doing · 五星名单', x: 622, y: 480, st: 'doing' },
   // 支线 B：看板交付与访问
-  { id: 'b1', label: '看板结构整理', meta: 'Done', x: 110, y: 620, st: 'done' },
-  { id: 'b2', label: '页面内容收敛', meta: 'Done', x: 300, y: 620, st: 'done' },
-  { id: 'b3', label: '访问权限控制', meta: 'Doing · 确认方式', x: 490, y: 620, st: 'doing' },
-  { id: 'b4', label: 'Simon访问', meta: 'Next', x: 680, y: 620, st: 'next' },
-  { id: 'b5', label: '每周更新', meta: 'Doing · 每周五', x: 870, y: 620, st: 'doing' }
+  { id: 'b1', label: '看板结构整理', meta: 'Done', x: 110, y: 650, st: 'done' },
+  { id: 'b2', label: '页面内容收敛', meta: 'Done', x: 300, y: 650, st: 'done' },
+  { id: 'b3', label: '访问权限控制', meta: 'Doing · 确认方式', x: 490, y: 650, st: 'doing' },
+  { id: 'b4', label: 'Simon访问', meta: 'Next', x: 680, y: 650, st: 'next' },
+  { id: 'b5', label: '每周更新', meta: 'Doing · 每周五', x: 870, y: 650, st: 'doing' }
 ];
 
 const DEP_LINKS = [
@@ -639,8 +643,8 @@ const DEP_LINKS = [
   ['m4', 'm5', 'main'], ['m5', 'm6', 'main'], ['m6', 'm7', 'main'],
   // 支线 C（浅灰）→ 设计交付包
   ['c1', 'c2', 'c'], ['c2', 'c3', 'c'], ['c3', 'c4', 'c'], ['c4', 'm4', 'c'],
-  // 支线 A（浅色）→ 客户筛选 → 客户 Pipeline
-  ['a1', 'a4', 'a'], ['a2', 'a4', 'a'], ['a3', 'a4', 'a'], ['a4', 'm5', 'a'],
+  // 支线 A（浅色）：四源并行 → 客户筛选 → 客户 Pipeline
+  ['a1', 'a5', 'a'], ['a2', 'a5', 'a'], ['a3', 'a5', 'a'], ['a4', 'a5', 'a'], ['a5', 'm5', 'a'],
   // 支线 B（淡蓝）链式
   ['b1', 'b2', 'b'], ['b2', 'b3', 'b'], ['b3', 'b4', 'b'], ['b4', 'b5', 'b']
 ];
@@ -648,14 +652,14 @@ const DEP_LINKS = [
 const DEP_LABELS = [
   { text: '支线 C · 设计物料制作', x: 200, y: 18 },
   { text: '主链路 · 绩效交付', x: 70, y: 184 },
-  { text: '支线 A · 获客线索汇入', x: 484, y: 346 },
-  { text: '支线 B · 看板交付与访问', x: 110, y: 566 }
+  { text: '支线 A · 获客线索汇入', x: 484, y: 352 },
+  { text: '支线 B · 看板交付与访问', x: 110, y: 606 }
 ];
 
 /* 全局状态：当前生效的数据 + 筛选条件 */
 const state = {
   kpi: [], gantt: [], roadmap: [], pipeline: [],
-  todo: [], milestones: [], weeklyLog: null
+  todo: [], milestones: [], weeklyLog: null, blockers: null
 };
 const filterState = { query: '' };
 
@@ -757,16 +761,13 @@ function renderSummary() {
     .slice()
     .sort((a, b) => ((a.priority + a.due) < (b.priority + b.due) ? -1 : 1))[0];
 
-  // 3) 当前阻塞 = roadmap + pipeline + todo 中 Blocked 总数
-  const blockedRoadmap = state.roadmap.filter((r) => r.status === 'Blocked');
-  const blockedPipe = state.pipeline.filter((p) => p.status === 'Blocked');
-  const blockers =
-    blockedRoadmap.length +
-    blockedPipe.length +
-    state.todo.filter((t) => t.status === 'Blocked').length;
-  const firstBlockerNext = blockedPipe.length
-    ? blockedPipe[0].next
-    : (blockedRoadmap.length ? blockedRoadmap[0].next : '');
+  // 3) 当前阻塞 = blockers.json current 条数（说明取前 3 条短标签）
+  const blockerItems = (state.blockers && state.blockers.current) || [];
+  const blockers = blockerItems.length;
+  const blockerBrief = blockerItems
+    .slice(0, 3)
+    .map((b) => BLOCKER_SHORT[b] || b)
+    .join(' / ');
 
   // 4) 下一里程碑 = milestones 中最早非 Done 项
   const nextMilestone = state.milestones
@@ -807,9 +808,9 @@ function renderSummary() {
         const num = el('div', 'sum-value', '0');
         countUp(num, blockers, { format: (v) => String(Math.round(v)) });
         body.appendChild(num);
-        body.appendChild(el('div', 'sum-sub', '主线 + Pipeline + 待办阻塞总数'));
+        body.appendChild(el('div', 'sum-sub', blockers ? blockerBrief : 'blockers.json 当前无阻塞'));
       },
-      next: blockers ? firstBlockerNext : '无阻塞，保持推进节奏'
+      next: blockers ? '详见 08 区「需要 Simon 协助」清单' : '无阻塞，保持推进节奏'
     },
     {
       label: '下一里程碑',
@@ -1222,7 +1223,7 @@ function renderGantt(list) {
     wrap.appendChild(rowWrap);
   });
 
-  // 图例：Done 绿 / Doing 蓝 / Next 黄 / Blocked 红
+  // 图例：Done 绿胶囊 / Doing 黄渐变胶囊 / Next 灰半透明 / Blocked 红边条
   const legend = document.getElementById('ganttLegend');
   legend.innerHTML = '';
   STATUS_ORDER.forEach((s) => {
@@ -1364,6 +1365,9 @@ function renderWorkstreams(list) {
     card.appendChild(barRow);
     // 进度条直接落终值（CSS transition 负责展开动效）
     fill.style.width = ws.progress + '%';
+
+    // 子任务范围标签（roadmap subLabel，紧贴进度条下方）
+    if (ws.subLabel) card.appendChild(el('div', 'ws-sublabel', ws.subLabel));
 
     // 关键子任务数 + 负责人
     const metaRow = el('div', 'ws-meta-row');
@@ -1556,88 +1560,60 @@ function renderTodo(list) {
   });
 }
 
-/* ---------- 08 阻塞事项 + 需 Supervisor 协助清单 ---------- */
+/* ---------- 08 阻塞事项与需要协助（blockers.json 双栏驱动） ---------- */
 function renderBlocked() {
-  const wrap = document.getElementById('blockedCards');
-  wrap.innerHTML = '';
-  const blocked = state.pipeline.filter((p) => p.status === 'Blocked');
-  if (!blocked.length) {
-    wrap.appendChild(el('div', 'blocked-none', '✓ 当前无阻塞事项，继续保持'));
+  const current = (state.blockers && state.blockers.current) || [];
+  const asks = (state.blockers && state.blockers.asks) || [];
+
+  // 左栏：当前阻塞（红色调列表）
+  const curList = document.getElementById('currentBlockers');
+  curList.innerHTML = '';
+  if (!current.length) {
+    curList.appendChild(el('li', 'blk-empty', '✓ 当前无阻塞事项，继续保持'));
   }
-  blocked.forEach((item) => {
-    const card = el('div', 'blocked-card');
-    card.appendChild(el('h4', null, '⛔ ' + item.module));
-    card.appendChild(el('p', null, '当前状态：' + item.progress));
-    card.appendChild(el('p', null, '下一步：' + item.next));
-    card.appendChild(el('div', 'bc-meta',
-      '负责人：' + item.owner + ' · 优先级：' + item.priority +
-      ' · 所属主线：' + (item.workstream || '—') +
-      ' · 截止：' + (item.due || '—')));
-    wrap.appendChild(card);
+  current.forEach((b) => {
+    const li = el('li', null);
+    li.appendChild(el('span', 'blk-dot', '⛔'));
+    li.appendChild(el('span', 'blk-text', b));
+    curList.appendChild(li);
   });
 
-  const asks = document.getElementById('fixedAsks');
-  asks.innerHTML = '';
-  FIXED_ASKS.forEach((a) => asks.appendChild(el('li', null, a)));
+  // 右栏：需要 Simon 协助（黄色调列表）
+  const askList = document.getElementById('simonAsks');
+  askList.innerHTML = '';
+  asks.forEach((a) => {
+    const li = el('li', null);
+    li.appendChild(el('span', 'blk-text', a));
+    askList.appendChild(li);
+  });
 }
 
-/* ---------- 09 周更记录（weekly-log.json） ---------- */
+/* ---------- 09 周更记录（轻量版：done bullets + cadence / 最近更新） ---------- */
 function renderWeekly(log) {
-  const top = document.getElementById('weeklyTop');
-  top.innerHTML = '';
+  const list = document.getElementById('weeklyDone');
+  list.innerHTML = '';
+  ((log && log.done) || []).forEach((d) => list.appendChild(el('li', null, d)));
 
-  // 顶部：更新节奏徽标 + 本周更新时间
-  const badges = el('div', 'weekly-badges');
-  badges.appendChild(el('span', 'weekly-cadence', (log && log.cadence) || '每周更新一次（每周五）'));
-  const updated = el('span', 'weekly-updated');
-  updated.appendChild(document.createTextNode('本周更新时间：'));
-  updated.appendChild(el('b', null, (log && log.updatedAt) || TODAY));
-  badges.appendChild(updated);
-  top.appendChild(badges);
-
-  // 本周重点动作（focus 列表）
-  top.appendChild(el('div', 'focus-title', '本周重点动作'));
-  const chips = el('div', 'focus-chips');
-  ((log && log.focus) || []).forEach((f) => chips.appendChild(el('span', 'focus-chip', f)));
-  top.appendChild(chips);
-
-  // 下方：logs 时间线（每周一条）
-  const timeline = document.getElementById('logTimeline');
-  timeline.innerHTML = '';
-  ((log && log.logs) || []).forEach((entry) => {
-    const item = el('div', 'log-item');
-
-    const head = el('div', 'log-head');
-    head.appendChild(el('span', 'log-week', entry.week));
-    head.appendChild(el('span', 'log-date', entry.date));
-    item.appendChild(head);
-
-    item.appendChild(el('div', 'log-summary', entry.summary));
-
-    const cols = el('div', 'log-cols');
-    const doneCol = el('div', 'log-col log-done');
-    doneCol.appendChild(el('div', 'log-col-title', '已完成'));
-    const doneUl = el('ul');
-    (entry.done || []).forEach((d) => doneUl.appendChild(el('li', null, d)));
-    doneCol.appendChild(doneUl);
-    cols.appendChild(doneCol);
-
-    const nextCol = el('div', 'log-col log-next');
-    nextCol.appendChild(el('div', 'log-col-title', '下周计划'));
-    const nextUl = el('ul');
-    (entry.next || []).forEach((n) => nextUl.appendChild(el('li', null, n)));
-    nextCol.appendChild(nextUl);
-    cols.appendChild(nextCol);
-
-    item.appendChild(cols);
-    timeline.appendChild(item);
-  });
+  document.getElementById('weeklyCadence').textContent = (log && log.cadence) || '每周更新一次';
+  document.getElementById('weeklyUpdated').textContent = (log && log.updatedAt) || TODAY;
 
   // 侧栏与页脚更新时间与周更数据保持一致
   if (log && log.updatedAt) {
     document.getElementById('sideUpdated').textContent = log.updatedAt;
     document.getElementById('footerUpdated').textContent = log.updatedAt;
   }
+  if (log && log.cadence) {
+    document.getElementById('sideCadence').textContent = log.cadence;
+  }
+}
+
+/* ---------- 侧栏 08 阻塞事项状态点（Blocked 数 > 0 红，否则绿） ---------- */
+function updateSidebarBlockedDot() {
+  const dot = document.getElementById('navDotBlocked');
+  if (!dot) return;
+  const n = ((state.blockers && state.blockers.current) || []).length;
+  dot.classList.toggle('dot-red', n > 0);
+  dot.classList.toggle('dot-green', n === 0);
 }
 
 /* ---------- 导出：导出 Pipeline JSON 下载 ---------- */
@@ -1708,16 +1684,17 @@ function bindEvents() {
   document.getElementById('btnExport').addEventListener('click', exportPipeline);
 }
 
-/* ---------- 启动：加载 7 个 JSON，任一失败自动用 FALLBACK ---------- */
+/* ---------- 启动：加载 8 个 JSON，任一失败自动用 FALLBACK ---------- */
 async function init() {
-  const [kpi, gantt, roadmap, pipeline, todo, milestones, weeklyLog] = await Promise.all([
+  const [kpi, gantt, roadmap, pipeline, todo, milestones, weeklyLog, blockers] = await Promise.all([
     loadJson('data/kpi.json', FALLBACK.kpi),
     loadJson('data/gantt.json', FALLBACK.gantt),
     loadJson('data/roadmap.json', FALLBACK.roadmap),
     loadJson('data/pipeline.json', FALLBACK.pipeline),
     loadJson('data/todo.json', FALLBACK.todo),
     loadJson('data/milestones.json', FALLBACK.milestones),
-    loadJson('data/weekly-log.json', FALLBACK.weeklyLog)
+    loadJson('data/weekly-log.json', FALLBACK.weeklyLog),
+    loadJson('data/blockers.json', FALLBACK.blockers)
   ]);
   state.kpi = kpi;
   state.gantt = gantt;
@@ -1726,6 +1703,7 @@ async function init() {
   state.todo = todo;
   state.milestones = milestones;
   state.weeklyLog = weeklyLog;
+  state.blockers = blockers;
 
   renderSummary();
   renderKpi(state.kpi);
@@ -1736,6 +1714,7 @@ async function init() {
   renderTodo(state.todo);
   renderBlocked();
   renderWeekly(state.weeklyLog);
+  updateSidebarBlockedDot();
   bindEvents();
   initScrollSpy();
   initDrawer();
