@@ -147,6 +147,7 @@ async function run(intent, hooks = {}) {
       if (TERMINAL.includes(task.status)) throw new Error(`${task.id} 已完成，不能再更新进度`);
       task.progress = intent.value;
       if (intent.value > 0 && ['待启动', '已提醒'].includes(task.status)) transition(task, '进行中');
+      if (intent.value >= 100 && task.status === '进行中') transition(task, '待输出');
       finalize(data, 'cli', 'progress', task.id, `「${task.title}」进度更新为 ${intent.value}%`);
       return `📈 已更新 ${fmtLine(task)}`;
     }

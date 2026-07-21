@@ -32,14 +32,15 @@
       <nav class="side-nav" id="sideNav">
         <a class="nav-link" href="#sec-summary"><span class="nav-no">01</span>执行摘要<span class="nav-dot dot-yellow" aria-hidden="true"></span></a>
         <a class="nav-link" href="#sec-kpi"><span class="nav-no">02</span>KPI 概览<span class="nav-dot dot-yellow" aria-hidden="true"></span></a>
-        <a class="nav-link" href="#sec-resources"><span class="nav-no">03</span>资料访问中心<span class="nav-dot dot-green" aria-hidden="true"></span></a>
-        <a class="nav-link" href="#sec-gantt"><span class="nav-no">04</span>时间推进图<span class="nav-dot dot-yellow" aria-hidden="true"></span></a>
-        <a class="nav-link" href="#sec-depmap"><span class="nav-no">05</span>任务依赖图<span class="nav-dot dot-gray" aria-hidden="true"></span></a>
-        <a class="nav-link" href="#sec-roadmap"><span class="nav-no">06</span>主线任务进度<span class="nav-dot dot-yellow" aria-hidden="true"></span></a>
-        <a class="nav-link" href="#sec-pipeline"><span class="nav-no">07</span>工作 Pipeline<span class="nav-dot dot-yellow" aria-hidden="true"></span></a>
-        <a class="nav-link" href="#sec-todo"><span class="nav-no">08</span>本周待办<span class="nav-dot dot-yellow" aria-hidden="true"></span></a>
-        <a class="nav-link" href="#sec-blocked"><span class="nav-no">09</span>阻塞事项<span class="nav-dot dot-red" id="navDotBlocked" aria-hidden="true"></span></a>
-        <a class="nav-link" href="#sec-weekly"><span class="nav-no">10</span>周更记录<span class="nav-dot dot-green" aria-hidden="true"></span></a>
+        <a class="nav-link" href="#sec-countdown"><span class="nav-no">03</span>任务倒计时<span class="nav-dot dot-yellow" aria-hidden="true"></span></a>
+        <a class="nav-link" href="#sec-resources"><span class="nav-no">04</span>资料访问中心<span class="nav-dot dot-green" aria-hidden="true"></span></a>
+        <a class="nav-link" href="#sec-gantt"><span class="nav-no">05</span>时间推进图<span class="nav-dot dot-yellow" aria-hidden="true"></span></a>
+        <a class="nav-link" href="#sec-depmap"><span class="nav-no">06</span>任务依赖图<span class="nav-dot dot-gray" aria-hidden="true"></span></a>
+        <a class="nav-link" href="#sec-roadmap"><span class="nav-no">07</span>主线任务进度<span class="nav-dot dot-yellow" aria-hidden="true"></span></a>
+        <a class="nav-link" href="#sec-pipeline"><span class="nav-no">08</span>工作 Pipeline<span class="nav-dot dot-yellow" aria-hidden="true"></span></a>
+        <a class="nav-link" href="#sec-todo"><span class="nav-no">09</span>本周待办<span class="nav-dot dot-yellow" aria-hidden="true"></span></a>
+        <a class="nav-link" href="#sec-blocked"><span class="nav-no">10</span>阻塞事项<span class="nav-dot dot-red" id="navDotBlocked" aria-hidden="true"></span></a>
+        <a class="nav-link" href="#sec-weekly"><span class="nav-no">11</span>周更记录<span class="nav-dot dot-green" aria-hidden="true"></span></a>
       </nav>
       <div class="side-foot"><span id="sideCadence">每周更新一次</span> · 本周更新：<b id="sideUpdated">2026-07-21</b></div>
     </aside>
@@ -95,10 +96,22 @@
           <div class="kpi-grid" id="kpiGrid"></div>
         </section>
 
-        <!-- ========== 03 资料访问中心（resources.json 驱动 · 4 张资料卡） ========== -->
-        <section class="section" id="sec-resources">
+        <!-- ========== 03 任务倒计时（tasks.json 驱动 · 秒级实时刷新） ========== -->
+        <section class="section" id="sec-countdown">
           <div class="section-head">
             <span class="sec-no">03</span>
+            <div>
+              <h2>任务倒计时</h2>
+              <p class="section-sub">任务闭环执行层 · 由 data/tasks.json 驱动 · 24 小时内到期黄色 · 逾期红色 · 完成绿色 · 秒级实时刷新</p>
+            </div>
+          </div>
+          <div class="cd-grid" id="cdGrid"></div>
+        </section>
+
+        <!-- ========== 04 资料访问中心（resources.json 驱动 · 4 张资料卡） ========== -->
+        <section class="section" id="sec-resources">
+          <div class="section-head">
+            <span class="sec-no">04</span>
             <div>
               <h2>资料访问中心</h2>
               <p class="section-sub">CRM / 设计交付 / 渠道计划等关键资料直达 · 由 data/resources.json 驱动 · 文件缺失自动标记</p>
@@ -107,10 +120,10 @@
           <div class="res-grid" id="resGrid"></div>
         </section>
 
-        <!-- ========== 04 时间推进图（主线甘特 · 可展开子任务） ========== -->
+        <!-- ========== 05 时间推进图（主线甘特 · 可展开子任务） ========== -->
         <section class="section" id="sec-gantt">
           <div class="section-head">
-            <span class="sec-no">04</span>
+            <span class="sec-no">05</span>
             <div>
               <h2>主线任务时间推进图</h2>
               <p class="section-sub">2026-07-21 ～ 2026-08-31 · W1-W6 周视图 · 点击主线展开子任务 · 悬浮查看详情</p>
@@ -125,10 +138,10 @@
           </div>
         </section>
 
-        <!-- ========== 05 依赖关系图（贝塞尔曲线 + 玻璃节点） ========== -->
+        <!-- ========== 06 依赖关系图（贝塞尔曲线 + 玻璃节点） ========== -->
         <section class="section" id="sec-depmap">
           <div class="section-head">
-            <span class="sec-no">05</span>
+            <span class="sec-no">06</span>
             <div>
               <h2>任务依赖关系图</h2>
               <p class="section-sub">主链路（黄色渐变） · 支线 A 获客线索（浅色） · 支线 B 看板交付（淡蓝） · 支线 C 设计物料（浅灰）</p>
@@ -147,10 +160,10 @@
           </div>
         </section>
 
-        <!-- ========== 06 主线任务进度 ========== -->
+        <!-- ========== 07 主线任务进度 ========== -->
         <section class="section" id="sec-roadmap">
           <div class="section-head">
-            <span class="sec-no">06</span>
+            <span class="sec-no">07</span>
             <div>
               <h2>主线任务进度</h2>
               <p class="section-sub">Workstream Progress · 5 条绩效主线实时进度与风险</p>
@@ -159,10 +172,10 @@
           <div class="ws-grid" id="wsGrid"></div>
         </section>
 
-        <!-- ========== 07 工作 Pipeline（折叠分组看板） ========== -->
+        <!-- ========== 08 工作 Pipeline（折叠分组看板） ========== -->
         <section class="section" id="sec-pipeline">
           <div class="section-head">
-            <span class="sec-no">07</span>
+            <span class="sec-no">08</span>
             <div>
               <h2>工作 Pipeline</h2>
               <p class="section-sub">按状态分组 · 点击组标题折叠 / 展开 · 顶栏搜索实时过滤</p>
@@ -171,10 +184,10 @@
           <div class="pipe-groups" id="pipeGroups"></div>
         </section>
 
-        <!-- ========== 08 本周待办 ========== -->
+        <!-- ========== 09 本周待办 ========== -->
         <section class="section" id="sec-todo">
           <div class="section-head">
-            <span class="sec-no">08</span>
+            <span class="sec-no">09</span>
             <div>
               <h2>本周待办</h2>
               <p class="section-sub">Weekly To Do · 按优先级排序（P0 高亮） · 搜索联动 · 过期任务标红</p>
@@ -196,10 +209,10 @@
           </div>
         </section>
 
-        <!-- ========== 09 阻塞事项与需要协助（blockers.json 驱动 · 双栏） ========== -->
+        <!-- ========== 10 阻塞事项与需要协助（blockers.json 驱动 · 双栏） ========== -->
         <section class="section" id="sec-blocked">
           <div class="section-head">
-            <span class="sec-no">09</span>
+            <span class="sec-no">10</span>
             <div>
               <h2>阻塞事项与需要协助</h2>
               <p class="section-sub">当前阻塞与需要 Simon 协助事项 · 由 data/blockers.json 驱动</p>
@@ -217,10 +230,10 @@
           </div>
         </section>
 
-        <!-- ========== 10 周更记录（轻量版：本周更新 + cadence / 最近更新） ========== -->
+        <!-- ========== 11 周更记录（轻量版：本周更新 + cadence / 最近更新） ========== -->
         <section class="section" id="sec-weekly">
           <div class="section-head">
-            <span class="sec-no">10</span>
+            <span class="sec-no">11</span>
             <div>
               <h2>周更记录</h2>
               <p class="section-sub">Weekly Log · 每周更新一次 · 本周更新内容</p>

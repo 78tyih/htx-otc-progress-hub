@@ -72,6 +72,10 @@ r = run(['progress', 'T-0004', '10']);
 check('progress: 更新成功', r.code === 0, r.out);
 check('progress: 待启动自动转为进行中', task('T-0004').status === '进行中' && task('T-0004').progress === 10);
 
+// 3b. 进度 100 → 待输出（具备结果输出条件）
+r = run(['progress', 'T-0004', '100']);
+check('progress: 100% 自动转为待输出', r.code === 0 && task('T-0004').status === '待输出' && task('T-0004').progress === 100, r.out);
+
 // 4. 下一步
 r = run(['next', 'T-0002', '按清单逐个触达五星客户']);
 check('next: 更新成功', r.code === 0 && task('T-0002').nextAction === '按清单逐个触达五星客户', r.out);

@@ -1,7 +1,7 @@
 /* ============================================================
    HTX OTC PIP 执行看板 — app.js
    纯原生 JS：fetch 加载 data/*.json，失败自动回退内置 FALLBACK
-   日间 / 夜间双主题 · 左侧目录 scroll-spy · 10 大模块 · 9 个数据源
+   日间 / 夜间双主题 · 左侧目录 scroll-spy · 11 大模块 · 10 个数据源
    ============================================================ */
 'use strict';
 
@@ -617,7 +617,103 @@ const FALLBACK = {
       "description": "集团销售、大数据名单、Partner/KOL 的触达计划与节奏。",
       "url": "assets/files/channel-expansion-plan.md"
     }
-  ]
+  ],
+  "tasks": {
+    "version": 1,
+    "updatedAt": "2026-07-22T09:00:00+08:00",
+    "tasks": [
+      {
+        "id": "T-0001",
+        "title": "提交设计交付包",
+        "status": "进行中",
+        "priority": "P0",
+        "workstream": "设计交付包",
+        "owner": "Sera",
+        "createdAt": "2026-07-21T09:00:00+08:00",
+        "dueAt": "2026-07-22T18:00:00+08:00",
+        "remindAt": "2026-07-22T09:00:00+08:00",
+        "remindedAt": null,
+        "completedAt": null,
+        "progress": 80,
+        "nextAction": "提交设计团队并确认排期",
+        "outputCondition": "设计团队确认收到交付包并给出排期",
+        "result": null,
+        "source": "seed"
+      },
+      {
+        "id": "T-0002",
+        "title": "筛选 TOP 五星客户",
+        "status": "进行中",
+        "priority": "P0",
+        "workstream": "注册 / KYC / 首单推进",
+        "owner": "Sera",
+        "createdAt": "2026-07-21T09:00:00+08:00",
+        "dueAt": "2026-07-23T18:00:00+08:00",
+        "remindAt": "2026-07-23T09:00:00+08:00",
+        "remindedAt": null,
+        "completedAt": null,
+        "progress": 40,
+        "nextAction": "按金额和成交概率安排优先跟进顺序",
+        "outputCondition": "输出五星客户优先跟进清单",
+        "result": null,
+        "source": "seed"
+      },
+      {
+        "id": "T-0003",
+        "title": "确认访问权限",
+        "status": "进行中",
+        "priority": "P0",
+        "workstream": "看板交付与访问",
+        "owner": "Sera / Simon",
+        "createdAt": "2026-07-21T09:00:00+08:00",
+        "dueAt": "2026-07-23T18:00:00+08:00",
+        "remindAt": "2026-07-23T10:00:00+08:00",
+        "remindedAt": null,
+        "completedAt": null,
+        "progress": 30,
+        "nextAction": "与 Simon 确认 Cloudflare Access 验证方式",
+        "outputCondition": "Simon 确认访问方式，Sera 提供 Cloudflare 账号",
+        "result": null,
+        "source": "seed"
+      },
+      {
+        "id": "T-0004",
+        "title": "配合首单测试",
+        "status": "待启动",
+        "priority": "P0",
+        "workstream": "注册 / KYC / 首单推进",
+        "owner": "Sera / 静格",
+        "createdAt": "2026-07-21T09:00:00+08:00",
+        "dueAt": "2026-07-25T18:00:00+08:00",
+        "remindAt": "2026-07-24T09:00:00+08:00",
+        "remindedAt": null,
+        "completedAt": null,
+        "progress": 0,
+        "nextAction": "配合静格完成周四/周五首单测试",
+        "outputCondition": "首单 COBO/POBO 流程跑通并记录结果",
+        "result": null,
+        "source": "seed"
+      },
+      {
+        "id": "T-0005",
+        "title": "获取大数据名单",
+        "status": "阻塞",
+        "priority": "P1",
+        "workstream": "渠道拓展",
+        "owner": "Sera / Simon",
+        "createdAt": "2026-07-21T09:00:00+08:00",
+        "dueAt": "2026-07-26T18:00:00+08:00",
+        "remindAt": "2026-07-24T09:00:00+08:00",
+        "remindedAt": null,
+        "completedAt": null,
+        "progress": 0,
+        "nextAction": "请 Simon 协助调取名单并确认筛选条件",
+        "outputCondition": "拿到名单并完成筛选条件确认",
+        "result": null,
+        "source": "seed"
+      }
+    ]
+  }
 };
 // __FALLBACK_SYNC_END__
 
@@ -707,7 +803,7 @@ const DEP_LABELS = [
 const state = {
   kpi: [], gantt: [], roadmap: [], pipeline: [],
   todo: [], milestones: [], weeklyLog: null, blockers: null,
-  resources: []
+  resources: [], tasks: null
 };
 const filterState = { query: '' };
 
@@ -1140,7 +1236,7 @@ function renderKpi(list) {
   });
 }
 
-/* ---------- 03 资料访问中心（resources.json 驱动 · 文件存在性检测） ---------- */
+/* ---------- 04 资料访问中心（resources.json 驱动 · 文件存在性检测） ---------- */
 /* 资料卡状态 → badge 样式映射 */
 const RES_STATUS_CLS = { '已整理': 'done', '待提交': 'doing', '待同步': 'next', '待完善': 'next' };
 
@@ -1196,7 +1292,127 @@ function renderResources(list) {
   });
 }
 
-/* ---------- 04 时间推进图（6 条主线 · 点击展开子任务 · 悬浮详情） ---------- */
+/* ---------- 03 任务倒计时（tasks.json 驱动 · 秒级实时刷新） ---------- */
+/* 七态 → badge 样式映射（warn=黄 / late=橙 / blocked=红 / doing=蓝 / next=灰 / done=绿） */
+const CD_STATUS_BADGE = {
+  '待启动': 'next', '进行中': 'doing', '待输出': 'warn', '已提醒': 'warn',
+  '已完成': 'done', '已延期': 'late', '阻塞': 'blocked'
+};
+const CD_DAY_MS = 24 * 3600 * 1000;
+
+/* 剩余毫秒 → 倒计时文案（如 "1天 04:12:33" / "04:12:33"） */
+function cdFmtDuration(ms) {
+  const totalSec = Math.floor(Math.abs(ms) / 1000);
+  const d = Math.floor(totalSec / 86400);
+  const h = String(Math.floor((totalSec % 86400) / 3600)).padStart(2, '0');
+  const m = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0');
+  const s = String(totalSec % 60).padStart(2, '0');
+  return (d > 0 ? d + '天 ' : '') + h + ':' + m + ':' + s;
+}
+
+/* 任务紧迫度：done=完成绿 / overdue=逾期红 / soon=24h 内黄 / normal=常规 */
+function cdUrgency(task, nowMs) {
+  if (task.status === '已完成') return 'done';
+  const due = Date.parse(task.dueAt);
+  if (Number.isNaN(due)) return 'normal';
+  if (due < nowMs) return 'overdue';
+  if (due - nowMs <= CD_DAY_MS) return 'soon';
+  return 'normal';
+}
+
+function cdTimerText(task, nowMs) {
+  if (task.status === '已完成') return '已完成';
+  const due = Date.parse(task.dueAt);
+  if (Number.isNaN(due)) return '—';
+  return due < nowMs ? '已逾期 ' + cdFmtDuration(nowMs - due) : '距截止 ' + cdFmtDuration(due - nowMs);
+}
+
+/* 秒级滴答：只更新计时文案与卡片紧迫度 class，不重建 DOM */
+function tickCountdown() {
+  const nowMs = Date.now();
+  document.querySelectorAll('#cdGrid .cd-timer').forEach((timer) => {
+    const card = timer.closest('.cd-card');
+    const status = card ? card.dataset.status : '';
+    const dueMs = Date.parse(timer.dataset.cdDue || '');
+    if (status === '已完成') return;
+    const fakeTask = { status, dueAt: timer.dataset.cdDue };
+    timer.textContent = cdTimerText(fakeTask, nowMs);
+    if (card && !Number.isNaN(dueMs)) {
+      const urgency = cdUrgency(fakeTask, nowMs);
+      card.classList.toggle('cd-soon', urgency === 'soon');
+      card.classList.toggle('cd-overdue', urgency === 'overdue');
+    }
+  });
+}
+
+function renderCountdown(tasksData) {
+  const grid = document.getElementById('cdGrid');
+  grid.innerHTML = '';
+  const list = (tasksData && Array.isArray(tasksData.tasks)) ? tasksData.tasks.slice() : [];
+  if (!list.length) {
+    grid.appendChild(el('div', 'cd-empty', '暂无任务 · 可通过终端 npm run task 新增'));
+    return;
+  }
+  // 未完成按截止升序在前，已完成按完成时间降序在后
+  const rank = (t) => (t.status === '已完成' ? 1 : 0);
+  list.sort((a, b) => rank(a) - rank(b)
+    || (a.status === '已完成' ? Date.parse(b.completedAt || 0) - Date.parse(a.completedAt || 0)
+      : Date.parse(a.dueAt) - Date.parse(b.dueAt)));
+
+  const nowMs = Date.now();
+  list.forEach((t) => {
+    const urgency = cdUrgency(t, nowMs);
+    const card = el('article', 'cd-card'
+      + (urgency === 'soon' ? ' cd-soon' : '')
+      + (urgency === 'overdue' ? ' cd-overdue' : '')
+      + (urgency === 'done' ? ' cd-done' : ''));
+    card.dataset.status = t.status;
+
+    const head = el('div', 'cd-head');
+    head.appendChild(el('span', 'cd-id', t.id));
+    head.appendChild(el('span', 'badge badge-' + (t.priority === 'P0' ? 'p0' : 'p1'), t.priority));
+    head.appendChild(el('span', 'badge badge-' + (CD_STATUS_BADGE[t.status] || 'next'), t.status));
+    card.appendChild(head);
+
+    card.appendChild(el('h3', 'cd-title', t.title));
+
+    const timer = el('div', 'cd-timer', cdTimerText(t, nowMs));
+    timer.dataset.cdDue = t.dueAt || '';
+    card.appendChild(timer);
+
+    const bar = el('div', 'cd-progress');
+    const fill = el('span');
+    fill.style.width = Math.max(0, Math.min(100, t.progress || 0)) + '%';
+    bar.appendChild(fill);
+    card.appendChild(bar);
+
+    const meta = el('div', 'cd-meta');
+    meta.appendChild(el('span', null, '截止 ' + (t.dueAt || '').slice(0, 16).replace('T', ' ')));
+    meta.appendChild(el('span', null, '提醒 ' + (t.remindAt || '').slice(0, 16).replace('T', ' ')));
+    if (t.workstream) meta.appendChild(el('span', null, t.workstream));
+    meta.appendChild(el('span', null, t.owner));
+    card.appendChild(meta);
+
+    card.appendChild(el('div', 'cd-next', '下一步：' + (t.nextAction || '—')));
+
+    const out = el('div', 'cd-out');
+    out.appendChild(el('span', 'cd-out-label', '输出条件：' + (t.outputCondition || '—')));
+    if (t.status === '待输出') out.appendChild(el('span', 'cd-out-badge', '已具备结果输出条件'));
+    card.appendChild(out);
+
+    if (t.status === '已完成' && t.result) {
+      card.appendChild(el('div', 'cd-result', '结果：' + t.result));
+    }
+
+    grid.appendChild(card);
+  });
+
+  // 秒级实时刷新（防止重复挂定时器）
+  if (state.cdTimer) clearInterval(state.cdTimer);
+  state.cdTimer = setInterval(tickCountdown, 1000);
+}
+
+/* ---------- 05 时间推进图（6 条主线 · 点击展开子任务 · 悬浮详情） ---------- */
 function ganttDayOffset(dateStr) {
   const base = new Date(GANTT_START + 'T00:00:00');
   const d = new Date(dateStr + 'T00:00:00');
@@ -1339,7 +1555,7 @@ function renderGantt(list) {
   legend.appendChild(el('span', 'legend-hint', '点击左侧主线名可展开 / 折叠子任务'));
 }
 
-/* ---------- 05 依赖关系图（SVG 贝塞尔曲线 + 玻璃节点） ---------- */
+/* ---------- 06 依赖关系图（SVG 贝塞尔曲线 + 玻璃节点） ---------- */
 function renderDepMap() {
   const canvas = document.getElementById('depCanvas');
   canvas.innerHTML = '';
@@ -1440,7 +1656,7 @@ function renderDepMap() {
   });
 }
 
-/* ---------- 06 主线任务进度（roadmap.json 5 条主线卡） ---------- */
+/* ---------- 07 主线任务进度（roadmap.json 5 条主线卡） ---------- */
 function renderWorkstreams(list) {
   const grid = document.getElementById('wsGrid');
   grid.innerHTML = '';
@@ -1496,7 +1712,7 @@ function renderWorkstreams(list) {
   });
 }
 
-/* ---------- 07 工作 Pipeline（折叠分组看板） ---------- */
+/* ---------- 08 工作 Pipeline（折叠分组看板） ---------- */
 /* 分组定义：本周重点（P0 合集）+ 四状态分组，defaultOpen 控制默认展开 */
 const PIPE_GROUPS = [
   { key: 'focus',   name: '本周重点 · P0', dot: 'next',    defaultOpen: true,
@@ -1633,7 +1849,7 @@ function applyFilters() {
   }
 }
 
-/* ---------- 08 本周待办（P0 高亮 / 过期标红 / 搜索过滤） ---------- */
+/* ---------- 09 本周待办（P0 高亮 / 过期标红 / 搜索过滤） ---------- */
 function renderTodo(list) {
   const tbody = document.getElementById('todoTableBody');
   tbody.innerHTML = '';
@@ -1664,7 +1880,7 @@ function renderTodo(list) {
   });
 }
 
-/* ---------- 09 阻塞事项与需要协助（blockers.json 双栏驱动） ---------- */
+/* ---------- 10 阻塞事项与需要协助（blockers.json 双栏驱动） ---------- */
 function renderBlocked() {
   const current = (state.blockers && state.blockers.current) || [];
   const asks = (state.blockers && state.blockers.asks) || [];
@@ -1692,7 +1908,7 @@ function renderBlocked() {
   });
 }
 
-/* ---------- 10 周更记录（轻量版：done bullets + cadence / 最近更新） ---------- */
+/* ---------- 11 周更记录（轻量版：done bullets + cadence / 最近更新） ---------- */
 function renderWeekly(log) {
   const list = document.getElementById('weeklyDone');
   list.innerHTML = '';
@@ -1804,9 +2020,9 @@ function bindEvents() {
   document.getElementById('btnExport').addEventListener('click', exportPipeline);
 }
 
-/* ---------- 启动：加载 9 个 JSON，任一失败自动用 FALLBACK ---------- */
+/* ---------- 启动：加载 10 个 JSON，任一失败自动用 FALLBACK ---------- */
 async function init() {
-  const [kpi, gantt, roadmap, pipeline, todo, milestones, weeklyLog, blockers, resources] = await Promise.all([
+  const [kpi, gantt, roadmap, pipeline, todo, milestones, weeklyLog, blockers, resources, tasks] = await Promise.all([
     loadJson('data/kpi.json', FALLBACK.kpi),
     loadJson('data/gantt.json', FALLBACK.gantt),
     loadJson('data/roadmap.json', FALLBACK.roadmap),
@@ -1815,7 +2031,8 @@ async function init() {
     loadJson('data/milestones.json', FALLBACK.milestones),
     loadJson('data/weekly-log.json', FALLBACK.weeklyLog),
     loadJson('data/blockers.json', FALLBACK.blockers),
-    loadJson('data/resources.json', FALLBACK.resources)
+    loadJson('data/resources.json', FALLBACK.resources),
+    loadJson('data/tasks.json', FALLBACK.tasks)
   ]);
   state.kpi = kpi;
   state.gantt = gantt;
@@ -1826,9 +2043,11 @@ async function init() {
   state.weeklyLog = weeklyLog;
   state.blockers = blockers;
   state.resources = resources;
+  state.tasks = tasks;
 
   renderSummary();
   renderKpi(state.kpi);
+  renderCountdown(state.tasks);
   renderResources(state.resources);
   renderGantt(state.gantt);
   renderDepMap();

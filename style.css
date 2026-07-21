@@ -459,6 +459,8 @@ button { font-family: inherit; cursor: pointer; }
 .badge-blocked { color: var(--danger); background: var(--danger-dim); border-color: rgba(255,77,109,.4); }
 .badge-p0      { color: #111111; background: var(--accent-yellow); border-color: var(--accent-yellow); }
 .badge-p1      { color: var(--text-muted); background: var(--gray-dim); border-color: var(--border); }
+.badge-warn    { color: var(--yellow-text); background: var(--yellow-dim); border-color: var(--yellow-border); }
+.badge-late    { color: var(--warning); background: var(--note-bg); border-color: var(--note-border); }
 
 /* 状态点：呼吸动画（克制） */
 .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; flex: 0 0 auto; }
@@ -860,6 +862,67 @@ button { font-family: inherit; cursor: pointer; }
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* ---------- 03 任务倒计时卡（秒级刷新 · 黄=24h 内 / 红=逾期 / 绿=完成） ---------- */
+.cd-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.cd-card {
+  background: var(--bg-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--card-shadow);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: transform .2s ease, box-shadow .2s ease, border-color .3s;
+}
+.cd-card:hover { transform: translateY(-3px); box-shadow: var(--card-shadow-hover); border-color: var(--hover-border); }
+.cd-card.cd-soon    { border-color: var(--yellow-border); box-shadow: 0 0 0 1px var(--yellow-border), var(--card-shadow); }
+.cd-card.cd-overdue { border-color: var(--danger); box-shadow: 0 0 0 1px var(--danger), var(--card-shadow); }
+.cd-card.cd-done    { border-color: rgba(16,185,129,.4); }
+
+.cd-head { display: flex; align-items: center; gap: 6px; }
+.cd-id { font-size: 11px; font-weight: 800; color: var(--text-muted); letter-spacing: .4px; margin-right: auto; }
+.cd-title { font-size: 13.5px; font-weight: 700; line-height: 1.35; }
+
+.cd-timer {
+  font-size: 22px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .3px;
+  color: var(--text-main);
+}
+.cd-soon .cd-timer    { color: var(--yellow-text); }
+.cd-overdue .cd-timer { color: var(--danger); }
+.cd-done .cd-timer    { color: var(--success); }
+
+.cd-progress { height: 5px; border-radius: 999px; background: var(--track-bg); overflow: hidden; }
+.cd-progress span { display: block; height: 100%; border-radius: 999px; background: var(--accent-blue); transition: width .4s ease; }
+.cd-done .cd-progress span { background: var(--success); }
+
+.cd-meta { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11px; color: var(--text-muted); }
+.cd-next { font-size: 12px; color: var(--text-main); line-height: 1.5; }
+.cd-out { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; font-size: 11.5px; color: var(--text-muted); line-height: 1.5; }
+.cd-out-badge {
+  flex: 0 0 auto;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--yellow-text);
+  background: var(--yellow-dim);
+  border: 1px solid var(--yellow-border);
+  border-radius: 999px;
+  padding: 1px 8px;
+  white-space: nowrap;
+}
+.cd-result { font-size: 11.5px; color: var(--success); line-height: 1.5; }
+.cd-empty { grid-column: 1 / -1; padding: 20px; text-align: center; font-size: 12.5px; color: var(--text-muted); }
+
 .res-type {
   flex: 0 0 auto;
   font-size: 10px;
@@ -1748,6 +1811,7 @@ button { font-family: inherit; cursor: pointer; }
   .sum-grid { grid-template-columns: repeat(2, 1fr); }
   .pg-body { grid-template-columns: repeat(2, 1fr); }
   .res-grid { grid-template-columns: repeat(2, 1fr); }
+  .cd-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 /* 移动端：侧栏折叠为汉堡抽屉 */
@@ -1779,6 +1843,7 @@ button { font-family: inherit; cursor: pointer; }
   .sum-grid { grid-template-columns: 1fr; }
   .pg-body { grid-template-columns: 1fr; }
   .res-grid { grid-template-columns: 1fr; }
+  .cd-grid { grid-template-columns: 1fr; }
   .subtitle { white-space: normal; }
 }
 
