@@ -51,6 +51,15 @@ function auditCount() {
 function blockers() {
   return JSON.parse(fs.readFileSync(path.join(tmp, 'blockers.json'), 'utf8')).current;
 }
+function todo() {
+  return JSON.parse(fs.readFileSync(path.join(tmp, 'todo.json'), 'utf8'));
+}
+function pipeline() {
+  return JSON.parse(fs.readFileSync(path.join(tmp, 'pipeline.json'), 'utf8'));
+}
+function weeklyLog() {
+  return JSON.parse(fs.readFileSync(path.join(tmp, 'weekly-log.json'), 'utf8'));
+}
 
 const baseAudit = auditCount();
 
@@ -60,6 +69,8 @@ check('add: 结构化新增成功', r.code === 0 && /T-\d{4}/.test(r.out), r.out
 const added = tasks().find((t) => t.title === '输出 7 月 CRIB 复盘');
 check('add: 字段完整（dueAt/remindAt/nextAction/outputCondition）',
   !!added && added.dueAt.startsWith('2026-07-31T18:00') && added.remindAt.startsWith('2026-07-30T09:00') && added.nextAction === '汇总 pipeline 产出' && added.outputCondition === 'CRIB 复盘归档 docs/');
+check('sync: 新增后 todo.json 已投影（待启动→Next）', todo().some((t) => t.task === '输出 7 月 CRIB 复盘' && t.status === 'Next' && t.due === '2026-07-31'));
+check('sync: 新增后 pipeline.json 已生成镜像卡片', pipeline().some((p) => p.mirrorOf === added.id && p.module === '输出 7 月 CRIB 复盘' && p.status === 'Next'));
 
 // 2. 自然语言新增
 r = run(['新增任务 确认设计排期 截止 7月28日 P0 主线 设计交付包']);
@@ -85,15 +96,20 @@ r = run(['done', 'T-0001', '--result', '交付包已提交设计团队', '--foll
 check('done: 完成成功', r.code === 0 && task('T-0001').status === '已完成' && task('T-0001').completedAt !== null, r.out);
 check('done: 结果已记录', task('T-0001').result === '交付包已提交设计团队');
 check('done: 后续任务已创建', tasks().some((t) => t.title === '确认设计团队排期' && t.dueAt.startsWith('2026-07-28')));
+check('sync: 完成后 todo.json 置 Done', todo().some((t) => t.task === '提交设计交付包' && t.status === 'Done'));
+check('sync: 完成后 weekly-log 追加结果', weeklyLog().done.some((d) => d === '完成「提交设计交付包」：交付包已提交设计团队'));
+const weeklyLenAfterDone = weeklyLog().done.length;
 
 // 6. 延期
 r = run(['postpone', 'T-0003', '--to', '2026-07-28 18:00', '--reason', '等待确认']);
 check('postpone: 已延期且截止时间更新', r.code === 0 && task('T-0003').status === '已延期' && task('T-0003').dueAt.startsWith('2026-07-28'), r.out);
+check('sync: 延期后 todo.json 截止日已更新', todo().some((t) => t.task === '确认访问权限' && t.due === '2026-07-28' && t.status === 'Next'));
 
 // 7. 阻塞（带任务）
 const blockersBefore = blockers().length;
 r = run(['block', 'T-0005', '大数据名单待确认']);
 check('block: 任务标记阻塞并写入 blockers.json', r.code === 0 && task('T-0005').status === '阻塞' && blockers().includes('大数据名单待确认') && blockers().length === blockersBefore + 1, r.out);
+check('sync: 阻塞后 todo.json 置 Blocked', todo().some((t) => t.task === '获取大数据名单' && t.status === 'Blocked'));
 
 // 8. 纯文本阻塞
 r = run(['block', '设计团队排期待确认']);
@@ -111,6 +127,7 @@ check('pending-output: 正常输出', r.code === 0 && /待输出|本周/.test(r.
 const delTarget = tasks().find((t) => t.title === '确认设计排期');
 r = run(['delete', delTarget.id], `${delTarget.id}\n`);
 check('delete: 二次确认后删除成功', r.code === 0 && !tasks().some((t) => t.id === delTarget.id), r.out);
+check('sync: 删除后 todo.json 与 pipeline 镜像同步移除', !todo().some((t) => t.task === '确认设计排期') && !pipeline().some((p) => p.mirrorOf === delTarget.id));
 check('delete: 审计含删除快照', JSON.parse(fs.readFileSync(path.join(tmp, 'audit-log.json'), 'utf8')).entries.some((e) => e.action === 'delete' && e.taskId === delTarget.id && e.detail.includes('快照')));
 
 // 12. 删除（输入错误 ID，应取消）
@@ -128,6 +145,13 @@ check('validate: 全部操作后 schema 仍合法', r.status === 0 && /VALIDATE:
 
 // 15. 审计日志随操作增长
 check('audit: 每个写操作均有审计记录', auditCount() >= baseAudit + 10, `before=${baseAudit} after=${auditCount()}`);
+
+// 15b. 展示层幂等：后续多次写操作后 weekly-log 不重复追加同一完成项
+check('sync: weekly-log 完成项按标题去重（幂等）', weeklyLog().done.length === weeklyLenAfterDone, `after=${weeklyLenAfterDone} now=${weeklyLog().done.length}`);
+// 15c. 策展条目不受镜像影响（人工维护的 pipeline 卡片保持原样）
+check('sync: 人工策展的 pipeline 条目未被改动',
+  pipeline().some((p) => p.module === '设计交付包' && p.pipGoal === '客户支持资料及跟进机制建设' && !p.mirrorOf) &&
+  pipeline().filter((p) => p.mirrorOf).every((p) => tasks().some((t) => t.id === p.mirrorOf)));
 
 // 16-22. Scheduler 企微提醒（webhook 桩在本进程内，须用异步 spawn 避免事件循环死锁）
 (async () => {

@@ -15,6 +15,7 @@
 'use strict';
 
 const { STATUS_TRANSITIONS } = require('../agent/schema');
+const { syncPresentation } = require('../agent/presenter');
 const { loadTasks, saveTasks, appendAudit, nowIso, syncFallbackQuiet } = require('../agent/data-writer');
 const { findDueReminders, buildMessage, remainText } = require('./reminder-rules');
 const { loadWebhookUrl, buildPayload, postWebhook } = require('./wecom-notifier');
@@ -99,6 +100,7 @@ async function main() {
     for (const t of due) {
       appendAudit('scheduler', 'remind', t.id, `企微提醒已推送：「${t.title}」（${t.remindedAt}），状态置为已提醒`);
     }
+    syncPresentation(data);
     syncFallbackQuiet();
     console.log(`✅ 已推送 ${due.length} 项提醒并标记 remindedAt：`);
     console.log(listDue(due));

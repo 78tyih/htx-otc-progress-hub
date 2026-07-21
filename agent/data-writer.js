@@ -105,6 +105,8 @@ module.exports = {
   DATA_DIR,
   nowIso,
   todayStr,
+  readJson,
+  writeJsonAtomic,
   loadTasks,
   saveTasks,
   appendAudit,

@@ -5,6 +5,7 @@
 'use strict';
 
 const { STATUS_TRANSITIONS, TASK_STATUSES } = require('./schema');
+const { syncPresentation } = require('./presenter');
 const {
   loadTasks,
   saveTasks,
@@ -39,10 +40,11 @@ function fmtLine(t) {
   return `${t.id}  [${t.priority}] ${t.title} ｜ ${t.status} ｜ 进度 ${t.progress}% ｜ 截止 ${due} ｜ 下一步：${t.nextAction}`;
 }
 
-/** 任务变更统一收尾：保存 → 审计 → FALLBACK 同步 */
+/** 任务变更统一收尾：保存 → 审计 → 展示层投影 → FALLBACK 同步 */
 function finalize(data, actor, action, taskId, detail) {
   saveTasks(data);
   appendAudit(actor, action, taskId, detail);
+  syncPresentation(data);
   syncFallbackQuiet();
 }
 
