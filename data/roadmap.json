@@ -1,56 +1,62 @@
 [
   {
     "id": "WS01",
-    "name": "设计交付线",
-    "goal": "向设计团队提交 OTC USD 大宗交易资料包",
-    "progress": 90,
+    "name": "业务资料建设",
+    "goal": "业务手册/FAQ、BD 计划文档、设计交付包",
+    "progress": 75,
     "status": "Doing",
     "owner": "Sera",
-    "target": "完成设计交付包并确认排期"
+    "subDone": 9,
+    "subTotal": 12,
+    "next": "提交设计团队并确认排期",
+    "risk": "设计团队排期未定，可能影响物料产出时间"
   },
   {
     "id": "WS02",
-    "name": "CRM客户线",
-    "goal": "完成TG存量客户资料汇总与分级",
+    "name": "客户 Pipeline 建档",
+    "goal": "TG 存量客户汇总分级与五星客户筛选",
     "progress": 80,
     "status": "Doing",
     "owner": "Sera",
-    "target": "筛选五星重点客户"
+    "subDone": 3,
+    "subTotal": 5,
+    "next": "筛选五星重点客户",
+    "risk": "部分客户 KYC 状态待确认"
   },
   {
     "id": "WS03",
-    "name": "客户转化线",
-    "goal": "推动客户完成注册、KYC及首单",
+    "name": "客户转化推进",
+    "goal": "注册/KYC/首单（个人≥19、机构≥6、收入≥26,000 USDT）",
     "progress": 15,
     "status": "Next",
     "owner": "Sera",
-    "target": "个人注册≥19，机构注册≥6"
+    "subDone": 0,
+    "subTotal": 5,
+    "next": "确认首批唤醒客户名单",
+    "risk": "依赖五星名单与首单测试结果"
   },
   {
     "id": "WS04",
-    "name": "交易测试线",
-    "goal": "完成第一笔交易测试并沉淀SOP",
-    "progress": 20,
-    "status": "Next",
-    "owner": "Sera / 静格",
-    "target": "周四/周五完成首单测试"
+    "name": "渠道拓展",
+    "goal": "大数据名单、销售转介、Partner/KOL",
+    "progress": 10,
+    "status": "Blocked",
+    "owner": "Sera",
+    "subDone": 0,
+    "subTotal": 3,
+    "next": "请 Simon 协助调取大数据名单",
+    "risk": "大数据名单与销售名单未到位"
   },
   {
     "id": "WS05",
-    "name": "渠道拓展线",
-    "goal": "推进大数据、销售转介、Partner/KOL获客",
-    "progress": 10,
-    "status": "Next",
-    "owner": "Sera / Simon / Oscar",
-    "target": "销售对接≥6，Partner≥7，KOL≥10"
-  },
-  {
-    "id": "WS06",
-    "name": "私密看板线",
-    "goal": "交付仅 Simon 可访问的私密进度看板",
-    "progress": 65,
+    "name": "周报与复盘",
+    "goal": "每周更新看板，月底 CRIB 复盘",
+    "progress": 20,
     "status": "Doing",
-    "owner": "Sera / Kimi",
-    "target": "完成私密部署与访问控制"
+    "owner": "Sera",
+    "subDone": 1,
+    "subTotal": 4,
+    "next": "本周五完成首次周更",
+    "risk": "无"
   }
 ]

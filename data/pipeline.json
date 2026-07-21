@@ -7,7 +7,9 @@
     "next": "明天提交设计团队，确认排期",
     "owner": "Sera",
     "priority": "P0",
-    "status": "Done"
+    "status": "Done",
+    "workstream": "设计交付包",
+    "due": "2026-07-22"
   },
   {
     "module": "TG客户资料汇总",
@@ -17,7 +19,9 @@
     "next": "筛选五星重点客户，推动注册/KYC/首单",
     "owner": "Sera",
     "priority": "P0",
-    "status": "Done"
+    "status": "Done",
+    "workstream": "客户 Pipeline 建档",
+    "due": "2026-07-21"
   },
   {
     "module": "高价值客户筛选",
@@ -27,7 +31,9 @@
     "next": "按金额和成交概率安排优先跟进",
     "owner": "Sera",
     "priority": "P0",
-    "status": "Doing"
+    "status": "Doing",
+    "workstream": "注册 / KYC / 首单推进",
+    "due": "2026-07-25"
   },
   {
     "module": "注册/KYC推进",
@@ -37,7 +43,9 @@
     "next": "逐个确认UID、注册状态、KYC状态",
     "owner": "Sera",
     "priority": "P0",
-    "status": "Next"
+    "status": "Next",
+    "workstream": "注册 / KYC / 首单推进",
+    "due": "2026-08-08"
   },
   {
     "module": "首单交易测试",
@@ -47,7 +55,9 @@
     "next": "配合静格完成周四/周五首单测试",
     "owner": "Sera / 静格",
     "priority": "P0",
-    "status": "Next"
+    "status": "Next",
+    "workstream": "注册 / KYC / 首单推进",
+    "due": "2026-07-25"
   },
   {
     "module": "大数据客户名单",
@@ -57,7 +67,9 @@
     "next": "请 Simon 协助调取名单",
     "owner": "Sera / Simon",
     "priority": "P1",
-    "status": "Blocked"
+    "status": "Blocked",
+    "workstream": "渠道拓展",
+    "due": "2026-07-26"
   },
   {
     "module": "集团销售转介",
@@ -67,7 +79,9 @@
     "next": "联系Oscar/销售团队获取高价值名单",
     "owner": "Sera / Oscar",
     "priority": "P1",
-    "status": "Next"
+    "status": "Next",
+    "workstream": "渠道拓展",
+    "due": "2026-08-01"
   },
   {
     "module": "Partner/KOL拓展",
@@ -77,7 +91,9 @@
     "next": "制作合作介绍物料并开始触达",
     "owner": "Sera",
     "priority": "P1",
-    "status": "Next"
+    "status": "Next",
+    "workstream": "渠道拓展",
+    "due": "2026-08-05"
   },
   {
     "module": "周报与CRIB复盘",
@@ -87,6 +103,8 @@
     "next": "每周更新进度，月底输出CRIB复盘",
     "owner": "Sera",
     "priority": "P1",
-    "status": "Next"
+    "status": "Next",
+    "workstream": "周报 / CRIB 复盘",
+    "due": "2026-07-25"
   }
 ]

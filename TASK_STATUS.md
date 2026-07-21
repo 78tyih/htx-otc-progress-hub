@@ -148,4 +148,34 @@
 
 ---
 
+---
+
+## v0.5（2026-07-21）「做减法」结构收敛 — 阶段日志
+
+### 22. 结构收敛开发 [Done]
+
+- [Done] 页面收敛为「左侧目录导航 + 右侧 9 模块」两栏布局（scroll-spy 高亮、≤900px 汉堡抽屉）；删除日间主题与 Day/Night 切换，固定 `<html data-theme="dark">` 暗色单主题；甘特重构为 6 条主线可折叠（子任务默认折叠、W1–W6 周列、统一行高）；Pipeline 改 5 分组折叠看板（本周重点/进行中/阻塞默认展开，待开始/已完成默认折叠，卡片收敛为 任务名/所属主线/优先级/截止/下一步，搜索时强制展开）；主线任务进度 5 条线（subDone/subTotal/risk）；新增 09 周更记录模块（`data/weekly-log.json`）；依赖图支线 B 补「访问权限控制」节点（页面内容收敛→访问权限控制→Simon访问→每周更新）；删除 CRM 漏斗 / Live Task Progress / 任务树独立区块 / 里程碑独立区块 / Hero 拓扑区 / 私密部署宣传内容 / Kimi 任务内容；加载数据源 9→7（design-delivery / crm-summary / task-progress / task-tree 弃用，保留磁盘不加载）。详见 `本轮结构调整说明.md`。
+- [Files] `index.html`、`style.css`、`app.js`、`data/weekly-log.json`（新增）、`data/gantt.json`、`data/roadmap.json`、`data/pipeline.json`、`本轮结构调整说明.md`（新建）。
+- [Next] QA 独立终验。
+
+### 23. sync_fallback.py 更新为 7 数据集 [Done]
+
+- [Done] `.dev-scripts/sync_fallback.py` 从旧 9 数据集（含 design-delivery/crm-summary/task-progress/task-tree）改为 7 数据集（kpi/gantt/roadmap/pipeline/todo/milestones/weeklyLog ↔ 对应 JSON）；新增 `--check` 校验模式（只比对不写文件），ROOT 改为按脚本位置推导。运行校验模式一次：7 项 OK、`VERIFY: PASS`。
+- [Files] `.dev-scripts/sync_fallback.py`。
+- [Next] 并入 QA 终验项 2 复核。
+
+### 24. QA 独立终验 [Done（零修复）]
+
+- [Done] QA 按 12 项清单独立复核，全部 PASS、未发现 bug、未改动页面代码：① 临时 http.server（8123 端口，避开用户 8080 预览进程）15 项资源（index/css/js/7 JSON/4 品牌 SVG）全 200，用后 kill 并补杀残留子进程，确认 8123 完全释放、8080 未触碰；② 7 个 JSON `json.load` 合法，FALLBACK 块按同步脚本同路径再序列化后与 7 个 JSON 逐字一致；③ `node --check app.js` 通过；④ 全仓库（排除 .git）`思源|siyuan` 0 命中，data/ 与 index/css/js 中无 Kimi（owner 仅 Sera/Simon/静格/Oscar，Kimi 仅残留于文档区同事名说明）；⑤ 无 light 主题 CSS / 切换按钮 / localStorage theme 残留，`data-theme="dark"` 在 `<html>` 上；⑥ 左侧目录 9 项与右侧 9 模块锚点一一对应，scroll-spy 逻辑存在且实测滚动至 09 时高亮 `#sec-weekly`；⑦ 甘特仅 6 条主线、子任务默认折叠（实测初始可见子任务区为 0）、点击展开/折叠实测正常、W1–W6 周列齐全；⑧ Pipeline 默认态实测 [开,开,开,关,关]，卡片字段符合收敛口径（另保留状态 badge 作分组内提示），搜索时强制展开、清空后恢复用户折叠态（实测通过）；⑨ 依赖图含「访问权限控制」节点且目标链路连通；⑩ 周更记录模块节奏标注/本周更新时间/本周重点动作齐全；⑪ 敏感信息扫描（真实客户姓名/UID/TG/银行/邮箱/电话，含点文件与 SVG 共 34 个文本文件）0 命中；⑫ 无头浏览器（agent-browser + Chrome）实测 1280 与 390 视口 `scrollWidth == innerWidth` 无横向溢出，移动端抽屉开合正常，console 零报错。
+- [Files] 全站（只读验证，未改动）；本日志、`docs/CHANGELOG.md`、`README.md`、`本轮结构调整说明.md` 由 QA 同步更新。
+- [Next] git 提交本轮全部变更。
+
+### 25. Git 提交 [进行中]
+
+- [进行中] 待提交：v0.5 结构收敛全部变更 + 四份文档（结构调整说明 / README / 本日志 / CHANGELOG）+ 7 数据集版 `sync_fallback.py`。
+- [Files] 见上各阶段。
+- [Next] 提交后进入 Cloudflare 私密部署（阶段 15，对应依赖图「访问权限控制」节点）。
+
+---
+
 > 状态图例：`[Done]` 已完成 / `[进行中]` 正在处理 / `[待执行]` 未开始。

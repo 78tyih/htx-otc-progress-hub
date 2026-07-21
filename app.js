@@ -1,8 +1,7 @@
 /* ============================================================
-   HTX OTC BD Progress Hub — app.js
+   HTX OTC BD 绩效看板 — app.js
    纯原生 JS：fetch 加载 data/*.json，失败自动回退内置 FALLBACK
-   双主题（日间/夜间，默认日间，localStorage 记忆）
-   收敛版：10 区块 · 9 个数据源 · 动态 KPI 组件 · 克制动效
+   固定暗色主题 · 左侧目录 scroll-spy · 9 大模块 · 7 个数据源
    ============================================================ */
 'use strict';
 
@@ -105,6 +104,268 @@ const FALLBACK = {
       ]
     }
   ],
+  "gantt": [
+    {
+      "id": "L1",
+      "name": "业务手册 / FAQ",
+      "owner": "Sera",
+      "status": "Doing",
+      "progress": 70,
+      "start": "2026-07-21",
+      "end": "2026-07-29",
+      "next": "补充 FAQ 话术与禁用词审校",
+      "children": [
+        {
+          "task": "客户手册框架与内容",
+          "start": "2026-07-21",
+          "end": "2026-07-23",
+          "status": "Doing",
+          "progress": 70
+        },
+        {
+          "task": "FAQ 与客户话术",
+          "start": "2026-07-23",
+          "end": "2026-07-25",
+          "status": "Next",
+          "progress": 0
+        },
+        {
+          "task": "禁用词与合规审校",
+          "start": "2026-07-25",
+          "end": "2026-07-29",
+          "status": "Next",
+          "progress": 0
+        }
+      ]
+    },
+    {
+      "id": "L2",
+      "name": "BD 计划文档",
+      "owner": "Sera",
+      "status": "Doing",
+      "progress": 60,
+      "start": "2026-07-21",
+      "end": "2026-07-31",
+      "next": "完善渠道拓展与目标拆解章节",
+      "children": [
+        {
+          "task": "绩效目标拆解",
+          "start": "2026-07-21",
+          "end": "2026-07-24",
+          "status": "Doing",
+          "progress": 60
+        },
+        {
+          "task": "获客路径与渠道计划",
+          "start": "2026-07-24",
+          "end": "2026-07-28",
+          "status": "Next",
+          "progress": 0
+        },
+        {
+          "task": "文档定稿与内部对齐",
+          "start": "2026-07-28",
+          "end": "2026-07-31",
+          "status": "Next",
+          "progress": 0
+        }
+      ]
+    },
+    {
+      "id": "L3",
+      "name": "设计交付包",
+      "owner": "Sera",
+      "status": "Doing",
+      "progress": 90,
+      "start": "2026-07-21",
+      "end": "2026-07-24",
+      "next": "提交设计团队并确认排期",
+      "children": [
+        {
+          "task": "资料整理（背景/流程/FAQ/禁用词/参考图）",
+          "start": "2026-07-21",
+          "end": "2026-07-22",
+          "status": "Done",
+          "progress": 100
+        },
+        {
+          "task": "提交设计团队",
+          "start": "2026-07-22",
+          "end": "2026-07-23",
+          "status": "Doing",
+          "progress": 60
+        },
+        {
+          "task": "确认排期与反馈",
+          "start": "2026-07-23",
+          "end": "2026-07-24",
+          "status": "Next",
+          "progress": 0
+        }
+      ]
+    },
+    {
+      "id": "L4",
+      "name": "客户 Pipeline 建档",
+      "owner": "Sera",
+      "status": "Doing",
+      "progress": 80,
+      "start": "2026-07-21",
+      "end": "2026-07-25",
+      "next": "输出五星重点客户名单",
+      "children": [
+        {
+          "task": "TG 客户 CRM 初版",
+          "start": "2026-07-21",
+          "end": "2026-07-21",
+          "status": "Done",
+          "progress": 100
+        },
+        {
+          "task": "五星重点客户筛选",
+          "start": "2026-07-22",
+          "end": "2026-07-25",
+          "status": "Doing",
+          "progress": 30
+        },
+        {
+          "task": "注册/KYC 推进名单",
+          "start": "2026-07-25",
+          "end": "2026-07-25",
+          "status": "Next",
+          "progress": 0
+        }
+      ]
+    },
+    {
+      "id": "L5",
+      "name": "注册 / KYC / 首单推进",
+      "owner": "Sera / 静格",
+      "status": "Next",
+      "progress": 15,
+      "start": "2026-07-25",
+      "end": "2026-08-08",
+      "next": "确认首批唤醒客户并启动注册推进",
+      "children": [
+        {
+          "task": "确认首批唤醒客户",
+          "start": "2026-07-25",
+          "end": "2026-07-26",
+          "status": "Next",
+          "progress": 0
+        },
+        {
+          "task": "推动个人/机构注册",
+          "start": "2026-07-26",
+          "end": "2026-08-04",
+          "status": "Next",
+          "progress": 0
+        },
+        {
+          "task": "跟进 KYC/KYB",
+          "start": "2026-07-28",
+          "end": "2026-08-06",
+          "status": "Next",
+          "progress": 0
+        },
+        {
+          "task": "首单交易测试（配合静格）",
+          "start": "2026-07-24",
+          "end": "2026-07-25",
+          "status": "Next",
+          "progress": 0
+        }
+      ]
+    },
+    {
+      "id": "L6",
+      "name": "周报 / CRIB 复盘",
+      "owner": "Sera",
+      "status": "Doing",
+      "progress": 20,
+      "start": "2026-07-21",
+      "end": "2026-08-31",
+      "next": "本周五完成首次周更",
+      "children": [
+        {
+          "task": "每周看板数据更新",
+          "start": "2026-07-21",
+          "end": "2026-08-31",
+          "status": "Doing",
+          "progress": 20
+        },
+        {
+          "task": "月度 CRIB 复盘",
+          "start": "2026-08-25",
+          "end": "2026-08-31",
+          "status": "Next",
+          "progress": 0
+        }
+      ]
+    }
+  ],
+  "roadmap": [
+    {
+      "id": "WS01",
+      "name": "业务资料建设",
+      "goal": "业务手册/FAQ、BD 计划文档、设计交付包",
+      "progress": 75,
+      "status": "Doing",
+      "owner": "Sera",
+      "subDone": 9,
+      "subTotal": 12,
+      "next": "提交设计团队并确认排期",
+      "risk": "设计团队排期未定，可能影响物料产出时间"
+    },
+    {
+      "id": "WS02",
+      "name": "客户 Pipeline 建档",
+      "goal": "TG 存量客户汇总分级与五星客户筛选",
+      "progress": 80,
+      "status": "Doing",
+      "owner": "Sera",
+      "subDone": 3,
+      "subTotal": 5,
+      "next": "筛选五星重点客户",
+      "risk": "部分客户 KYC 状态待确认"
+    },
+    {
+      "id": "WS03",
+      "name": "客户转化推进",
+      "goal": "注册/KYC/首单（个人≥19、机构≥6、收入≥26,000 USDT）",
+      "progress": 15,
+      "status": "Next",
+      "owner": "Sera",
+      "subDone": 0,
+      "subTotal": 5,
+      "next": "确认首批唤醒客户名单",
+      "risk": "依赖五星名单与首单测试结果"
+    },
+    {
+      "id": "WS04",
+      "name": "渠道拓展",
+      "goal": "大数据名单、销售转介、Partner/KOL",
+      "progress": 10,
+      "status": "Blocked",
+      "owner": "Sera",
+      "subDone": 0,
+      "subTotal": 3,
+      "next": "请 Simon 协助调取大数据名单",
+      "risk": "大数据名单与销售名单未到位"
+    },
+    {
+      "id": "WS05",
+      "name": "周报与复盘",
+      "goal": "每周更新看板，月底 CRIB 复盘",
+      "progress": 20,
+      "status": "Doing",
+      "owner": "Sera",
+      "subDone": 1,
+      "subTotal": 4,
+      "next": "本周五完成首次周更",
+      "risk": "无"
+    }
+  ],
   "pipeline": [
     {
       "module": "设计交付包",
@@ -114,7 +375,9 @@ const FALLBACK = {
       "next": "明天提交设计团队，确认排期",
       "owner": "Sera",
       "priority": "P0",
-      "status": "Done"
+      "status": "Done",
+      "workstream": "设计交付包",
+      "due": "2026-07-22"
     },
     {
       "module": "TG客户资料汇总",
@@ -124,7 +387,9 @@ const FALLBACK = {
       "next": "筛选五星重点客户，推动注册/KYC/首单",
       "owner": "Sera",
       "priority": "P0",
-      "status": "Done"
+      "status": "Done",
+      "workstream": "客户 Pipeline 建档",
+      "due": "2026-07-21"
     },
     {
       "module": "高价值客户筛选",
@@ -134,7 +399,9 @@ const FALLBACK = {
       "next": "按金额和成交概率安排优先跟进",
       "owner": "Sera",
       "priority": "P0",
-      "status": "Doing"
+      "status": "Doing",
+      "workstream": "注册 / KYC / 首单推进",
+      "due": "2026-07-25"
     },
     {
       "module": "注册/KYC推进",
@@ -144,7 +411,9 @@ const FALLBACK = {
       "next": "逐个确认UID、注册状态、KYC状态",
       "owner": "Sera",
       "priority": "P0",
-      "status": "Next"
+      "status": "Next",
+      "workstream": "注册 / KYC / 首单推进",
+      "due": "2026-08-08"
     },
     {
       "module": "首单交易测试",
@@ -154,7 +423,9 @@ const FALLBACK = {
       "next": "配合静格完成周四/周五首单测试",
       "owner": "Sera / 静格",
       "priority": "P0",
-      "status": "Next"
+      "status": "Next",
+      "workstream": "注册 / KYC / 首单推进",
+      "due": "2026-07-25"
     },
     {
       "module": "大数据客户名单",
@@ -164,7 +435,9 @@ const FALLBACK = {
       "next": "请 Simon 协助调取名单",
       "owner": "Sera / Simon",
       "priority": "P1",
-      "status": "Blocked"
+      "status": "Blocked",
+      "workstream": "渠道拓展",
+      "due": "2026-07-26"
     },
     {
       "module": "集团销售转介",
@@ -174,7 +447,9 @@ const FALLBACK = {
       "next": "联系Oscar/销售团队获取高价值名单",
       "owner": "Sera / Oscar",
       "priority": "P1",
-      "status": "Next"
+      "status": "Next",
+      "workstream": "渠道拓展",
+      "due": "2026-08-01"
     },
     {
       "module": "Partner/KOL拓展",
@@ -184,7 +459,9 @@ const FALLBACK = {
       "next": "制作合作介绍物料并开始触达",
       "owner": "Sera",
       "priority": "P1",
-      "status": "Next"
+      "status": "Next",
+      "workstream": "渠道拓展",
+      "due": "2026-08-05"
     },
     {
       "module": "周报与CRIB复盘",
@@ -194,398 +471,9 @@ const FALLBACK = {
       "next": "每周更新进度，月底输出CRIB复盘",
       "owner": "Sera",
       "priority": "P1",
-      "status": "Next"
-    }
-  ],
-  "crmSummary": {
-    "updatedAt": "2026-07-21",
-    "total": 42,
-    "byLevel": [
-      {
-        "level": "五星",
-        "count": 6
-      },
-      {
-        "level": "四星",
-        "count": 12
-      },
-      {
-        "level": "三星",
-        "count": 15
-      },
-      {
-        "level": "待评估",
-        "count": 9
-      }
-    ],
-    "funnel": [
-      {
-        "stage": "咨询",
-        "count": 42,
-        "next": "初筛"
-      },
-      {
-        "stage": "信息收集",
-        "count": 30,
-        "next": "补充字段"
-      },
-      {
-        "stage": "注册",
-        "count": 18,
-        "next": "推动注册"
-      },
-      {
-        "stage": "KYC/KYB",
-        "count": 10,
-        "next": "跟进审核"
-      },
-      {
-        "stage": "报价",
-        "count": 5,
-        "next": "确认金额"
-      },
-      {
-        "stage": "首单",
-        "count": 0,
-        "next": "交易测试"
-      },
-      {
-        "stage": "长期维护",
-        "count": 0,
-        "next": "例行维护"
-      }
-    ],
-    "note": "占位示例数据，请以实际 TG CRM 表为准，每周更新"
-  },
-  "taskProgress": [
-    {
-      "id": "T001",
-      "task": "设计交付包整理",
-      "status": "Done",
-      "progress": 100,
-      "owner": "Sera",
-      "updatedAt": "2026-07-21",
-      "next": "提交设计团队并确认排期"
-    },
-    {
-      "id": "T002",
-      "task": "TG客户CRM汇总",
-      "status": "Done",
-      "progress": 100,
-      "owner": "Sera",
-      "updatedAt": "2026-07-21",
-      "next": "筛选五星重点客户"
-    },
-    {
-      "id": "T003",
-      "task": "日间主题与主题切换",
-      "status": "Done",
-      "progress": 100,
-      "owner": "Kimi",
-      "updatedAt": "2026-07-21",
-      "next": "收集使用反馈，按需微调日间主题细节"
-    },
-    {
-      "id": "T004",
-      "task": "私密部署（Cloudflare Pages + Access）",
-      "status": "Doing",
-      "progress": 30,
-      "owner": "Kimi / Sera",
-      "updatedAt": "2026-07-21",
-      "next": "公网 Pages 已下线；待 Cloudflare 账号创建项目并配置 Access"
-    },
-    {
-      "id": "T005",
-      "task": "首单交易测试",
       "status": "Next",
-      "progress": 0,
-      "owner": "Sera / 静格",
-      "updatedAt": "2026-07-21",
-      "next": "周四/周五配合测试"
-    },
-    {
-      "id": "T006",
-      "task": "PIP 甘特图/任务树看板升级",
-      "status": "Done",
-      "progress": 100,
-      "owner": "Kimi",
-      "updatedAt": "2026-07-21",
-      "next": "进入每周数据更新节奏"
-    }
-  ],
-  "roadmap": [
-    {
-      "id": "WS01",
-      "name": "设计交付线",
-      "goal": "向设计团队提交 OTC USD 大宗交易资料包",
-      "progress": 90,
-      "status": "Doing",
-      "owner": "Sera",
-      "target": "完成设计交付包并确认排期"
-    },
-    {
-      "id": "WS02",
-      "name": "CRM客户线",
-      "goal": "完成TG存量客户资料汇总与分级",
-      "progress": 80,
-      "status": "Doing",
-      "owner": "Sera",
-      "target": "筛选五星重点客户"
-    },
-    {
-      "id": "WS03",
-      "name": "客户转化线",
-      "goal": "推动客户完成注册、KYC及首单",
-      "progress": 15,
-      "status": "Next",
-      "owner": "Sera",
-      "target": "个人注册≥19，机构注册≥6"
-    },
-    {
-      "id": "WS04",
-      "name": "交易测试线",
-      "goal": "完成第一笔交易测试并沉淀SOP",
-      "progress": 20,
-      "status": "Next",
-      "owner": "Sera / 静格",
-      "target": "周四/周五完成首单测试"
-    },
-    {
-      "id": "WS05",
-      "name": "渠道拓展线",
-      "goal": "推进大数据、销售转介、Partner/KOL获客",
-      "progress": 10,
-      "status": "Next",
-      "owner": "Sera / Simon / Oscar",
-      "target": "销售对接≥6，Partner≥7，KOL≥10"
-    },
-    {
-      "id": "WS06",
-      "name": "私密看板线",
-      "goal": "交付仅 Simon 可访问的私密进度看板",
-      "progress": 65,
-      "status": "Doing",
-      "owner": "Sera / Kimi",
-      "target": "完成私密部署与访问控制"
-    }
-  ],
-  "gantt": [
-    {
-      "id": "G001",
-      "workstream": "设计交付线",
-      "task": "整理设计交付包",
-      "start": "2026-07-21",
-      "end": "2026-07-22",
-      "progress": 100,
-      "status": "Done",
-      "dependsOn": [],
-      "owner": "Sera",
-      "next": "提交设计团队"
-    },
-    {
-      "id": "G002",
-      "workstream": "设计交付线",
-      "task": "提交设计团队",
-      "start": "2026-07-22",
-      "end": "2026-07-23",
-      "progress": 60,
-      "status": "Doing",
-      "dependsOn": [
-        "G001"
-      ],
-      "owner": "Sera",
-      "next": "确认设计排期与反馈时间"
-    },
-    {
-      "id": "G003",
-      "workstream": "CRM客户线",
-      "task": "TG客户CRM初版",
-      "start": "2026-07-20",
-      "end": "2026-07-21",
-      "progress": 100,
-      "status": "Done",
-      "dependsOn": [],
-      "owner": "Sera",
-      "next": "筛选五星重点客户"
-    },
-    {
-      "id": "G004",
-      "workstream": "CRM客户线",
-      "task": "五星客户筛选",
-      "start": "2026-07-22",
-      "end": "2026-07-25",
-      "progress": 30,
-      "status": "Doing",
-      "dependsOn": [
-        "G003"
-      ],
-      "owner": "Sera",
-      "next": "输出五星重点客户名单"
-    },
-    {
-      "id": "G005",
-      "workstream": "客户转化线",
-      "task": "第一批注册/KYC推进",
-      "start": "2026-07-25",
-      "end": "2026-08-08",
-      "progress": 0,
-      "status": "Next",
-      "dependsOn": [
-        "G004"
-      ],
-      "owner": "Sera",
-      "next": "按名单逐个推进注册与KYC"
-    },
-    {
-      "id": "G006",
-      "workstream": "交易测试线",
-      "task": "首单交易测试",
-      "start": "2026-07-24",
-      "end": "2026-07-25",
-      "progress": 0,
-      "status": "Next",
-      "dependsOn": [
-        "G002"
-      ],
-      "owner": "Sera / 静格",
-      "next": "周四/周五配合完成首单测试"
-    },
-    {
-      "id": "G007",
-      "workstream": "渠道拓展线",
-      "task": "大数据客户筛选条件",
-      "start": "2026-07-22",
-      "end": "2026-07-26",
-      "progress": 20,
-      "status": "Blocked",
-      "dependsOn": [],
-      "owner": "Sera / Simon",
-      "next": "请 Simon 协助调取大数据名单"
-    },
-    {
-      "id": "G008",
-      "workstream": "渠道拓展线",
-      "task": "Oscar大客户名单对接",
-      "start": "2026-07-25",
-      "end": "2026-08-01",
-      "progress": 0,
-      "status": "Next",
-      "dependsOn": [],
-      "owner": "Sera / Oscar",
-      "next": "获取高价值客户名单"
-    },
-    {
-      "id": "G009",
-      "workstream": "私密看板线",
-      "task": "访问控制方案确认",
-      "start": "2026-07-21",
-      "end": "2026-07-23",
-      "progress": 70,
-      "status": "Doing",
-      "dependsOn": [],
-      "owner": "Sera / Kimi",
-      "next": "完成 Cloudflare 私密部署与 Access 配置"
-    }
-  ],
-  "taskTree": [
-    {
-      "id": "T001",
-      "title": "设计交付包",
-      "owner": "Sera",
-      "status": "Doing",
-      "progress": 90,
-      "children": [
-        {
-          "title": "业务背景说明",
-          "done": true
-        },
-        {
-          "title": "页面结构与模块",
-          "done": true
-        },
-        {
-          "title": "COBO买币流程",
-          "done": true
-        },
-        {
-          "title": "POBO卖币流程",
-          "done": true
-        },
-        {
-          "title": "FAQ与客户话术",
-          "done": true
-        },
-        {
-          "title": "设计禁用词与合规注意",
-          "done": true
-        },
-        {
-          "title": "视觉参考图",
-          "done": true
-        },
-        {
-          "title": "提交设计团队并确认排期",
-          "done": false
-        }
-      ]
-    },
-    {
-      "id": "T002",
-      "title": "TG客户CRM",
-      "owner": "Sera",
-      "status": "Doing",
-      "progress": 80,
-      "children": [
-        {
-          "title": "解析TG压缩包",
-          "done": true
-        },
-        {
-          "title": "生成客户CRM表",
-          "done": true
-        },
-        {
-          "title": "提取UID与KYC状态",
-          "done": true
-        },
-        {
-          "title": "五星客户筛选",
-          "done": false
-        },
-        {
-          "title": "注册/KYC推进名单",
-          "done": false
-        }
-      ]
-    },
-    {
-      "id": "T003",
-      "title": "客户注册/KYC转化",
-      "owner": "Sera",
-      "status": "Next",
-      "progress": 15,
-      "children": [
-        {
-          "title": "确认首批唤醒客户",
-          "done": false
-        },
-        {
-          "title": "推动个人注册",
-          "done": false
-        },
-        {
-          "title": "推动机构注册",
-          "done": false
-        },
-        {
-          "title": "跟进KYC/KYB",
-          "done": false
-        },
-        {
-          "title": "推动首单成交",
-          "done": false
-        }
-      ]
+      "workstream": "周报 / CRIB 复盘",
+      "due": "2026-07-25"
     }
   ],
   "todo": [
@@ -651,7 +539,34 @@ const FALLBACK = {
       "title": "PIP阶段复盘与CRIB总结",
       "status": "Next"
     }
-  ]
+  ],
+  "weeklyLog": {
+    "cadence": "每周更新一次（每周五）",
+    "updatedAt": "2026-07-21",
+    "focus": [
+      "提交设计交付包并确认排期",
+      "筛选五星重点客户",
+      "配合静格完成首单测试",
+      "确认 Simon 访问方式"
+    ],
+    "logs": [
+      {
+        "week": "2026-W30",
+        "date": "2026-07-21",
+        "summary": "看板收敛为绩效主线视图；设计交付包就绪待提交；TG 客户 CRM 初版完成。",
+        "done": [
+          "设计交付包整理",
+          "TG 客户 CRM 初版",
+          "看板绩效化收敛"
+        ],
+        "next": [
+          "提交设计团队",
+          "五星客户筛选",
+          "首单交易测试"
+        ]
+      }
+    ]
+  }
 };
 // __FALLBACK_SYNC_END__
 
@@ -684,15 +599,65 @@ const GANTT_WEEKS = [
   ['W6', '08/25-08/31']
 ];
 
-/* CRM 漏斗阶段简称（KPI 迷你漏斗条用） */
-const FUNNEL_SHORT = ['咨询', '信息', '注册', 'KYC', '报价', '首单', '维护'];
+/* 当前日期（与数据快照一致） */
+const TODAY = '2026-07-21';
+
+/* ------------------------------------------------------------
+ * 依赖关系图配置（viewBox 1000x700，节点坐标为画布坐标）
+ * 主链路（黄） / 支线 A 获客（浅色） / 支线 B 看板（淡蓝） / 支线 C 设计（浅灰）
+ * ---------------------------------------------------------- */
+const DEP_NODES = [
+  // 主链路
+  { id: 'm1', label: '绩效评估表目标', meta: 'PIP 已立项', x: 70,  y: 240, st: 'done' },
+  { id: 'm2', label: 'BD计划文档',     meta: '撰写中 60%', x: 208, y: 240, st: 'doing' },
+  { id: 'm3', label: '客户手册/FAQ',   meta: '完善中 70%', x: 346, y: 240, st: 'doing' },
+  { id: 'm4', label: '设计交付包',     meta: '90% · 待提交', x: 484, y: 240, st: 'hub' },
+  { id: 'm5', label: '客户 Pipeline',  meta: '初版已建', x: 622, y: 240, st: 'hub' },
+  { id: 'm6', label: '注册/KYC/首单',  meta: '待推进', x: 760, y: 240, st: 'next' },
+  { id: 'm7', label: '周报/CRIB复盘',  meta: '每周五更新', x: 898, y: 240, st: 'doing' },
+  // 支线 C：设计物料制作（汇入 设计交付包）
+  { id: 'c1', label: '文字稿整理', meta: 'Done', x: 200, y: 70, st: 'done' },
+  { id: 'c2', label: '提交设计团队', meta: 'Doing · 07-22', x: 340, y: 70, st: 'doing' },
+  { id: 'c3', label: 'UI出图', meta: 'Next', x: 480, y: 70, st: 'next' },
+  { id: 'c4', label: '反馈修改', meta: 'Next', x: 620, y: 70, st: 'next' },
+  // 支线 A：获客线索（汇入 客户 Pipeline）
+  { id: 'a1', label: 'TG客户资料', meta: 'Done · CRM 初版', x: 484, y: 400, st: 'done' },
+  { id: 'a2', label: '销售转介', meta: 'Next · 对接 Oscar', x: 622, y: 400, st: 'next' },
+  { id: 'a3', label: '存量客户池', meta: 'Done · 已汇总分级', x: 760, y: 400, st: 'done' },
+  { id: 'a4', label: '客户筛选', meta: 'Doing · 五星名单', x: 622, y: 490, st: 'doing' },
+  // 支线 B：看板交付与访问
+  { id: 'b1', label: '看板结构整理', meta: 'Done', x: 110, y: 620, st: 'done' },
+  { id: 'b2', label: '页面内容收敛', meta: 'Done', x: 300, y: 620, st: 'done' },
+  { id: 'b3', label: '访问权限控制', meta: 'Doing · 确认方式', x: 490, y: 620, st: 'doing' },
+  { id: 'b4', label: 'Simon访问', meta: 'Next', x: 680, y: 620, st: 'next' },
+  { id: 'b5', label: '每周更新', meta: 'Doing · 每周五', x: 870, y: 620, st: 'doing' }
+];
+
+const DEP_LINKS = [
+  // 主链路（黄色渐变）
+  ['m1', 'm2', 'main'], ['m2', 'm3', 'main'], ['m3', 'm4', 'main'],
+  ['m4', 'm5', 'main'], ['m5', 'm6', 'main'], ['m6', 'm7', 'main'],
+  // 支线 C（浅灰）→ 设计交付包
+  ['c1', 'c2', 'c'], ['c2', 'c3', 'c'], ['c3', 'c4', 'c'], ['c4', 'm4', 'c'],
+  // 支线 A（浅色）→ 客户筛选 → 客户 Pipeline
+  ['a1', 'a4', 'a'], ['a2', 'a4', 'a'], ['a3', 'a4', 'a'], ['a4', 'm5', 'a'],
+  // 支线 B（淡蓝）链式
+  ['b1', 'b2', 'b'], ['b2', 'b3', 'b'], ['b3', 'b4', 'b'], ['b4', 'b5', 'b']
+];
+
+const DEP_LABELS = [
+  { text: '支线 C · 设计物料制作', x: 200, y: 18 },
+  { text: '主链路 · 绩效交付', x: 70, y: 184 },
+  { text: '支线 A · 获客线索汇入', x: 484, y: 346 },
+  { text: '支线 B · 看板交付与访问', x: 110, y: 566 }
+];
 
 /* 全局状态：当前生效的数据 + 筛选条件 */
 const state = {
-  kpi: [], pipeline: [], crmSummary: null, taskProgress: [],
-  roadmap: [], gantt: [], taskTree: [], todo: [], milestones: []
+  kpi: [], gantt: [], roadmap: [], pipeline: [],
+  todo: [], milestones: [], weeklyLog: null
 };
-const filterState = { query: '', status: 'all' };
+const filterState = { query: '' };
 
 /* 动效偏好：系统开启「减少动态效果」时跳过滚动动画 */
 const REDUCED_MOTION = window.matchMedia
@@ -768,31 +733,12 @@ async function loadJson(url, fallback) {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     return await res.json();
   } catch (err) {
-    console.warn('[ProgressHub] 加载失败，使用内置兜底数据：' + url, err);
+    console.warn('[绩效看板] 加载失败，使用内置兜底数据：' + url, err);
     return fallback;
   }
 }
 
-/* ---------- 01 主题切换（日间 / 夜间，localStorage 记忆） ---------- */
-function currentTheme() {
-  return document.documentElement.dataset.theme === 'dark' ? 'night' : 'day';
-}
-
-function syncThemeButtons() {
-  const mode = currentTheme();
-  document.querySelectorAll('#themeToggle .theme-btn').forEach((b) => {
-    b.classList.toggle('active', b.dataset.mode === mode);
-  });
-}
-
-function setTheme(mode) {
-  const theme = mode === 'night' ? 'dark' : 'light';
-  document.documentElement.dataset.theme = theme;
-  try { localStorage.setItem('theme', theme); } catch (err) { /* 隐私模式下忽略 */ }
-  syncThemeButtons(); // 品牌字标由 CSS 随主题自动切换
-}
-
-/* ---------- 02 执行摘要（4 卡 · 主数据突出 · 底部 next action） ---------- */
+/* ---------- 01 执行摘要（4 卡 · 主数据突出 · 每卡一行下一步） ---------- */
 function renderSummary() {
   const grid = document.getElementById('sumGrid');
   grid.innerHTML = '';
@@ -809,23 +755,24 @@ function renderSummary() {
   const nextTodo = state.todo
     .filter((t) => t.status !== 'Done')
     .slice()
-    .sort((a, b) => (a.priority + a.due < b.priority + b.due ? -1 : 1))[0];
+    .sort((a, b) => ((a.priority + a.due) < (b.priority + b.due) ? -1 : 1))[0];
 
-  // 3) 当前阻塞 = pipeline + gantt + todo 中 Blocked 总数
-  const blockedItems = state.pipeline.filter((p) => p.status === 'Blocked');
+  // 3) 当前阻塞 = roadmap + pipeline + todo 中 Blocked 总数
+  const blockedRoadmap = state.roadmap.filter((r) => r.status === 'Blocked');
+  const blockedPipe = state.pipeline.filter((p) => p.status === 'Blocked');
   const blockers =
-    blockedItems.length +
-    state.gantt.filter((g) => g.status === 'Blocked').length +
+    blockedRoadmap.length +
+    blockedPipe.length +
     state.todo.filter((t) => t.status === 'Blocked').length;
+  const firstBlockerNext = blockedPipe.length
+    ? blockedPipe[0].next
+    : (blockedRoadmap.length ? blockedRoadmap[0].next : '');
 
   // 4) 下一里程碑 = milestones 中最早非 Done 项
   const nextMilestone = state.milestones
     .filter((m) => m.status !== 'Done')
     .slice()
     .sort((a, b) => (a.date < b.date ? -1 : 1))[0];
-  const milestoneGantt = nextMilestone
-    ? state.gantt.find((g) => g.task === nextMilestone.title)
-    : null;
 
   const cards = [
     {
@@ -836,9 +783,9 @@ function renderSummary() {
         const num = el('div', 'sum-value', '0%');
         countUp(num, avg, { format: (v) => Math.round(v) + '%' });
         body.appendChild(num);
-        body.appendChild(el('div', 'sum-sub', state.roadmap.length + ' 条主线平均进度'));
+        body.appendChild(el('div', 'sum-sub', state.roadmap.length + ' 条绩效主线平均进度'));
       },
-      next: slowest ? '重点推进「' + slowest.name + '」：' + slowest.target : '保持当前节奏'
+      next: slowest ? '重点推进「' + slowest.name + '」：' + slowest.next : '保持当前节奏'
     },
     {
       label: '本周完成',
@@ -860,20 +807,20 @@ function renderSummary() {
         const num = el('div', 'sum-value', '0');
         countUp(num, blockers, { format: (v) => String(Math.round(v)) });
         body.appendChild(num);
-        body.appendChild(el('div', 'sum-sub', 'Pipeline + 甘特 + 待办阻塞总数'));
+        body.appendChild(el('div', 'sum-sub', '主线 + Pipeline + 待办阻塞总数'));
       },
-      next: blockedItems.length ? blockedItems[0].next : '无阻塞，保持推进节奏'
+      next: blockers ? firstBlockerNext : '无阻塞，保持推进节奏'
     },
     {
       label: '下一里程碑',
       badge: nextMilestone ? { cls: 'badge-' + (STATUS_CLS[nextMilestone.status] || 'next'), text: STATUS_TEXT[nextMilestone.status] || nextMilestone.status } : null,
       accent: 'ac-yellow',
-      isMilestone: true,
       build(body) {
+        // 事件名为主大字，日期为辅文
         body.appendChild(el('div', 'sum-value sum-value-text', nextMilestone ? nextMilestone.title : '暂无'));
         body.appendChild(el('div', 'sum-sub', nextMilestone ? nextMilestone.date + ' · ' + (STATUS_TEXT[nextMilestone.status] || nextMilestone.status) : '暂无待办里程碑'));
       },
-      next: milestoneGantt ? milestoneGantt.next : '按期推进，提前同步风险'
+      next: '按里程碑节点推进，风险提前同步 Simon'
     }
   ];
 
@@ -892,7 +839,7 @@ function renderSummary() {
   });
 }
 
-/* ---------- 03 动态图形 KPI（按 component 字段渲染 6 卡） ---------- */
+/* ---------- 02 动态图形 KPI（按 component 字段渲染 6 卡） ---------- */
 
 /* 统一卡片骨架：顶部 label + badge / 中部组件 / 数值 / 底部 next action */
 function kpiCardShell(item) {
@@ -981,8 +928,8 @@ function kpiBodyRing(item) {
   const NS = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(NS, 'svg');
   svg.setAttribute('class', 'kpi-ring');
-  svg.setAttribute('width', '74');
-  svg.setAttribute('height', '74');
+  svg.setAttribute('width', '72');
+  svg.setAttribute('height', '72');
   svg.setAttribute('viewBox', '0 0 74 74');
 
   const defs = document.createElementNS(NS, 'defs');
@@ -1033,26 +980,33 @@ function kpiBodyRing(item) {
   return body;
 }
 
-/* funnel：客户 Pipeline —— 迷你多阶段条 */
+/* funnel：客户 Pipeline —— 阶段条（汇总 → 筛选 → 转化） */
 function kpiBodyFunnel(item) {
   const body = el('div', 'kpi-body');
   const wrap = el('div', 'kpi-minifunnel');
 
-  const stages = el('div', 'mf-stages');
+  // 阶段与卡片的 trend / next 文案一一对应：汇总已完成 → 筛选推进中 → 转化待启动
+  const stages = [
+    { label: '汇总', cls: '', height: 100, tip: 'TG客户资料已汇总' },
+    { label: '筛选', cls: 'mf-doing', height: 62, tip: '筛选五星重点客户（推进中）' },
+    { label: '转化', cls: 'mf-empty', height: 34, tip: '注册/KYC/首单转化（待启动）' }
+  ];
+  const stagesRow = el('div', 'mf-stages');
   const labels = el('div', 'mf-labels');
-  const funnel = (state.crmSummary && state.crmSummary.funnel) || [];
-  const max = Math.max.apply(null, funnel.map((f) => f.count).concat([1]));
-  FUNNEL_SHORT.forEach((short, i) => {
-    const count = funnel[i] ? funnel[i].count : 0;
-    const seg = el('div', 'mf-seg' + (count > 0 ? '' : ' mf-empty'));
-    seg.style.height = count > 0 ? Math.max((count / max) * 100, 12) + '%' : '8%';
-    seg.title = (funnel[i] ? funnel[i].stage : short) + '：' + count;
-    stages.appendChild(seg);
-    labels.appendChild(el('span', null, short));
+  stages.forEach((s) => {
+    const seg = el('div', 'mf-seg' + (s.cls ? ' ' + s.cls : ''));
+    seg.style.height = s.height + '%';
+    seg.title = s.tip;
+    stagesRow.appendChild(seg);
+    labels.appendChild(el('span', null, s.label));
   });
-  wrap.appendChild(stages);
+  wrap.appendChild(stagesRow);
   wrap.appendChild(labels);
   body.appendChild(wrap);
+
+  const side = el('div', 'kpi-side');
+  side.appendChild(el('div', 'ks-note', item.trend || ''));
+  body.appendChild(side);
   return body;
 }
 
@@ -1137,11 +1091,23 @@ function renderKpi(list) {
   });
 }
 
-/* ---------- 04 甘特图（玻璃时间推进图 · 胶囊条 · 悬浮详情） ---------- */
+/* ---------- 03 时间推进图（6 条主线 · 点击展开子任务 · 悬浮详情） ---------- */
 function ganttDayOffset(dateStr) {
   const base = new Date(GANTT_START + 'T00:00:00');
   const d = new Date(dateStr + 'T00:00:00');
   return Math.round((d - base) / 86400000);
+}
+
+function ganttBar(item, isChild) {
+  let startIdx = Math.max(0, ganttDayOffset(item.start));
+  let endIdx = Math.min(GANTT_DAYS - 1, ganttDayOffset(item.end));
+  if (endIdx < 0 || startIdx > GANTT_DAYS - 1) return null;
+  if (endIdx < startIdx) endIdx = startIdx;
+  const bar = el('div', 'gantt-bar gb-' + (STATUS_CLS[item.status] || 'next') + (isChild ? ' gantt-bar-child' : ''));
+  bar.style.left = ((startIdx / GANTT_DAYS) * 100).toFixed(2) + '%';
+  bar.style.width = (((endIdx - startIdx + 1) / GANTT_DAYS) * 100).toFixed(2) + '%';
+  bar.textContent = item.progress + '%';
+  return bar;
 }
 
 function renderGantt(list) {
@@ -1152,7 +1118,7 @@ function renderGantt(list) {
 
   // 表头：左列占位 + 6 个周列
   const head = el('div', 'gantt-head');
-  head.appendChild(el('div', 'gantt-corner', 'Workstream / 任务'));
+  head.appendChild(el('div', 'gantt-corner', '主线 / 任务'));
   const weeks = el('div', 'gantt-weeks');
   GANTT_WEEKS.forEach(([w, range]) => {
     const cell = el('div', 'gantt-week');
@@ -1163,62 +1129,100 @@ function renderGantt(list) {
   head.appendChild(weeks);
   wrap.appendChild(head);
 
-  // 任务行：日期换算为 42 天时间轴上的百分比位置，越界截断
-  list.forEach((g) => {
+  // 悬浮详情层：负责人 / 起止 / 进度 / 下一步
+  function bindTip(bar, titleText, rows) {
+    bar.addEventListener('mouseenter', () => {
+      tip.innerHTML = '';
+      tip.appendChild(el('div', 'gt-title', titleText));
+      rows.forEach(([k, v]) => {
+        const r = el('div', 'gt-row');
+        r.appendChild(el('span', 'gt-k', k));
+        r.appendChild(el('span', 'gt-v', v));
+        tip.appendChild(r);
+      });
+      tip.hidden = false;
+    });
+    bar.addEventListener('mousemove', (e) => {
+      const rect = panel.getBoundingClientRect();
+      let x = e.clientX - rect.left + 14;
+      let y = e.clientY - rect.top + 14;
+      x = Math.max(8, Math.min(x, rect.width - 262));
+      y = Math.max(8, Math.min(y, rect.height - tip.offsetHeight - 8));
+      tip.style.left = x + 'px';
+      tip.style.top = y + 'px';
+    });
+    bar.addEventListener('mouseleave', () => { tip.hidden = true; });
+  }
+
+  // 主线行（默认折叠，点击左列展开子任务）
+  list.forEach((line) => {
+    const rowWrap = el('div', 'gantt-row-wrap');
     const row = el('div', 'gantt-row');
 
+    // 左列：展开箭头 + 主线名 + owner + 进度%
     const label = el('div', 'gantt-label');
-    label.appendChild(el('div', 'gl-task', g.task));
-    label.appendChild(el('div', 'gl-ws', g.workstream + ' · ' + g.id));
+    const btn = el('button', 'gantt-label-btn');
+    btn.type = 'button';
+    btn.setAttribute('aria-expanded', 'false');
+    btn.title = '点击展开 / 折叠子任务';
+    btn.appendChild(el('span', 'gantt-chevron', '▶'));
+    const text = el('div', 'gl-text');
+    text.appendChild(el('div', 'gl-task', line.name));
+    text.appendChild(el('div', 'gl-ws', line.id + ' · 负责人：' + line.owner + ' · ' + (STATUS_TEXT[line.status] || line.status)));
+    btn.appendChild(text);
+    btn.appendChild(el('span', 'gl-pct', line.progress + '%'));
+    label.appendChild(btn);
     row.appendChild(label);
 
+    // 右侧胶囊任务条
     const track = el('div', 'gantt-track');
-    let startIdx = Math.max(0, ganttDayOffset(g.start));
-    let endIdx = Math.min(GANTT_DAYS - 1, ganttDayOffset(g.end));
-    if (endIdx >= 0 && startIdx <= GANTT_DAYS - 1) {
-      if (endIdx < startIdx) endIdx = startIdx;
-      const bar = el('div', 'gantt-bar gb-' + (STATUS_CLS[g.status] || 'next'));
-      bar.style.left = ((startIdx / GANTT_DAYS) * 100).toFixed(2) + '%';
-      bar.style.width = (((endIdx - startIdx + 1) / GANTT_DAYS) * 100).toFixed(2) + '%';
-      bar.textContent = g.task + ' · ' + g.progress + '%';
-
-      // 悬浮详情层：负责人 / 起止 / 进度 / 下一步 / 依赖
-      bar.addEventListener('mouseenter', () => {
-        tip.innerHTML = '';
-        tip.appendChild(el('div', 'gt-title', g.task));
-        const rows = [
-          ['状态', (STATUS_TEXT[g.status] || g.status) + ' · ' + g.progress + '%'],
-          ['负责人', g.owner || '—'],
-          ['起止', g.start + ' ~ ' + g.end],
-          ['下一步', g.next || '—'],
-          ['依赖', g.dependsOn && g.dependsOn.length ? g.dependsOn.join('、') : '无']
-        ];
-        rows.forEach(([k, v]) => {
-          const r = el('div', 'gt-row');
-          r.appendChild(el('span', 'gt-k', k));
-          r.appendChild(el('span', 'gt-v', v));
-          tip.appendChild(r);
-        });
-        tip.hidden = false;
-      });
-      bar.addEventListener('mousemove', (e) => {
-        const rect = panel.getBoundingClientRect();
-        let x = e.clientX - rect.left + 14;
-        let y = e.clientY - rect.top + 14;
-        x = Math.max(8, Math.min(x, rect.width - 262));
-        y = Math.max(8, Math.min(y, rect.height - tip.offsetHeight - 8));
-        tip.style.left = x + 'px';
-        tip.style.top = y + 'px';
-      });
-      bar.addEventListener('mouseleave', () => { tip.hidden = true; });
-
+    const bar = ganttBar(line, false);
+    if (bar) {
+      bindTip(bar, line.name, [
+        ['状态', (STATUS_TEXT[line.status] || line.status) + ' · ' + line.progress + '%'],
+        ['负责人', line.owner || '—'],
+        ['起止', line.start + ' ~ ' + line.end],
+        ['下一步', line.next || '—']
+      ]);
       track.appendChild(bar);
     }
     row.appendChild(track);
-    wrap.appendChild(row);
+    rowWrap.appendChild(row);
+
+    // 子任务区（默认折叠）：子任务条更细、同色浅色
+    const childrenWrap = el('div', 'gantt-children');
+    (line.children || []).forEach((c) => {
+      const crow = el('div', 'gantt-row');
+      const clabel = el('div', 'gantt-label-child');
+      clabel.appendChild(el('div', 'gl-task', c.task));
+      crow.appendChild(clabel);
+      const ctrack = el('div', 'gantt-track gantt-track-child');
+      const cbar = ganttBar(c, true);
+      if (cbar) {
+        bindTip(cbar, c.task, [
+          ['状态', (STATUS_TEXT[c.status] || c.status) + ' · ' + c.progress + '%'],
+          ['负责人', line.owner || '—'],
+          ['起止', c.start + ' ~ ' + c.end],
+          ['所属主线', line.name]
+        ]);
+        ctrack.appendChild(cbar);
+      }
+      crow.appendChild(ctrack);
+      childrenWrap.appendChild(crow);
+    });
+    rowWrap.appendChild(childrenWrap);
+
+    // 展开 / 折叠切换
+    btn.addEventListener('click', () => {
+      const open = rowWrap.classList.toggle('open');
+      row.classList.toggle('open', open);
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+
+    wrap.appendChild(rowWrap);
   });
 
-  // 图例：Done 绿 / Doing 蓝 / Next 黄 / Blocked 红（中文说明）
+  // 图例：Done 绿 / Doing 蓝 / Next 黄 / Blocked 红
   const legend = document.getElementById('ganttLegend');
   legend.innerHTML = '';
   STATUS_ORDER.forEach((s) => {
@@ -1227,144 +1231,272 @@ function renderGantt(list) {
     item.appendChild(document.createTextNode(s + ' ' + STATUS_TEXT[s]));
     legend.appendChild(item);
   });
+  legend.appendChild(el('span', 'legend-hint', '点击左侧主线名可展开 / 折叠子任务'));
 }
 
-/* ---------- 5.1 Workstream Progress Cards（roadmap.json 6 条主线） ---------- */
+/* ---------- 04 依赖关系图（SVG 贝塞尔曲线 + 玻璃节点） ---------- */
+function renderDepMap() {
+  const canvas = document.getElementById('depCanvas');
+  canvas.innerHTML = '';
+  const NS = 'http://www.w3.org/2000/svg';
+  const VB_W = 1000;
+  const VB_H = 700;
+
+  const byId = {};
+  DEP_NODES.forEach((n) => { byId[n.id] = n; });
+
+  // SVG 曲线层（贝塞尔，节点下方）
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('class', 'dep-svg');
+  svg.setAttribute('viewBox', '0 0 ' + VB_W + ' ' + VB_H);
+  svg.setAttribute('preserveAspectRatio', 'none');
+  svg.setAttribute('aria-hidden', 'true');
+
+  const defs = document.createElementNS(NS, 'defs');
+  // userSpaceOnUse：水平直线路径包围盒高度为 0，objectBoundingBox 渐变会失效
+  const mainGrad = document.createElementNS(NS, 'linearGradient');
+  mainGrad.setAttribute('id', 'depMainGrad2');
+  mainGrad.setAttribute('gradientUnits', 'userSpaceOnUse');
+  mainGrad.setAttribute('x1', '0'); mainGrad.setAttribute('y1', '0');
+  mainGrad.setAttribute('x2', String(VB_W)); mainGrad.setAttribute('y2', '0');
+  [['0%', '#FFE000'], ['100%', '#FFB800']].forEach(([off, color]) => {
+    const stop = document.createElementNS(NS, 'stop');
+    stop.setAttribute('offset', off);
+    stop.setAttribute('stop-color', color);
+    mainGrad.appendChild(stop);
+  });
+  const boardGrad = document.createElementNS(NS, 'linearGradient');
+  boardGrad.setAttribute('id', 'depBoardGrad2');
+  boardGrad.setAttribute('gradientUnits', 'userSpaceOnUse');
+  boardGrad.setAttribute('x1', '0'); boardGrad.setAttribute('y1', '0');
+  boardGrad.setAttribute('x2', String(VB_W)); boardGrad.setAttribute('y2', '0');
+  [['0%', '#18A7E3'], ['100%', '#4CC0F0']].forEach(([off, color]) => {
+    const stop = document.createElementNS(NS, 'stop');
+    stop.setAttribute('offset', off);
+    stop.setAttribute('stop-color', color);
+    boardGrad.appendChild(stop);
+  });
+  defs.appendChild(mainGrad);
+  defs.appendChild(boardGrad);
+  svg.appendChild(defs);
+
+  // 贝塞尔曲线：方向射线与节点矩形求交，从节点边缘起止（避免线段被节点卡片遮住）
+  const HALF_W = 58; // 节点水平半径（viewBox 单位，略大于 11% 宽度的一半）
+  const HALF_H = 33; // 节点垂直半径
+  function edgeOffset(ux, uy) {
+    const tx = ux === 0 ? Infinity : HALF_W / Math.abs(ux);
+    const ty = uy === 0 ? Infinity : HALF_H / Math.abs(uy);
+    return Math.min(tx, ty) + 2;
+  }
+  DEP_LINKS.forEach(([fromId, toId, cls]) => {
+    const f = byId[fromId];
+    const t = byId[toId];
+    if (!f || !t) return;
+    const ddx = t.x - f.x;
+    const ddy = t.y - f.y;
+    const len = Math.hypot(ddx, ddy) || 1;
+    const ux = ddx / len;
+    const uy = ddy / len;
+    const off = edgeOffset(ux, uy);
+    const sx = f.x + ux * off;
+    const sy = f.y + uy * off;
+    const ex = t.x - ux * off;
+    const ey = t.y - uy * off;
+    // 水平偏置控制点，形成平滑 S 曲线
+    const c1x = sx + (ex - sx) * 0.5;
+    const c2x = ex - (ex - sx) * 0.5;
+    const path = document.createElementNS(NS, 'path');
+    path.setAttribute('class', 'dl-' + (cls === 'main' ? 'main2' : cls));
+    path.setAttribute('d',
+      'M' + sx.toFixed(1) + ' ' + sy.toFixed(1) +
+      ' C' + c1x.toFixed(1) + ' ' + sy.toFixed(1) +
+      ' ' + c2x.toFixed(1) + ' ' + ey.toFixed(1) +
+      ' ' + ex.toFixed(1) + ' ' + ey.toFixed(1));
+    svg.appendChild(path);
+  });
+  canvas.appendChild(svg);
+
+  // 链路分区标签
+  DEP_LABELS.forEach((lb, i) => {
+    const node = el('div', 'dep-chain-label', lb.text);
+    node.style.left = (lb.x / VB_W * 100) + '%';
+    node.style.top = (lb.y / VB_H * 100) + '%';
+    canvas.appendChild(node);
+  });
+
+  // 玻璃节点层（轻 3D：偶数节点轻微浮起）
+  DEP_NODES.forEach((n, i) => {
+    const node = el('div', 'dep-node2 dn-' + n.st + (i % 2 ? ' dep-z' : ''));
+    node.style.left = (n.x / VB_W * 100) + '%';
+    node.style.top = (n.y / VB_H * 100) + '%';
+    node.appendChild(el('div', 'dn-title', n.label));
+    node.appendChild(el('div', 'dn-meta', n.meta));
+    canvas.appendChild(node);
+  });
+}
+
+/* ---------- 05 主线任务进度（roadmap.json 5 条主线卡） ---------- */
 function renderWorkstreams(list) {
   const grid = document.getElementById('wsGrid');
   grid.innerHTML = '';
   list.forEach((ws) => {
-    const card = el('div', 'ws-card');
+    const statusCls = STATUS_CLS[ws.status] || 'next';
+    const card = el('div', 'ws-card' + (ws.status === 'Blocked' ? ' ws-blocked' : ''));
 
+    // 名称 + 状态 badge
     const head = el('div', 'ws-head');
     head.appendChild(el('span', 'ws-id', ws.id));
     head.appendChild(el('span', 'ws-name', ws.name));
-    head.appendChild(el('span', 'badge badge-' + (STATUS_CLS[ws.status] || 'next'), STATUS_TEXT[ws.status] || ws.status));
+    head.appendChild(el('span', 'badge badge-' + statusCls, STATUS_TEXT[ws.status] || ws.status));
     card.appendChild(head);
 
     card.appendChild(el('div', 'ws-goal', ws.goal));
 
+    // 进度条 + 百分比
     const barRow = el('div', 'ws-bar-row');
     const track = el('div', 'ws-track');
-    const fill = el('div', 'ws-fill wf-' + (STATUS_CLS[ws.status] || 'next'));
+    const fill = el('div', 'ws-fill wf-' + statusCls);
     track.appendChild(fill);
     barRow.appendChild(track);
     const pctNode = el('span', 'ws-pct', '0%');
     countUp(pctNode, ws.progress, { format: (v) => Math.round(v) + '%' });
     barRow.appendChild(pctNode);
     card.appendChild(barRow);
-    // 进度条直接落终值（与百分比数字一致，CSS transition 负责展开动效）
+    // 进度条直接落终值（CSS transition 负责展开动效）
     fill.style.width = ws.progress + '%';
 
-    card.appendChild(el('div', 'ws-owner', '负责人：' + ws.owner));
+    // 关键子任务数 + 负责人
+    const metaRow = el('div', 'ws-meta-row');
+    metaRow.appendChild(el('span', 'ws-sub', '关键子任务：' + ws.subDone + '/' + ws.subTotal));
+    metaRow.appendChild(el('span', null, '负责人：' + ws.owner));
+    card.appendChild(metaRow);
 
+    // 风险点（无风险显示「无」并弱化；Blocked 红色强调）
+    const hasRisk = ws.risk && ws.risk !== '无';
+    const risk = el('div', 'ws-risk ' + (hasRisk ? (ws.status === 'Blocked' ? 'risk-hot' : '') : 'risk-none'));
+    risk.appendChild(el('span', 'rk-k', '风险'));
+    risk.appendChild(el('span', null, hasRisk ? ws.risk : '无'));
+    card.appendChild(risk);
+
+    // 下一步动作
     const next = el('div', 'ws-next');
     next.appendChild(el('span', 'sn-k', '下一步'));
-    next.appendChild(el('span', null, ws.target));
+    next.appendChild(el('span', null, ws.next));
     card.appendChild(next);
 
     grid.appendChild(card);
   });
 }
 
-/* ---------- 06.1 主任务树（可展开卡片） ---------- */
-function renderTaskTree(list) {
-  const wrap = document.getElementById('taskTree');
-  wrap.innerHTML = '';
-  list.forEach((t) => {
-    const children = t.children || [];
-    const doneCount = children.filter((c) => c.done).length;
-    const card = el('div', 'ttree-card');
+/* ---------- 06 工作 Pipeline（折叠分组看板） ---------- */
+/* 分组定义：本周重点（P0 合集）+ 四状态分组，defaultOpen 控制默认展开 */
+const PIPE_GROUPS = [
+  { key: 'focus',   name: '本周重点 · P0', dot: 'next',    defaultOpen: true,
+    pick: (list) => list.filter((p) => p.priority === 'P0') },
+  { key: 'Doing',   name: '进行中 Doing',  dot: 'doing',   defaultOpen: true,
+    pick: (list) => list.filter((p) => p.status === 'Doing') },
+  { key: 'Blocked', name: '阻塞 Blocked',  dot: 'blocked', defaultOpen: true,
+    pick: (list) => list.filter((p) => p.status === 'Blocked') },
+  { key: 'Next',    name: '待开始 Next',   dot: 'next',    defaultOpen: false,
+    pick: (list) => list.filter((p) => p.status === 'Next') },
+  { key: 'Done',    name: '已完成 Done',   dot: 'done',    defaultOpen: false,
+    pick: (list) => list.filter((p) => p.status === 'Done') }
+];
 
-    const headBtn = el('button', 'ttree-head');
-    headBtn.type = 'button';
-    headBtn.setAttribute('aria-expanded', 'false');
-    headBtn.appendChild(el('span', 'ttree-chevron', '▶'));
-    headBtn.appendChild(el('span', 'ttree-title', t.title));
-    headBtn.appendChild(el('span', 'badge badge-' + (STATUS_CLS[t.status] || 'next'), STATUS_TEXT[t.status] || t.status));
-    headBtn.appendChild(el('span', 'ttree-owner', '负责人：' + t.owner));
-    const prog = el('div', 'ttree-progress');
-    prog.appendChild(buildPbar(t.status, t.progress, t.progress + '%'));
-    headBtn.appendChild(prog);
-    headBtn.appendChild(el('span', 'ttree-count', '子任务 ' + doneCount + '/' + children.length));
-    card.appendChild(headBtn);
-
-    const childWrap = el('div', 'ttree-children');
-    children.forEach((c) => {
-      const row = el('div', 'ttree-child' + (c.done ? ' is-done' : ''));
-      row.appendChild(el('span', 'ttree-check ' + (c.done ? 'done' : 'todo'), c.done ? '✓' : '○'));
-      row.appendChild(el('span', 'ttree-child-title', c.title));
-      childWrap.appendChild(row);
-    });
-    card.appendChild(childWrap);
-
-    headBtn.addEventListener('click', () => {
-      const open = card.classList.toggle('open');
-      headBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
-    });
-
-    wrap.appendChild(card);
-  });
-}
-
-/* ---------- 06.2 工作 Pipeline 看板（紧凑版） ---------- */
 function buildTaskCard(item) {
   const card = el('article', 'task-card');
   card.dataset.status = item.status;
-  card.dataset.search = [item.module, item.pipGoal, item.output, item.next].join(' ').toLowerCase();
+  card.dataset.search = [item.module, item.workstream, item.next, item.priority, item.status]
+    .join(' ').toLowerCase();
 
+  // 任务名
   card.appendChild(el('h3', 'task-title', item.module));
 
+  // 所属主线 + 下一步动作（字段收敛）
   const rows = [
-    ['PIP 目标', item.pipGoal],
-    ['进度', item.progress],
-    ['产出', item.output],
+    ['所属主线', item.workstream],
     ['下一步', item.next]
   ];
   rows.forEach(([k, v]) => {
     const row = el('div', 'task-row');
     row.appendChild(el('span', 'k', k));
-    row.appendChild(el('span', v === '—' ? 'v muted' : 'v', v));
+    row.appendChild(el('span', v ? 'v' : 'v muted', v || '—'));
     card.appendChild(row);
   });
 
+  // 底部：优先级 + 状态 + 截止日期
   const footer = el('div', 'task-footer');
   footer.appendChild(el('span', 'badge ' + (item.priority === 'P0' ? 'badge-p0' : 'badge-p1'), item.priority));
-  footer.appendChild(el('span', 'badge badge-' + STATUS_CLS[item.status], STATUS_TEXT[item.status] || item.status));
-  footer.appendChild(el('span', 'task-owner', '负责人：' + item.owner));
+  footer.appendChild(el('span', 'badge badge-' + (STATUS_CLS[item.status] || 'next'), STATUS_TEXT[item.status] || item.status));
+  const overdue = item.due && item.due < TODAY && item.status !== 'Done';
+  footer.appendChild(el('span', 'task-due' + (overdue ? ' overdue' : ''), '截止 ' + (item.due ? item.due.slice(5) : '—') + (overdue ? ' · 已过期' : '')));
   card.appendChild(footer);
   return card;
 }
 
-function renderKanban(pipeline) {
-  STATUS_ORDER.forEach((s) => { document.getElementById('col-' + s).innerHTML = ''; });
-  pipeline.forEach((item) => {
-    const body = document.getElementById('col-' + item.status);
-    if (body) body.appendChild(buildTaskCard(item));
+function renderPipeline(pipeline) {
+  const wrap = document.getElementById('pipeGroups');
+  wrap.innerHTML = '';
+
+  PIPE_GROUPS.forEach((g) => {
+    const items = g.pick(pipeline);
+    const group = el('div', 'pipe-group' + (g.defaultOpen ? ' open' : ''));
+    group.dataset.openState = g.defaultOpen ? '1' : '0';
+
+    // 组标题栏：箭头 + 状态点 + 名称 + 数量徽标（点击折叠 / 展开）
+    const headBtn = el('button', 'pg-head');
+    headBtn.type = 'button';
+    headBtn.setAttribute('aria-expanded', g.defaultOpen ? 'true' : 'false');
+    headBtn.appendChild(el('span', 'pg-arrow', '▶'));
+    headBtn.appendChild(el('span', 'dot dot-' + g.dot));
+    headBtn.appendChild(el('span', 'pg-name', g.name));
+    headBtn.appendChild(el('span', 'pg-count', String(items.length)));
+    group.appendChild(headBtn);
+
+    // 卡片网格
+    const body = el('div', 'pg-body');
+    items.forEach((item) => body.appendChild(buildTaskCard(item)));
+    group.appendChild(body);
+
+    headBtn.addEventListener('click', () => {
+      const open = group.classList.toggle('open');
+      group.dataset.openState = open ? '1' : '0';
+      headBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+
+    wrap.appendChild(group);
   });
-  applyFilters(); // 初次渲染后刷新计数与空列提示
+
+  applyFilters(); // 初次渲染后刷新计数与空组提示
 }
 
-/* ---------- 搜索 + 状态筛选（联动：看板卡片 + 待办行） ---------- */
+/* ---------- 搜索过滤（Pipeline 卡片 + 待办行联动） ---------- */
 function applyFilters() {
   const q = filterState.query.trim().toLowerCase();
-  STATUS_ORDER.forEach((s) => {
-    const body = document.getElementById('col-' + s);
+
+  document.querySelectorAll('#pipeGroups .pipe-group').forEach((group) => {
+    const body = group.querySelector('.pg-body');
     const cards = body.querySelectorAll('.task-card');
     let visible = 0;
     cards.forEach((card) => {
-      const statusOk = filterState.status === 'all' || card.dataset.status === filterState.status;
-      const queryOk = !q || card.dataset.search.indexOf(q) !== -1;
-      const show = statusOk && queryOk;
+      const show = !q || card.dataset.search.indexOf(q) !== -1;
       card.classList.toggle('is-hidden', !show);
       if (show) visible++;
     });
-    document.getElementById('count-' + s).textContent = visible;
-    let empty = body.querySelector('.col-empty');
+    group.querySelector('.pg-count').textContent = visible;
+
+    let empty = body.querySelector('.pg-empty');
     if (visible === 0) {
-      if (!empty) body.appendChild(el('div', 'col-empty', '暂无匹配的工作项'));
+      if (!empty) body.appendChild(el('div', 'pg-empty', q ? '暂无匹配的工作项' : '暂无工作项'));
     } else if (empty) {
       empty.remove();
+    }
+
+    // 搜索时强制展开全部分组，清空搜索后恢复用户折叠状态
+    if (q) {
+      group.classList.add('open');
+    } else {
+      group.classList.toggle('open', group.dataset.openState === '1');
     }
   });
 
@@ -1393,95 +1525,7 @@ function applyFilters() {
   }
 }
 
-/* ---------- 07 CRM 转化漏斗（含转化率 / 下一步） + CRM 分级 ---------- */
-function renderCrm(crm) {
-  const rows = document.getElementById('funnelRows');
-  rows.innerHTML = '';
-  const head = el('div', 'funnel-row funnel-head');
-  ['阶段', '占比', '数量', '转化率', '下一步'].forEach((h) => head.appendChild(el('span', null, h)));
-  rows.appendChild(head);
-
-  const max = Math.max.apply(null, crm.funnel.map((f) => f.count).concat([1]));
-  const base = crm.funnel.length ? crm.funnel[0].count : 1;
-  crm.funnel.forEach((f, i) => {
-    const row = el('div', 'funnel-row');
-    row.appendChild(el('div', 'funnel-stage', f.stage));
-    const track = el('div', 'funnel-track');
-    const bar = el('div', 'funnel-bar');
-    bar.style.width = ((f.count / max) * 100).toFixed(1) + '%';
-    track.appendChild(bar);
-    row.appendChild(track);
-    const count = el('div', 'funnel-count');
-    count.appendChild(document.createTextNode(String(f.count)));
-    count.appendChild(el('span', 'pct', Math.round((f.count / base) * 100) + '%'));
-    row.appendChild(count);
-    const prev = i === 0 ? null : crm.funnel[i - 1].count;
-    const convText = i === 0 ? '100%' : (prev > 0 ? Math.round((f.count / prev) * 100) + '%' : '–');
-    row.appendChild(el('div', 'funnel-conv', convText));
-    row.appendChild(el('div', 'funnel-next', f.next || '—'));
-    rows.appendChild(row);
-  });
-
-  document.getElementById('crmNote').textContent = crm.note || '';
-
-  const totalNode = document.getElementById('crmTotal');
-  countUp(totalNode, crm.total, { format: (v) => String(Math.round(v)) });
-  const levels = document.getElementById('crmLevels');
-  levels.innerHTML = '';
-  crm.byLevel.forEach((lv) => {
-    const r = el('div', 'crm-level-row');
-    r.appendChild(el('span', 'lv-name', lv.level));
-    r.appendChild(el('span', 'lv-count', String(lv.count)));
-    levels.appendChild(r);
-  });
-
-  // 顶栏「数据更新」与页脚「Last Updated」均与 CRM 数据保持一致
-  if (crm.updatedAt) {
-    document.getElementById('updatedAt').textContent = crm.updatedAt;
-    const footerUpdated = document.getElementById('footerUpdated');
-    if (footerUpdated) footerUpdated.textContent = crm.updatedAt;
-  }
-}
-
-/* ---------- 06.3 Live Task Progress ---------- */
-function renderTaskProgress(list) {
-  const tbody = document.getElementById('taskProgressBody');
-  if (!tbody) return;
-  tbody.innerHTML = '';
-  list.forEach((t) => {
-    const tr = document.createElement('tr');
-    const statusCls = STATUS_CLS[t.status] || 'next';
-    const pct = Math.max(0, Math.min(100, Number(t.progress) || 0));
-
-    tr.appendChild(el('td', 'tp-id', t.id));
-    tr.appendChild(el('td', null, t.task));
-    tr.appendChild(el('td', 'tp-owner', t.owner));
-
-    const tdStatus = el('td', null);
-    tdStatus.appendChild(el('span', 'badge badge-' + statusCls, STATUS_TEXT[t.status] || t.status));
-    tr.appendChild(tdStatus);
-
-    const tdProgress = el('td', null);
-    const wrap = el('div', 'tp-progress');
-    const track = el('div', 'tp-track');
-    const fill = el('div', 'tp-fill tp-' + statusCls);
-    fill.style.width = pct + '%';
-    fill.title = t.task + '：' + pct + '%';
-    track.appendChild(fill);
-    wrap.appendChild(track);
-    wrap.appendChild(el('span', 'tp-pct', pct + '%'));
-    tdProgress.appendChild(wrap);
-    tr.appendChild(tdProgress);
-
-    tr.appendChild(el('td', null, t.next));
-    tr.appendChild(el('td', 'tp-updated', t.updatedAt));
-    tbody.appendChild(tr);
-  });
-}
-
-/* ---------- 08 每周待办（P0 高亮 / 过期标红 / 搜索过滤） ---------- */
-const TODAY = '2026-07-21';
-
+/* ---------- 07 本周待办（P0 高亮 / 过期标红 / 搜索过滤） ---------- */
 function renderTodo(list) {
   const tbody = document.getElementById('todoTableBody');
   tbody.innerHTML = '';
@@ -1512,11 +1556,11 @@ function renderTodo(list) {
   });
 }
 
-/* ---------- 09 阻塞事项 + 固定协助清单 ---------- */
-function renderBlocked(pipeline) {
+/* ---------- 08 阻塞事项 + 需 Supervisor 协助清单 ---------- */
+function renderBlocked() {
   const wrap = document.getElementById('blockedCards');
   wrap.innerHTML = '';
-  const blocked = pipeline.filter((p) => p.status === 'Blocked');
+  const blocked = state.pipeline.filter((p) => p.status === 'Blocked');
   if (!blocked.length) {
     wrap.appendChild(el('div', 'blocked-none', '✓ 当前无阻塞事项，继续保持'));
   }
@@ -1525,7 +1569,10 @@ function renderBlocked(pipeline) {
     card.appendChild(el('h4', null, '⛔ ' + item.module));
     card.appendChild(el('p', null, '当前状态：' + item.progress));
     card.appendChild(el('p', null, '下一步：' + item.next));
-    card.appendChild(el('div', 'bc-meta', '负责人：' + item.owner + ' · 优先级：' + item.priority + ' · PIP 目标：' + item.pipGoal));
+    card.appendChild(el('div', 'bc-meta',
+      '负责人：' + item.owner + ' · 优先级：' + item.priority +
+      ' · 所属主线：' + (item.workstream || '—') +
+      ' · 截止：' + (item.due || '—')));
     wrap.appendChild(card);
   });
 
@@ -1534,25 +1581,68 @@ function renderBlocked(pipeline) {
   FIXED_ASKS.forEach((a) => asks.appendChild(el('li', null, a)));
 }
 
-/* ---------- 10 关键里程碑列表 ---------- */
-function renderMilestones(list) {
-  const wrap = document.getElementById('milestoneList');
-  wrap.innerHTML = '';
-  list
-    .slice()
-    .sort((a, b) => (a.date < b.date ? -1 : 1))
-    .forEach((m) => {
-      const li = document.createElement('li');
-      li.appendChild(el('span', 'ms-date', m.date.slice(5)));
-      li.appendChild(el('span', 'ms-title', m.title));
-      li.appendChild(el('span', 'badge badge-' + (STATUS_CLS[m.status] || 'next'), STATUS_TEXT[m.status] || m.status));
-      wrap.appendChild(li);
-    });
+/* ---------- 09 周更记录（weekly-log.json） ---------- */
+function renderWeekly(log) {
+  const top = document.getElementById('weeklyTop');
+  top.innerHTML = '';
+
+  // 顶部：更新节奏徽标 + 本周更新时间
+  const badges = el('div', 'weekly-badges');
+  badges.appendChild(el('span', 'weekly-cadence', (log && log.cadence) || '每周更新一次（每周五）'));
+  const updated = el('span', 'weekly-updated');
+  updated.appendChild(document.createTextNode('本周更新时间：'));
+  updated.appendChild(el('b', null, (log && log.updatedAt) || TODAY));
+  badges.appendChild(updated);
+  top.appendChild(badges);
+
+  // 本周重点动作（focus 列表）
+  top.appendChild(el('div', 'focus-title', '本周重点动作'));
+  const chips = el('div', 'focus-chips');
+  ((log && log.focus) || []).forEach((f) => chips.appendChild(el('span', 'focus-chip', f)));
+  top.appendChild(chips);
+
+  // 下方：logs 时间线（每周一条）
+  const timeline = document.getElementById('logTimeline');
+  timeline.innerHTML = '';
+  ((log && log.logs) || []).forEach((entry) => {
+    const item = el('div', 'log-item');
+
+    const head = el('div', 'log-head');
+    head.appendChild(el('span', 'log-week', entry.week));
+    head.appendChild(el('span', 'log-date', entry.date));
+    item.appendChild(head);
+
+    item.appendChild(el('div', 'log-summary', entry.summary));
+
+    const cols = el('div', 'log-cols');
+    const doneCol = el('div', 'log-col log-done');
+    doneCol.appendChild(el('div', 'log-col-title', '已完成'));
+    const doneUl = el('ul');
+    (entry.done || []).forEach((d) => doneUl.appendChild(el('li', null, d)));
+    doneCol.appendChild(doneUl);
+    cols.appendChild(doneCol);
+
+    const nextCol = el('div', 'log-col log-next');
+    nextCol.appendChild(el('div', 'log-col-title', '下周计划'));
+    const nextUl = el('ul');
+    (entry.next || []).forEach((n) => nextUl.appendChild(el('li', null, n)));
+    nextCol.appendChild(nextUl);
+    cols.appendChild(nextCol);
+
+    item.appendChild(cols);
+    timeline.appendChild(item);
+  });
+
+  // 侧栏与页脚更新时间与周更数据保持一致
+  if (log && log.updatedAt) {
+    document.getElementById('sideUpdated').textContent = log.updatedAt;
+    document.getElementById('footerUpdated').textContent = log.updatedAt;
+  }
 }
 
 /* ---------- 导出：导出 Pipeline JSON 下载 ---------- */
 function exportPipeline() {
-  const date = (state.crmSummary && state.crmSummary.updatedAt) || '2026-07-21';
+  const date = (state.weeklyLog && state.weeklyLog.updatedAt) || TODAY;
   const blob = new Blob([JSON.stringify(state.pipeline, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -1564,76 +1654,91 @@ function exportPipeline() {
   URL.revokeObjectURL(url);
 }
 
+/* ---------- 左侧目录 scroll-spy（滚动高亮当前区块） ---------- */
+function initScrollSpy() {
+  const links = Array.from(document.querySelectorAll('#sideNav .nav-link'));
+  const sections = links
+    .map((a) => document.querySelector(a.getAttribute('href')))
+    .filter(Boolean);
+  if (!('IntersectionObserver' in window) || !sections.length) return;
+
+  const setActive = (id) => {
+    links.forEach((a) => a.classList.toggle('active', a.getAttribute('href') === '#' + id));
+  };
+  setActive(sections[0].id);
+
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) setActive(entry.target.id);
+    });
+  }, { rootMargin: '-30% 0px -60% 0px', threshold: 0 });
+  sections.forEach((s) => io.observe(s));
+}
+
+/* ---------- 移动端目录抽屉 ---------- */
+function initDrawer() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sideOverlay');
+  const menuBtn = document.getElementById('menuBtn');
+
+  const close = () => {
+    sidebar.classList.remove('open');
+    overlay.hidden = true;
+  };
+  menuBtn.addEventListener('click', () => {
+    const open = sidebar.classList.toggle('open');
+    overlay.hidden = !open;
+  });
+  overlay.addEventListener('click', close);
+  // 移动端点击导航项后自动收起抽屉
+  document.getElementById('sideNav').addEventListener('click', (e) => {
+    if (e.target.closest('.nav-link') && window.innerWidth <= 900) close();
+  });
+}
+
 /* ---------- 事件绑定 ---------- */
 function bindEvents() {
-  // 主题切换：日间 / 夜间，写入 localStorage 记忆
-  document.getElementById('themeToggle').addEventListener('click', (e) => {
-    const btn = e.target.closest('.theme-btn');
-    if (!btn) return;
-    setTheme(btn.dataset.mode);
-  });
-
-  // 搜索框：实时过滤（看板卡片 + 待办行）
+  // 搜索框：实时过滤（Pipeline 卡片 + 待办行）
   document.getElementById('searchInput').addEventListener('input', (e) => {
     filterState.query = e.target.value;
     applyFilters();
   });
 
-  // 状态筛选按钮组：全部 / Done / Doing / Next / Blocked
-  document.getElementById('statusFilters').addEventListener('click', (e) => {
-    const btn = e.target.closest('.filter-btn');
-    if (!btn) return;
-    document.querySelectorAll('#statusFilters .filter-btn').forEach((b) => {
-      b.classList.toggle('active', b === btn);
-    });
-    filterState.status = btn.dataset.status;
-    applyFilters();
-  });
-
   // 导出按钮
   document.getElementById('btnExport').addEventListener('click', exportPipeline);
-  // 更新数据 / 新建工作项 为占位样式按钮，暂不绑定功能
 }
 
-/* ---------- 启动：加载 9 个 JSON，任一失败自动用 FALLBACK ---------- */
+/* ---------- 启动：加载 7 个 JSON，任一失败自动用 FALLBACK ---------- */
 async function init() {
-  const [
-    kpi, pipeline, crmSummary, taskProgress,
-    roadmap, gantt, taskTree, todo, milestones
-  ] = await Promise.all([
+  const [kpi, gantt, roadmap, pipeline, todo, milestones, weeklyLog] = await Promise.all([
     loadJson('data/kpi.json', FALLBACK.kpi),
-    loadJson('data/pipeline.json', FALLBACK.pipeline),
-    loadJson('data/crm-summary.json', FALLBACK.crmSummary),
-    loadJson('data/task-progress.json', FALLBACK.taskProgress),
-    loadJson('data/roadmap.json', FALLBACK.roadmap),
     loadJson('data/gantt.json', FALLBACK.gantt),
-    loadJson('data/task-tree.json', FALLBACK.taskTree),
+    loadJson('data/roadmap.json', FALLBACK.roadmap),
+    loadJson('data/pipeline.json', FALLBACK.pipeline),
     loadJson('data/todo.json', FALLBACK.todo),
-    loadJson('data/milestones.json', FALLBACK.milestones)
+    loadJson('data/milestones.json', FALLBACK.milestones),
+    loadJson('data/weekly-log.json', FALLBACK.weeklyLog)
   ]);
   state.kpi = kpi;
-  state.pipeline = pipeline;
-  state.crmSummary = crmSummary;
-  state.taskProgress = taskProgress;
-  state.roadmap = roadmap;
   state.gantt = gantt;
-  state.taskTree = taskTree;
+  state.roadmap = roadmap;
+  state.pipeline = pipeline;
   state.todo = todo;
   state.milestones = milestones;
+  state.weeklyLog = weeklyLog;
 
-  syncThemeButtons();
   renderSummary();
   renderKpi(state.kpi);
   renderGantt(state.gantt);
+  renderDepMap();
   renderWorkstreams(state.roadmap);
-  renderTaskTree(state.taskTree);
-  renderKanban(state.pipeline);
-  renderCrm(state.crmSummary);
-  renderTaskProgress(state.taskProgress);
+  renderPipeline(state.pipeline);
   renderTodo(state.todo);
-  renderBlocked(state.pipeline);
-  renderMilestones(state.milestones);
+  renderBlocked();
+  renderWeekly(state.weeklyLog);
   bindEvents();
+  initScrollSpy();
+  initDrawer();
 }
 
 document.addEventListener('DOMContentLoaded', init);

@@ -1,27 +1,69 @@
 #!/usr/bin/env python3
-"""从 data/*.json 同步生成 app.js 中的 FALLBACK，并做规范化双向验证。"""
+"""从 data/*.json 同步生成 app.js 中的 FALLBACK，并做规范化双向验证。
+
+用法：
+  python3 .dev-scripts/sync_fallback.py          # 同步模式：重写 app.js 中的 FALLBACK 并验证
+  python3 .dev-scripts/sync_fallback.py --check  # 校验模式：只比对、不写文件（CI / 提交前自查）
+
+v0.5 起加载的 7 个数据集：
+  kpi / gantt / roadmap / pipeline / todo / milestones / weekly-log
+已弃用（保留磁盘、不再加载、不纳入 FALLBACK）：
+  design-delivery.json / crm-summary.json / task-progress.json / task-tree.json
+"""
 import json
 import re
 import sys
 from pathlib import Path
 
-ROOT = Path("/Users/a1234/Documents/kimi/workspace/htx-otc-progress-hub")
+ROOT = Path(__file__).resolve().parent.parent
 APP = ROOT / "app.js"
 
-# FALLBACK 键 → data 文件名（9 个被加载的数据源，不含 design-delivery）
+# FALLBACK 键 → data 文件名（7 个被加载的数据源，键序与 app.js FALLBACK 一致）
 KEY_FILES = {
     "kpi": "kpi.json",
-    "pipeline": "pipeline.json",
-    "crmSummary": "crm-summary.json",
-    "taskProgress": "task-progress.json",
-    "roadmap": "roadmap.json",
     "gantt": "gantt.json",
-    "taskTree": "task-tree.json",
+    "roadmap": "roadmap.json",
+    "pipeline": "pipeline.json",
     "todo": "todo.json",
     "milestones": "milestones.json",
+    "weeklyLog": "weekly-log.json",
 }
 
+
+def read_fallback():
+    """从 app.js 回读 FALLBACK 并解析为 dict。"""
+    src = APP.read_text(encoding="utf-8")
+    m = re.search(r"const FALLBACK = (\{.*?\});\n// __FALLBACK_SYNC_END__", src, re.DOTALL)
+    if not m:
+        print("ERROR: 无法回读 FALLBACK")
+        return None
+    return json.loads(m.group(1))
+
+
+def verify(parsed):
+    """规范化比对：解析后的 FALLBACK 与磁盘 JSON 逐键对比。"""
+    ok = True
+    for key, fname in KEY_FILES.items():
+        with open(ROOT / "data" / fname, encoding="utf-8") as f:
+            disk = json.load(f)
+        if parsed.get(key) != disk:
+            print(f"MISMATCH: {key} != data/{fname}")
+            ok = False
+        else:
+            print(f"OK: {key} == data/{fname}")
+    print("VERIFY:", "PASS" if ok else "FAIL")
+    return ok
+
+
 def main():
+    check_only = "--check" in sys.argv[1:]
+
+    if check_only:
+        parsed = read_fallback()
+        if parsed is None:
+            return 1
+        return 0 if verify(parsed) else 1
+
     data = {}
     for key, fname in KEY_FILES.items():
         with open(ROOT / "data" / fname, encoding="utf-8") as f:
@@ -41,24 +83,12 @@ def main():
     APP.write_text(src, encoding="utf-8")
     print("FALLBACK 已写入 app.js")
 
-    # ---- 规范化比对验证：解析 app.js 中的 FALLBACK 与磁盘 JSON 逐一对比 ----
-    src2 = APP.read_text(encoding="utf-8")
-    m = re.search(r"const FALLBACK = (\{.*?\});\n// __FALLBACK_SYNC_END__", src2, re.DOTALL)
-    if not m:
-        print("ERROR: 无法回读 FALLBACK")
+    # ---- 回读验证 ----
+    parsed = read_fallback()
+    if parsed is None:
         return 1
-    parsed = json.loads(m.group(1))
-    ok = True
-    for key, fname in KEY_FILES.items():
-        with open(ROOT / "data" / fname, encoding="utf-8") as f:
-            disk = json.load(f)
-        if parsed.get(key) != disk:
-            print(f"MISMATCH: {key} != data/{fname}")
-            ok = False
-        else:
-            print(f"OK: {key} == data/{fname}")
-    print("VERIFY:", "PASS" if ok else "FAIL")
-    return 0 if ok else 1
+    return 0 if verify(parsed) else 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

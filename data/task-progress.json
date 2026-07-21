@@ -22,7 +22,7 @@
     "task": "日间主题与主题切换",
     "status": "Done",
     "progress": 100,
-    "owner": "Kimi",
+    "owner": "Sera",
     "updatedAt": "2026-07-21",
     "next": "收集使用反馈，按需微调日间主题细节"
   },
@@ -31,7 +31,7 @@
     "task": "私密部署（Cloudflare Pages + Access）",
     "status": "Doing",
     "progress": 30,
-    "owner": "Kimi / Sera",
+    "owner": "Sera",
     "updatedAt": "2026-07-21",
     "next": "公网 Pages 已下线；待 Cloudflare 账号创建项目并配置 Access"
   },
@@ -49,7 +49,7 @@
     "task": "PIP 甘特图/任务树看板升级",
     "status": "Done",
     "progress": 100,
-    "owner": "Kimi",
+    "owner": "Sera",
     "updatedAt": "2026-07-21",
     "next": "进入每周数据更新节奏"
   }
