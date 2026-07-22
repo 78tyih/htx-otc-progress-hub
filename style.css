@@ -2184,3 +2184,215 @@ button { font-family: inherit; cursor: pointer; }
 @media (max-width: 560px) {
   .agent-drawer { width: 100vw; max-width: 100vw; }
 }
+
+/* ============================================================
+   12 每周总结与复盘（sec-review · weekly-reviews.json 驱动）
+   ============================================================ */
+.review-panel { padding: 0; overflow: hidden; }
+
+/* 顶部工具栏：周期选择 + 操作按钮 */
+.review-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-solid);
+}
+.review-period { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.rv-period-btn {
+  height: 32px;
+  padding: 0 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-main);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color .15s ease, background .15s ease;
+}
+.rv-period-btn:hover { border-color: var(--yellow-text); color: var(--yellow-text); }
+.rv-period-btn.active {
+  background: var(--accent-yellow);
+  border-color: var(--accent-yellow);
+  color: #111111;
+  font-weight: 700;
+}
+.rv-history {
+  height: 32px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-main);
+  font-size: 12.5px;
+  outline: none;
+  cursor: pointer;
+  max-width: 220px;
+}
+.rv-history:focus { border-color: var(--yellow-text); }
+.review-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+/* 元信息条：周期 / 状态章 / 生成信息 */
+.review-metabar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.review-metabar:empty { display: none; }
+.rv-range { font-weight: 700; color: var(--text-main); }
+.rv-meta { color: var(--text-muted); }
+.rv-chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 9px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.rv-chip-draft     { color: var(--yellow-text); background: var(--yellow-dim); border-color: var(--yellow-border); }
+.rv-chip-confirmed { color: var(--success); background: var(--success-dim); border-color: rgba(16,185,129,.35); }
+.rv-chip-none      { color: var(--text-muted); background: var(--gray-dim); border-color: var(--border); }
+
+/* 主体 */
+.review-body { padding: 14px 16px; }
+.rv-empty { padding: 28px 10px; text-align: center; }
+.rv-muted { color: var(--text-muted); }
+.rv-missing { color: var(--warning); }
+
+/* 七个内容模块 */
+.rv-sec { margin-bottom: 18px; }
+.rv-sec:last-child { margin-bottom: 0; }
+.rv-sec-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 700;
+  margin: 0 0 8px;
+  color: var(--text-main);
+}
+.rv-sec-no {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background: var(--accent-yellow);
+  color: #111111;
+  font-size: 11.5px;
+  font-weight: 800;
+  flex: 0 0 auto;
+}
+.rv-summary p { margin: 0 0 6px; font-size: 13px; line-height: 1.7; }
+.rv-summary p:last-child { margin-bottom: 0; }
+
+/* 表格（复用 data-table，横向滚动兜底） */
+.rv-table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius-sm); }
+.rv-table { min-width: 560px; }
+.rv-table th, .rv-table td { white-space: normal; }
+
+/* 数据变化指标卡 */
+.rv-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.rv-metric {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  text-align: center;
+  box-shadow: var(--card-shadow);
+}
+.rv-metric-val {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--big-num-color);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+.rv-metric-label { font-size: 11.5px; color: var(--text-muted); margin-top: 3px; }
+
+/* 编辑模式 */
+.rv-edit-note {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--note-text);
+  background: var(--note-bg);
+  border: 1px solid var(--note-border);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+}
+.rv-summary-edit {
+  width: 100%;
+  min-height: 110px;
+  resize: vertical;
+  padding: 10px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-main);
+  font-size: 13px;
+  line-height: 1.7;
+  outline: none;
+  font-family: inherit;
+}
+.rv-summary-edit:focus { border-color: var(--yellow-text); }
+.rv-edit-list { display: flex; flex-direction: column; gap: 8px; }
+.rv-edit-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.rv-edit-cell { display: flex; flex-direction: column; gap: 4px; flex: 1 1 160px; min-width: 120px; }
+.rv-edit-label { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+.rv-edit-input {
+  height: 32px;
+  padding: 0 10px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-main);
+  font-size: 12.5px;
+  outline: none;
+  width: 100%;
+}
+.rv-edit-input:focus { border-color: var(--yellow-text); }
+.rv-edit-cb { width: 16px; height: 16px; accent-color: var(--yellow-text); margin-bottom: 8px; }
+.rv-row-del, .rv-row-add {
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+.rv-row-del:hover { color: var(--danger); border-color: var(--danger); }
+.rv-row-add { align-self: flex-start; color: var(--yellow-text); border-color: var(--yellow-border); background: var(--yellow-dim); font-weight: 600; }
+.rv-row-add:hover { filter: brightness(1.05); }
+
+@media (max-width: 900px) {
+  .rv-metrics { grid-template-columns: repeat(2, 1fr); }
+  .review-toolbar { flex-direction: column; align-items: stretch; }
+  .review-actions { justify-content: flex-end; }
+}

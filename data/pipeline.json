@@ -26,12 +26,12 @@
   {
     "module": "高价值客户筛选",
     "pipGoal": "新增交易收入≥26,000 USDT",
-    "progress": "进行中",
+    "progress": "已完成优先级筛选",
     "output": "五星客户、机构客户、Partner线索",
-    "next": "按金额和成交概率安排优先跟进",
+    "next": "按照客户优先级逐一推进注册、KYC 和首单，并记录每周转化结果",
     "owner": "Sera",
     "priority": "P0",
-    "status": "Doing",
+    "status": "Done",
     "workstream": "注册 / KYC / 首单推进",
     "due": "2026-07-25"
   },

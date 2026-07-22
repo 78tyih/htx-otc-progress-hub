@@ -16,13 +16,13 @@
     "id": "WS02",
     "name": "客户 Pipeline 建档",
     "goal": "TG 存量客户汇总分级与五星客户筛选",
-    "progress": 80,
-    "status": "Doing",
+    "progress": 100,
+    "status": "Done",
     "owner": "Sera",
     "subLabel": "CRM / 分级 / UID / KYC状态",
-    "subDone": 4,
+    "subDone": 5,
     "subTotal": 5,
-    "next": "筛选五星客户",
+    "next": "按客户优先级推进注册 / KYC / 首单",
     "risk": "数据需持续清洗"
   },
   {
@@ -54,7 +54,7 @@
   {
     "id": "WS05",
     "name": "周报与复盘",
-    "goal": "每周更新看板，月底 CRIB 复盘",
+    "goal": "每周总结与复盘，月底 CRIB 复盘",
     "progress": 20,
     "status": "Doing",
     "owner": "Sera",

@@ -28,6 +28,34 @@
       "action": "agent-update",
       "taskId": "T-0002",
       "detail": "{\"operator\":\"Sera\",\"previousStatus\":\"进行中\",\"newStatus\":\"已完成\",\"completionEvidence\":\"全链路测试交付物\",\"changeSource\":\"agent\"}"
+    },
+    {
+      "ts": "2026-07-22T22:59:54+08:00",
+      "actor": "cli",
+      "action": "delete",
+      "taskId": "T-0003",
+      "detail": "删除快照：{\"id\":\"T-0003\",\"title\":\"确认访问权限\",\"status\":\"进行中\",\"priority\":\"P0\",\"workstream\":\"看板交付与访问\",\"owner\":\"Sera / Simon\",\"createdAt\":\"2026-07-21T09:00:00+08:00\",\"updatedAt\":\"2026-07-21T09:00:00+08:00\",\"dueAt\":\"2026-07-23T18:00:00+08:00\",\"remindAt\":\"2026-07-23T10:00:00+08:00\",\"remindedAt\":null,\"completedAt\":null,\"progress\":30,\"nextAction\":\"与 Simon 确认 Cloudflare Access 验证方式\",\"outputCondition\":\"Simon 确认访问方式，Sera 提供 Cloudflare 账号\",\"result\":null,\"source\":\"seed\",\"dependencies\":[],\"updatedBy\":\"seed\",\"completionEvidence\":null}（看板交付与访问属系统建设工作，不计入 OTC PIP 业务成果）"
+    },
+    {
+      "ts": "2026-07-22T22:59:54+08:00",
+      "actor": "cli",
+      "action": "manual-update",
+      "taskId": "T-0002",
+      "detail": "{\"operator\":\"Sera\",\"previousStatus\":\"已完成\",\"newStatus\":\"已完成\",\"fields\":[\"title\",\"result\",\"nextAction\",\"outputCondition\",\"completionEvidence\"],\"completionEvidence\":\"高价值客户名单及优先级已完成确认\",\"changeSource\":\"manual\",\"note\":\"高价值客户筛选完成确认：按金额/成交概率/推进条件完成优先级筛选\"}"
+    },
+    {
+      "ts": "2026-07-22T22:59:54+08:00",
+      "actor": "cli",
+      "action": "manual-update",
+      "taskId": null,
+      "detail": "{\"operator\":\"Sera\",\"scope\":\"PIP 口径清理\",\"removed\":[\"看板结构整理\",\"页面内容收敛\",\"访问权限控制\",\"Simon 访问\",\"每周更新（看板）\",\"看板交付与访问主线\",\"日间主题\",\"私密部署\",\"看板升级\"],\"changeSource\":\"manual\",\"note\":\"看板建设属系统工作，移出 PIP 任务数/完成率/KPI 统计口径；登录/权限/部署功能保留在系统状态\"}"
+    },
+    {
+      "ts": "2026-07-22T15:14:40.333Z",
+      "actor": "web",
+      "action": "weekly-generate",
+      "taskId": null,
+      "detail": "{\"operator\":\"Sera\",\"weekStart\":\"2026-07-13\",\"weekEnd\":\"2026-07-19\",\"reviewId\":\"WR-2026-07-13\",\"replaced\":false}"
     }
   ]
 }

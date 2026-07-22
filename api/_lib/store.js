@@ -7,7 +7,7 @@
  *   - FS（本地 dev）：直接读写 data/*.json（与 CLI 共用同一真相源），
  *     通知状态额外落在 data/.hub-notify.json（不入库）
  *
- * 状态结构：{ version, seededAt, tasks, pipeline, weeklyLog, audit, notify:{ dedupe, lastTest, lastSuccessAt } }
+ * 状态结构：{ version, seededAt, tasks, pipeline, weeklyLog, weeklyReviews, audit, notify:{ dedupe, lastTest, lastSuccessAt } }
  * 写操作复用 agent/schema 校验，非法数据永不落盘。
  */
 'use strict';
@@ -16,6 +16,7 @@ const fs = require('fs');
 const path = require('path');
 const { validateTasksFile, validateAuditFile } = require('../../agent/schema');
 const { projectTodoRows } = require('../../agent/presenter');
+const { validateReviewsFile } = require('./weekly');
 
 const KV_KEY = 'hub:state';
 const DATA_DIR = process.env.HUB_DATA_DIR || path.join(__dirname, '..', '..', 'data');
@@ -31,6 +32,7 @@ function seedState() {
     tasks: require('../../data/tasks.json'),
     pipeline: require('../../data/pipeline.json'),
     weeklyLog: require('../../data/weekly-log.json'),
+    weeklyReviews: require('../../data/weekly-reviews.json'),
     audit: require('../../data/audit-log.json'),
     notify: { dedupe: {}, lastTest: null, lastSuccessAt: null },
   };
@@ -80,18 +82,26 @@ async function loadState() {
     }
     if (!state.notify) state.notify = { dedupe: {}, lastTest: null, lastSuccessAt: null };
     if (!state.notify.dedupe) state.notify.dedupe = {};
+    if (!state.weeklyReviews || !Array.isArray(state.weeklyReviews.reviews)) {
+      state.weeklyReviews = { version: 1, reviews: [] };
+    }
     return state;
   }
   let notify = { dedupe: {}, lastTest: null, lastSuccessAt: null };
   try {
     notify = JSON.parse(fs.readFileSync(NOTIFY_FILE, 'utf8'));
   } catch { /* 首次运行无通知状态 */ }
+  let weeklyReviews = { version: 1, reviews: [] };
+  try {
+    weeklyReviews = fsRead('weekly-reviews.json');
+  } catch { /* 首次运行无复盘数据 */ }
   return {
     version: 1,
     seededAt: null,
     tasks: fsRead('tasks.json'),
     pipeline: fsRead('pipeline.json'),
     weeklyLog: fsRead('weekly-log.json'),
+    weeklyReviews,
     audit: fsRead('audit-log.json'),
     notify,
   };
@@ -103,6 +113,8 @@ async function saveState(state) {
   if (taskErrors.length) throw new Error(`tasks 校验未通过：\n${taskErrors.join('\n')}`);
   const auditErrors = validateAuditFile(state.audit);
   if (auditErrors.length) throw new Error(`audit 校验未通过：\n${auditErrors.join('\n')}`);
+  const reviewErrors = validateReviewsFile(state.weeklyReviews || { version: 1, reviews: [] });
+  if (reviewErrors.length) throw new Error(`weeklyReviews 校验未通过：\n${reviewErrors.join('\n')}`);
 
   if (useKv()) {
     await kvSet(state);
@@ -111,6 +123,7 @@ async function saveState(state) {
   fsWriteAtomic('tasks.json', state.tasks);
   fsWriteAtomic('pipeline.json', state.pipeline);
   fsWriteAtomic('weekly-log.json', state.weeklyLog);
+  fsWriteAtomic('weekly-reviews.json', state.weeklyReviews || { version: 1, reviews: [] });
   fsWriteAtomic('audit-log.json', state.audit);
   // 展示层 todo.json 全量投影（与 CLI 的 syncPresentation 行为一致）
   fsWriteAtomic('todo.json', projectTodoRows(state.tasks.tasks));
@@ -133,11 +146,11 @@ function appendAuditEntry(state, { actor, action, taskId, detail }) {
   state.audit.entries.push({ ts: new Date().toISOString(), actor, action, taskId: taskId || null, detail: String(detail || '') });
 }
 
-/** 最近的 Agent 修改记录（最近 N 条，新→旧） */
+/** 最近的任务修改记录（PIP 助手 + 人工，最近 N 条，新→旧） */
 function recentAgentUpdates(state, limit = 8) {
   const entries = (state.audit && Array.isArray(state.audit.entries)) ? state.audit.entries : [];
   return entries
-    .filter((e) => e.action === 'agent-update')
+    .filter((e) => (e.action === 'agent-update' || e.action === 'manual-update') && e.taskId)
     .slice(-limit)
     .reverse()
     .map((e) => {

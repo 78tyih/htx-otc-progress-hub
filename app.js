@@ -1,7 +1,7 @@
 /* ============================================================
    HTX OTC PIP 执行看板 — app.js
    纯原生 JS：fetch 加载 data/*.json，失败自动回退内置 FALLBACK
-   日间 / 夜间双主题 · 左侧目录 scroll-spy · 11 大模块 · 10 个数据源
+   日间 / 夜间双主题 · 左侧目录 scroll-spy · 12 大模块 · 11 个数据源
    ============================================================ */
 'use strict';
 
@@ -70,8 +70,8 @@ const FALLBACK = {
       "unit": "套",
       "target": "1套",
       "current": "1/1",
-      "trend": "TG 客户资料已汇总",
-      "next": "筛选五星客户",
+      "trend": "高价值客户名单及优先级已确认",
+      "next": "按客户优先级逐一推进注册、KYC 和首单",
       "status": "done"
     },
     {
@@ -214,10 +214,10 @@ const FALLBACK = {
       "name": "客户 Pipeline 建档",
       "owner": "Sera",
       "status": "Doing",
-      "progress": 80,
+      "progress": 90,
       "start": "2026-07-21",
       "end": "2026-07-25",
-      "next": "输出五星重点客户名单",
+      "next": "按客户优先级逐一推进注册 / KYC / 首单",
       "children": [
         {
           "task": "TG 客户 CRM 初版",
@@ -230,8 +230,8 @@ const FALLBACK = {
           "task": "五星重点客户筛选",
           "start": "2026-07-22",
           "end": "2026-07-25",
-          "status": "Doing",
-          "progress": 30
+          "status": "Done",
+          "progress": 100
         },
         {
           "task": "注册/KYC 推进名单",
@@ -293,7 +293,7 @@ const FALLBACK = {
       "next": "本周五完成首次周更",
       "children": [
         {
-          "task": "每周看板数据更新",
+          "task": "每周总结与复盘",
           "start": "2026-07-21",
           "end": "2026-08-31",
           "status": "Doing",
@@ -327,13 +327,13 @@ const FALLBACK = {
       "id": "WS02",
       "name": "客户 Pipeline 建档",
       "goal": "TG 存量客户汇总分级与五星客户筛选",
-      "progress": 80,
-      "status": "Doing",
+      "progress": 100,
+      "status": "Done",
       "owner": "Sera",
       "subLabel": "CRM / 分级 / UID / KYC状态",
-      "subDone": 4,
+      "subDone": 5,
       "subTotal": 5,
-      "next": "筛选五星客户",
+      "next": "按客户优先级推进注册 / KYC / 首单",
       "risk": "数据需持续清洗"
     },
     {
@@ -365,7 +365,7 @@ const FALLBACK = {
     {
       "id": "WS05",
       "name": "周报与复盘",
-      "goal": "每周更新看板，月底 CRIB 复盘",
+      "goal": "每周总结与复盘，月底 CRIB 复盘",
       "progress": 20,
       "status": "Doing",
       "owner": "Sera",
@@ -404,12 +404,12 @@ const FALLBACK = {
     {
       "module": "高价值客户筛选",
       "pipGoal": "新增交易收入≥26,000 USDT",
-      "progress": "进行中",
+      "progress": "已完成优先级筛选",
       "output": "五星客户、机构客户、Partner线索",
-      "next": "按金额和成交概率安排优先跟进",
+      "next": "按照客户优先级逐一推进注册、KYC 和首单，并记录每周转化结果",
       "owner": "Sera",
       "priority": "P0",
-      "status": "Doing",
+      "status": "Done",
       "workstream": "注册 / KYC / 首单推进",
       "due": "2026-07-25"
     },
@@ -495,18 +495,11 @@ const FALLBACK = {
       "status": "Done"
     },
     {
-      "task": "筛选 TOP 五星客户",
+      "task": "高价值客户筛选",
       "owner": "Sera",
       "due": "2026-07-23",
       "priority": "P0",
       "status": "Done"
-    },
-    {
-      "task": "确认访问权限",
-      "owner": "Sera / Simon",
-      "due": "2026-07-23",
-      "priority": "P0",
-      "status": "Doing"
     },
     {
       "task": "配合首单测试",
@@ -557,25 +550,21 @@ const FALLBACK = {
       "完成 OTC 设计交付包整理",
       "设计团队交互包已传回品牌 Skill 包（Sera，2026-07-22）",
       "完成 TG 客户 CRM 初版",
-      "重构 PIP 绩效看板信息架构",
-      "明确 KPI、甘特图、依赖关系图与 Pipeline 结构",
       "完成「提交设计交付包」：OTC 设计交付包已完成交付",
-      "完成「筛选 TOP 五星客户」：全链路测试交付物"
+      "完成「高价值客户筛选」：已根据客户金额、成交概率和推进条件完成优先级筛选"
     ]
   },
   "blockers": {
-    "updatedAt": "2026-07-21",
+    "updatedAt": "2026-07-22",
     "current": [
       "大数据客户名单待确认",
       "设计团队排期待确认",
-      "首单测试需跨团队配合",
-      "访问权限方式待确认"
+      "首单测试需跨团队配合"
     ],
     "asks": [
       "确认客户名单筛选条件",
       "协调 Oscar / 销售同步高价值客户",
       "确认设计交付优先级",
-      "确认访问权限方式",
       "必要时协调首单测试资源"
     ]
   },
@@ -632,7 +621,7 @@ const FALLBACK = {
   ],
   "tasks": {
     "version": 1,
-    "updatedAt": "2026-07-22T12:21:35.913Z",
+    "updatedAt": "2026-07-22T15:38:32.928Z",
     "tasks": [
       {
         "id": "T-0001",
@@ -659,47 +648,26 @@ const FALLBACK = {
       },
       {
         "id": "T-0002",
-        "title": "筛选 TOP 五星客户",
+        "title": "高价值客户筛选",
         "status": "已完成",
         "priority": "P0",
         "workstream": "注册 / KYC / 首单推进",
         "owner": "Sera",
         "createdAt": "2026-07-21T09:00:00+08:00",
-        "updatedAt": "2026-07-22T12:21:35.913Z",
+        "updatedAt": "2026-07-22T22:59:54+08:00",
         "dueAt": "2026-07-23T18:00:00+08:00",
         "remindAt": "2026-07-23T09:00:00+08:00",
         "remindedAt": null,
         "completedAt": "2026-07-22T12:21:35.913Z",
         "progress": 100,
-        "nextAction": "按金额和成交概率安排优先跟进顺序",
-        "outputCondition": "输出五星客户优先跟进清单",
-        "result": "全链路测试交付物",
+        "nextAction": "按照客户优先级逐一推进注册、KYC 和首单，并记录每周转化结果",
+        "outputCondition": "输出高价值客户优先跟进清单",
+        "result": "已根据客户金额、成交概率和推进条件完成优先级筛选",
         "source": "seed",
         "dependencies": [],
         "updatedBy": "Sera",
-        "completionEvidence": "全链路测试交付物"
-      },
-      {
-        "id": "T-0003",
-        "title": "确认访问权限",
-        "status": "进行中",
-        "priority": "P0",
-        "workstream": "看板交付与访问",
-        "owner": "Sera / Simon",
-        "createdAt": "2026-07-21T09:00:00+08:00",
-        "updatedAt": "2026-07-21T09:00:00+08:00",
-        "dueAt": "2026-07-23T18:00:00+08:00",
-        "remindAt": "2026-07-23T10:00:00+08:00",
-        "remindedAt": null,
-        "completedAt": null,
-        "progress": 30,
-        "nextAction": "与 Simon 确认 Cloudflare Access 验证方式",
-        "outputCondition": "Simon 确认访问方式，Sera 提供 Cloudflare 账号",
-        "result": null,
-        "source": "seed",
-        "dependencies": [],
-        "updatedBy": "seed",
-        "completionEvidence": null
+        "completionEvidence": "高价值客户名单及优先级已完成确认",
+        "changeSource": "manual"
       },
       {
         "id": "T-0004",
@@ -748,6 +716,10 @@ const FALLBACK = {
         "completionEvidence": null
       }
     ]
+  },
+  "weeklyReviews": {
+    "version": 1,
+    "reviews": []
   }
 };
 // __FALLBACK_SYNC_END__
@@ -756,8 +728,7 @@ const FALLBACK = {
 const BLOCKER_SHORT = {
   '大数据客户名单待确认': '名单调取',
   '设计团队排期待确认': '设计排期',
-  '首单测试需跨团队配合': '首单协作',
-  '访问权限方式待确认': '访问方式'
+  '首单测试需跨团队配合': '首单协作'
 };
 
 /* 状态顺序与样式映射（Done 绿 / Doing 蓝 / Next 黄 / Blocked 红） */
@@ -785,34 +756,29 @@ const TODAY = '2026-07-21';
 
 /* ------------------------------------------------------------
  * 依赖关系图配置（viewBox 1000x700，节点坐标为画布坐标）
- * 主链路（黄） / 支线 A 获客（浅色） / 支线 B 看板（淡蓝） / 支线 C 设计（浅灰）
+ * 主链路（黄） / 支线 A 获客（浅色） / 支线 C 设计（浅灰）
+ * （看板交付与访问属系统建设工作，不计入 PIP 业务成果，已从图中移除）
  * ---------------------------------------------------------- */
 const DEP_NODES = [
   // 主链路
   { id: 'm1', label: '绩效评估表目标', meta: 'PIP 已立项', x: 70,  y: 240, st: 'done' },
   { id: 'm2', label: 'BD计划文档',     meta: '撰写中 60%', x: 208, y: 240, st: 'doing' },
   { id: 'm3', label: '客户手册/FAQ',   meta: '完善中 70%', x: 346, y: 240, st: 'doing' },
-  { id: 'm4', label: '设计交付包',     meta: '90% · 待提交', x: 484, y: 240, st: 'hub' },
+  { id: 'm4', label: '设计交付包',     meta: '已交付 100%', x: 484, y: 240, st: 'done' },
   { id: 'm5', label: '客户 Pipeline',  meta: '初版已建', x: 622, y: 240, st: 'hub' },
   { id: 'm6', label: '注册/KYC/首单',  meta: '待推进', x: 760, y: 240, st: 'next' },
   { id: 'm7', label: '周报/CRIB复盘',  meta: '每周五更新', x: 898, y: 240, st: 'doing' },
   // 支线 C：设计物料制作（汇入 设计交付包）
   { id: 'c1', label: '文字稿整理', meta: 'Done', x: 200, y: 70, st: 'done' },
-  { id: 'c2', label: '提交设计团队', meta: 'Doing · 07-22', x: 340, y: 70, st: 'doing' },
-  { id: 'c3', label: 'UI出图', meta: 'Next', x: 480, y: 70, st: 'next' },
+  { id: 'c2', label: '提交设计团队', meta: 'Done · 07-22', x: 340, y: 70, st: 'done' },
+  { id: 'c3', label: '品牌 Skill 包', meta: 'Done · 已传回', x: 480, y: 70, st: 'done' },
   { id: 'c4', label: '反馈修改', meta: 'Next', x: 620, y: 70, st: 'next' },
   // 支线 A：获客线索（四源并行汇入 客户筛选 → 客户 Pipeline）
   { id: 'a1', label: 'TG客户资料', meta: 'Done · CRM 初版', x: 484, y: 400, st: 'done' },
   { id: 'a2', label: '销售转介', meta: 'Next · 对接 Oscar', x: 760, y: 400, st: 'next' },
   { id: 'a3', label: '存量客户池', meta: 'Done · 已汇总分级', x: 484, y: 556, st: 'done' },
   { id: 'a4', label: 'Partner / KOL', meta: 'Next · 待触达', x: 760, y: 556, st: 'next' },
-  { id: 'a5', label: '客户筛选', meta: 'Doing · 五星名单', x: 622, y: 480, st: 'doing' },
-  // 支线 B：看板交付与访问
-  { id: 'b1', label: '看板结构整理', meta: 'Done', x: 110, y: 650, st: 'done' },
-  { id: 'b2', label: '页面内容收敛', meta: 'Done', x: 300, y: 650, st: 'done' },
-  { id: 'b3', label: '访问权限控制', meta: 'Doing · 确认方式', x: 490, y: 650, st: 'doing' },
-  { id: 'b4', label: 'Simon访问', meta: 'Next', x: 680, y: 650, st: 'next' },
-  { id: 'b5', label: '每周更新', meta: 'Doing · 每周五', x: 870, y: 650, st: 'doing' }
+  { id: 'a5', label: '客户筛选', meta: 'Done · 优先级已确认', x: 622, y: 480, st: 'done' }
 ];
 
 const DEP_LINKS = [
@@ -822,23 +788,20 @@ const DEP_LINKS = [
   // 支线 C（浅灰）→ 设计交付包
   ['c1', 'c2', 'c'], ['c2', 'c3', 'c'], ['c3', 'c4', 'c'], ['c4', 'm4', 'c'],
   // 支线 A（浅色）：四源并行 → 客户筛选 → 客户 Pipeline
-  ['a1', 'a5', 'a'], ['a2', 'a5', 'a'], ['a3', 'a5', 'a'], ['a4', 'a5', 'a'], ['a5', 'm5', 'a'],
-  // 支线 B（淡蓝）链式
-  ['b1', 'b2', 'b'], ['b2', 'b3', 'b'], ['b3', 'b4', 'b'], ['b4', 'b5', 'b']
+  ['a1', 'a5', 'a'], ['a2', 'a5', 'a'], ['a3', 'a5', 'a'], ['a4', 'a5', 'a'], ['a5', 'm5', 'a']
 ];
 
 const DEP_LABELS = [
   { text: '支线 C · 设计物料制作', x: 200, y: 18 },
   { text: '主链路 · 绩效交付', x: 70, y: 184 },
-  { text: '支线 A · 获客线索汇入', x: 484, y: 352 },
-  { text: '支线 B · 看板交付与访问', x: 110, y: 606 }
+  { text: '支线 A · 获客线索汇入', x: 484, y: 352 }
 ];
 
 /* 全局状态：当前生效的数据 + 筛选条件 */
 const state = {
   kpi: [], gantt: [], roadmap: [], pipeline: [],
   todo: [], milestones: [], weeklyLog: null, blockers: null,
-  resources: [], tasks: null
+  resources: [], tasks: null, weeklyReviews: null
 };
 const filterState = { query: '' };
 
@@ -1625,19 +1588,7 @@ function renderDepMap() {
     stop.setAttribute('stop-color', color);
     mainGrad.appendChild(stop);
   });
-  const boardGrad = document.createElementNS(NS, 'linearGradient');
-  boardGrad.setAttribute('id', 'depBoardGrad2');
-  boardGrad.setAttribute('gradientUnits', 'userSpaceOnUse');
-  boardGrad.setAttribute('x1', '0'); boardGrad.setAttribute('y1', '0');
-  boardGrad.setAttribute('x2', String(VB_W)); boardGrad.setAttribute('y2', '0');
-  [['0%', '#18A7E3'], ['100%', '#4CC0F0']].forEach(([off, color]) => {
-    const stop = document.createElementNS(NS, 'stop');
-    stop.setAttribute('offset', off);
-    stop.setAttribute('stop-color', color);
-    boardGrad.appendChild(stop);
-  });
   defs.appendChild(mainGrad);
-  defs.appendChild(boardGrad);
   svg.appendChild(defs);
 
   // 贝塞尔曲线：方向射线与节点矩形求交，从节点边缘起止（避免线段被节点卡片遮住）
@@ -1966,6 +1917,440 @@ function renderWeekly(log) {
   }
 }
 
+/* ---------- 12 每周总结与复盘（weekly-reviews.json 驱动 · PIP 助手生成草稿 · 确认归档） ---------- */
+const RV_MISSING = '该项缺少记录，待人工补充。';
+const rvState = { period: 'prev', weekStart: null, editing: false, working: null, busy: false };
+
+/* 周期计算（UTC 字段 = 上海墙钟，与系统时区无关） */
+function rvShanghaiNow() { return new Date(Date.now() + 8 * 3600000); }
+function rvIsoDate(d) {
+  const p = (n) => String(n).padStart(2, '0');
+  return d.getUTCFullYear() + '-' + p(d.getUTCMonth() + 1) + '-' + p(d.getUTCDate());
+}
+function rvWeekRangeOf(shDate) {
+  const offset = (shDate.getUTCDay() + 6) % 7; // 周一=0
+  const start = new Date(shDate.getTime() - offset * 86400000);
+  return { weekStart: rvIsoDate(start), weekEnd: rvIsoDate(new Date(start.getTime() + 6 * 86400000)) };
+}
+function rvPrevWeekRange() { return rvWeekRangeOf(new Date(rvShanghaiNow().getTime() - 7 * 86400000)); }
+function rvThisWeekRange() { return rvWeekRangeOf(rvShanghaiNow()); }
+
+function rvReviews() { return (state.weeklyReviews && state.weeklyReviews.reviews) || []; }
+function rvFind(weekStart) { return rvReviews().find((r) => r.weekStart === weekStart); }
+function rvUpsert(review) {
+  if (!state.weeklyReviews) state.weeklyReviews = { version: 1, reviews: [] };
+  const arr = state.weeklyReviews.reviews;
+  const i = arr.findIndex((r) => r.id === review.id);
+  if (i >= 0) arr[i] = review; else arr.push(review);
+}
+
+/* 当前选中的 weekStart / weekEnd */
+function rvCurrentRange() {
+  if (rvState.period === 'this') return rvThisWeekRange();
+  if (rvState.period === 'history' && rvState.weekStart) {
+    const hit = rvFind(rvState.weekStart);
+    return { weekStart: rvState.weekStart, weekEnd: hit ? hit.weekEnd : '' };
+  }
+  return rvPrevWeekRange();
+}
+
+function rvFmtTs(iso) { return String(iso || '').slice(5, 16).replace('T', ' ') || '—'; }
+
+/* 通用表格（textContent 防注入；空数据 → 缺记录提示） */
+function rvTable(headers, rows) {
+  const wrap = el('div', 'rv-table-wrap');
+  const table = el('table', 'data-table rv-table');
+  const thead = document.createElement('thead');
+  const htr = document.createElement('tr');
+  headers.forEach((h) => htr.appendChild(el('th', null, h)));
+  thead.appendChild(htr);
+  table.appendChild(thead);
+  const tbody = document.createElement('tbody');
+  if (!rows.length) {
+    const tr = document.createElement('tr');
+    const td = el('td', 'rv-missing', RV_MISSING);
+    td.colSpan = headers.length;
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+  } else {
+    rows.forEach((cells) => {
+      const tr = document.createElement('tr');
+      cells.forEach((c) => {
+        if (c && c.__html) { const td = el('td', null); td.innerHTML = c.__html; tr.appendChild(td); }
+        else tr.appendChild(el('td', c == null || c === '' ? 'rv-muted' : null, c == null || c === '' ? '—' : String(c)));
+      });
+      tbody.appendChild(tr);
+    });
+  }
+  table.appendChild(tbody);
+  wrap.appendChild(table);
+  return wrap;
+}
+
+function rvSectionEl(no, title, node) {
+  const sec = el('div', 'rv-sec');
+  const head = el('h3', 'rv-sec-title');
+  head.appendChild(el('span', 'rv-sec-no', no));
+  head.appendChild(document.createTextNode(title));
+  sec.appendChild(head);
+  sec.appendChild(node);
+  return sec;
+}
+
+const RV_METRICS = [
+  ['completedThisWeek', '本周完成任务数'],
+  ['uncompleted', '未完成任务数'],
+  ['newBlocked', '新增阻塞数'],
+  ['unblocked', '已解除阻塞数'],
+  ['highValueCustomer', '高价值客户推进数'],
+  ['registration', '注册推进数'],
+  ['kyc', 'KYC 推进数'],
+  ['firstOrder', '首单推进数']
+];
+
+/* 查看模式：7 个内容模块 */
+function renderRvView(review) {
+  const body = el('div', 'rv-view');
+
+  // 1. 上周工作概览
+  const summary = el('div', 'rv-summary');
+  (review.summary ? String(review.summary).split('\n') : [RV_MISSING]).forEach((line) => {
+    summary.appendChild(el('p', line === RV_MISSING ? 'rv-missing' : null, line));
+  });
+  body.appendChild(rvSectionEl('1', '上周工作概览', summary));
+
+  // 2. 已完成任务
+  body.appendChild(rvSectionEl('2', '已完成任务', rvTable(
+    ['任务名称', '负责人', '完成时间', '完成结果', '完成证据'],
+    (review.completedTasks || []).map((t) => [t.title, t.owner, rvFmtTs(t.completedAt), t.result, t.completionEvidence])
+  )));
+
+  // 3. 未完成及顺延任务
+  body.appendChild(rvSectionEl('3', '未完成及顺延任务', rvTable(
+    ['任务名称', '未完成原因', '当前进度', '是否顺延至本周', '新的计划时间'],
+    (review.deferredTasks || []).map((t) => [
+      t.title, t.reason, t.progress != null ? t.progress + '%' : null,
+      t.carriedOver ? '是' : '否', t.newDueAt ? rvFmtTs(t.newDueAt) : null
+    ])
+  )));
+
+  // 4. 遇到的问题
+  body.appendChild(rvSectionEl('4', '遇到的问题', rvTable(
+    ['问题描述', '影响范围', '当前处理状态', '是否需要 Simon 协助'],
+    (review.problems || []).map((p) => [p.description, p.scope, p.status, p.needsSimon ? '是' : '否'])
+  )));
+
+  // 5. 可以改进的空间
+  body.appendChild(rvSectionEl('5', '可以改进的空间', rvTable(
+    ['改进方向', '内容', '下一周的具体调整动作'],
+    (review.improvements || []).map((i) => [i.area, i.note, i.action])
+  )));
+
+  // 6. 下周重点
+  body.appendChild(rvSectionEl('6', '下周重点', rvTable(
+    ['优先任务', '负责人', '截止时间', '预期结果'],
+    (review.nextWeekPriorities || []).map((n) => [n.title, n.owner, n.dueAt ? rvFmtTs(n.dueAt) : null, n.expected])
+  )));
+
+  // 7. 数据变化
+  const grid = el('div', 'rv-metrics');
+  const snap = review.metricSnapshot || {};
+  RV_METRICS.forEach(([key, label]) => {
+    const card = el('div', 'rv-metric');
+    card.appendChild(el('div', 'rv-metric-val', String(snap[key] != null ? snap[key] : 0)));
+    card.appendChild(el('div', 'rv-metric-label', label));
+    grid.appendChild(card);
+  });
+  body.appendChild(rvSectionEl('7', '数据变化', grid));
+
+  return body;
+}
+
+/* 编辑模式：可编辑列表的字段规格 */
+const RV_EDIT_LISTS = [
+  ['deferredTasks', '未完成及顺延任务', [
+    ['title', '任务名称'], ['reason', '未完成原因'], ['progress', '进度%'],
+    ['carriedOver', '顺延', 'checkbox'], ['newDueAt', '新的计划时间']
+  ]],
+  ['problems', '遇到的问题', [
+    ['description', '问题描述'], ['scope', '影响范围'], ['status', '处理状态'],
+    ['needsSimon', '需 Simon', 'checkbox']
+  ]],
+  ['improvements', '可以改进的空间', [
+    ['area', '改进方向'], ['note', '内容'], ['action', '下周调整动作']
+  ]],
+  ['nextWeekPriorities', '下周重点', [
+    ['title', '优先任务'], ['owner', '负责人'], ['dueAt', '截止时间'], ['expected', '预期结果']
+  ]]
+];
+
+function renderRvEdit(review) {
+  const body = el('div', 'rv-edit');
+
+  // 概览 → textarea
+  const ta = el('textarea', 'rv-summary-edit');
+  ta.value = review.summary || '';
+  ta.rows = 4;
+  ta.addEventListener('input', () => { rvState.working.summary = ta.value; });
+  body.appendChild(rvSectionEl('1', '上周工作概览（可编辑）', ta));
+
+  // 4 个可编辑列表
+  RV_EDIT_LISTS.forEach(([key, title, cols], idx) => {
+    const items = rvState.working[key] || (rvState.working[key] = []);
+    const box = el('div', 'rv-edit-list');
+    items.forEach((item, i) => {
+      const row = el('div', 'rv-edit-row');
+      cols.forEach(([f, label, type]) => {
+        const cell = el('label', 'rv-edit-cell');
+        cell.appendChild(el('span', 'rv-edit-label', label));
+        if (type === 'checkbox') {
+          const cb = el('input', 'rv-edit-cb');
+          cb.type = 'checkbox';
+          cb.checked = !!item[f];
+          cb.addEventListener('change', () => { item[f] = cb.checked; });
+          cell.appendChild(cb);
+        } else {
+          const inp = el('input', 'rv-edit-input');
+          inp.type = 'text';
+          inp.value = item[f] != null ? String(item[f]) : '';
+          inp.addEventListener('input', () => {
+            item[f] = f === 'progress' ? (inp.value === '' ? null : Number(inp.value)) : inp.value;
+          });
+          cell.appendChild(inp);
+        }
+        row.appendChild(cell);
+      });
+      const del = el('button', 'rv-row-del', '删除');
+      del.type = 'button';
+      del.addEventListener('click', () => { items.splice(i, 1); renderWeeklyReview(); });
+      row.appendChild(del);
+      box.appendChild(row);
+    });
+    if (!items.length) box.appendChild(el('div', 'rv-missing', RV_MISSING + '（可点击下方按钮添加）'));
+    const add = el('button', 'rv-row-add', '+ 添加一行');
+    add.type = 'button';
+    add.addEventListener('click', () => {
+      const blank = {};
+      cols.forEach(([f, , type]) => { blank[f] = type === 'checkbox' ? false : null; });
+      items.push(blank);
+      renderWeeklyReview();
+    });
+    box.appendChild(add);
+    body.appendChild(rvSectionEl(String(idx + 3), title + '（可编辑）', box));
+  });
+
+  body.appendChild(el('div', 'rv-edit-note', '已完成任务与数据变化由任务数据派生，不可手工编辑；保存后生效。'));
+  return body;
+}
+
+function renderWeeklyReview() {
+  const metabar = document.getElementById('reviewMetabar');
+  const bodyBox = document.getElementById('reviewBody');
+  if (!metabar || !bodyBox) return;
+
+  // 历史周报下拉（保留选中）
+  const sel = document.getElementById('rvHistory');
+  const prevVal = sel.value;
+  sel.innerHTML = '';
+  const opt0 = el('option', null, '历史周报');
+  opt0.value = '';
+  sel.appendChild(opt0);
+  rvReviews().slice().sort((a, b) => (a.weekStart < b.weekStart ? 1 : -1)).forEach((r) => {
+    const o = el('option', null, `${r.weekStart.slice(5)} ~ ${r.weekEnd.slice(5)}（${r.status === 'confirmed' ? '已归档' : '草稿'}）`);
+    o.value = r.weekStart;
+    sel.appendChild(o);
+  });
+  sel.value = rvState.period === 'history' ? (rvState.weekStart || '') : (prevVal && rvState.period === 'history' ? prevVal : '');
+  if (rvState.period === 'history' && rvState.weekStart) sel.value = rvState.weekStart;
+
+  // 周期按钮高亮
+  document.getElementById('rvPrevWeek').classList.toggle('active', rvState.period === 'prev');
+  document.getElementById('rvThisWeek').classList.toggle('active', rvState.period === 'this');
+
+  const range = rvCurrentRange();
+  const review = rvFind(range.weekStart);
+
+  // 元信息栏：周期 + 状态 + 时间戳
+  metabar.innerHTML = '';
+  metabar.appendChild(el('span', 'rv-range', range.weekEnd ? `周期 ${range.weekStart} ~ ${range.weekEnd}` : `周期 ${range.weekStart}`));
+  if (review) {
+    const chip = el('span', 'rv-chip ' + (review.status === 'confirmed' ? 'rv-chip-confirmed' : 'rv-chip-draft'),
+      review.status === 'confirmed' ? '已归档' : '草稿（确认后归档）');
+    metabar.appendChild(chip);
+    metabar.appendChild(el('span', 'rv-meta',
+      `生成：${rvFmtTs(review.generatedAt)}（${review.generatedBy === 'pip-assistant' ? 'PIP 助手' : '人工'}）` +
+      (review.confirmedAt ? ` · 归档：${rvFmtTs(review.confirmedAt)}` : '')));
+  } else {
+    metabar.appendChild(el('span', 'rv-chip rv-chip-none', '未生成'));
+  }
+
+  // 主体
+  bodyBox.innerHTML = '';
+  if (!review) {
+    rvState.editing = false;
+    rvState.working = null;
+    const empty = el('div', 'rv-empty');
+    empty.appendChild(el('p', null, '该周期暂无复盘。'));
+    empty.appendChild(el('p', 'rv-muted', '点击「PIP 助手生成复盘」基于真实任务数据生成草稿；缺数据的栏目会标注「' + RV_MISSING + '」'));
+    bodyBox.appendChild(empty);
+  } else if (rvState.editing && review.status === 'draft') {
+    if (!rvState.working) rvState.working = JSON.parse(JSON.stringify(review));
+    bodyBox.appendChild(renderRvEdit(review));
+  } else {
+    rvState.editing = false;
+    rvState.working = null;
+    bodyBox.appendChild(renderRvView(review));
+  }
+
+  // 按钮状态
+  const btnGen = document.getElementById('btnReviewGenerate');
+  const btnEdit = document.getElementById('btnReviewEdit');
+  const btnConfirm = document.getElementById('btnReviewConfirm');
+  const confirmed = review && review.status === 'confirmed';
+  btnGen.disabled = rvState.busy || confirmed || rvState.editing;
+  btnGen.textContent = rvState.busy ? '生成中…' : (review && review.status === 'draft' ? '重新生成复盘' : 'PIP 助手生成复盘');
+  if (rvState.editing) {
+    btnEdit.textContent = '保存';
+    btnEdit.disabled = rvState.busy;
+    btnConfirm.textContent = '取消';
+    btnConfirm.disabled = rvState.busy;
+  } else {
+    btnEdit.textContent = '编辑';
+    btnEdit.disabled = rvState.busy || !review || confirmed;
+    btnConfirm.textContent = '确认归档';
+    btnConfirm.disabled = rvState.busy || !review || confirmed;
+  }
+}
+
+/* 生成（PIP 助手）：默认上一周；也供 PIP 抽屉快捷操作复用 */
+async function rvGenerate(weekStart, fromDrawer) {
+  if (rvState.busy) return null;
+  rvState.busy = true;
+  renderWeeklyReview();
+  try {
+    const r = await apiFetch('/api/weekly/generate', {
+      method: 'POST',
+      body: JSON.stringify({ weekStart, operator: agentState.operator })
+    });
+    rvUpsert(r.review);
+    rvState.busy = false;
+    renderWeeklyReview();
+    return r.review;
+  } catch (e) {
+    rvState.busy = false;
+    renderWeeklyReview();
+    if (fromDrawer) throw e;
+    alert('生成失败：' + e.message);
+    return null;
+  }
+}
+
+async function rvSaveEdit() {
+  const review = rvFind(rvCurrentRange().weekStart);
+  if (!review || !rvState.working) return;
+  rvState.busy = true;
+  renderWeeklyReview();
+  try {
+    const patch = {
+      summary: rvState.working.summary,
+      deferredTasks: rvState.working.deferredTasks || [],
+      problems: rvState.working.problems || [],
+      improvements: rvState.working.improvements || [],
+      nextWeekPriorities: rvState.working.nextWeekPriorities || []
+    };
+    const r = await apiFetch('/api/weekly/update', {
+      method: 'POST',
+      body: JSON.stringify({ id: review.id, operator: agentState.operator, patch })
+    });
+    rvUpsert(r.review);
+    rvState.editing = false;
+    rvState.working = null;
+    rvState.busy = false;
+    renderWeeklyReview();
+  } catch (e) {
+    rvState.busy = false;
+    renderWeeklyReview();
+    alert('保存失败：' + e.message);
+  }
+}
+
+async function rvConfirmReview() {
+  const review = rvFind(rvCurrentRange().weekStart);
+  if (!review) return;
+  if (!window.confirm(`确认归档 ${review.weekStart} ~ ${review.weekEnd} 的周报吗？归档后不可再编辑或重新生成。`)) return;
+  rvState.busy = true;
+  renderWeeklyReview();
+  try {
+    const r = await apiFetch('/api/weekly/confirm', {
+      method: 'POST',
+      body: JSON.stringify({ id: review.id, operator: agentState.operator })
+    });
+    rvUpsert(r.review);
+    rvState.busy = false;
+    renderWeeklyReview();
+  } catch (e) {
+    rvState.busy = false;
+    renderWeeklyReview();
+    alert('归档失败：' + e.message);
+  }
+}
+
+/* PIP 抽屉触发：生成上周复盘并跳转到复盘板块 */
+async function runWeeklyGenerateFromAgent() {
+  const weekStart = rvPrevWeekRange().weekStart;
+  try {
+    const review = await rvGenerate(weekStart, true);
+    if (!review) return;
+    rvState.period = 'prev';
+    rvState.weekStart = null;
+    renderWeeklyReview();
+    const done = (review.completedTasks || []).length;
+    const missing = [];
+    if (!(review.improvements || []).length) missing.push('改进空间');
+    agentBubble('agent',
+      '✅ 上周复盘草稿已生成（<b>' + escapeHtml(review.weekStart) + ' ~ ' + escapeHtml(review.weekEnd) + '</b>）：' +
+      '完成任务 ' + done + ' 项，下周重点 ' + (review.nextWeekPriorities || []).length + ' 项。' +
+      (missing.length ? '<br><span class="ag-muted">' + escapeHtml(missing.join('、')) + '缺少记录，待人工补充。</span>' : '') +
+      '<br>已在「每周总结与复盘」板块打开，请检查并编辑后点击「确认归档」。');
+    document.getElementById('sec-review').scrollIntoView({ behavior: REDUCED_MOTION ? 'auto' : 'smooth' });
+  } catch (e) {
+    agentBubble('sys', '⚠️ 生成复盘失败：' + escapeHtml(e.message));
+  }
+}
+
+function initReview() {
+  document.getElementById('rvPrevWeek').addEventListener('click', () => {
+    rvState.period = 'prev'; rvState.weekStart = null; rvState.editing = false; rvState.working = null;
+    renderWeeklyReview();
+  });
+  document.getElementById('rvThisWeek').addEventListener('click', () => {
+    rvState.period = 'this'; rvState.weekStart = null; rvState.editing = false; rvState.working = null;
+    renderWeeklyReview();
+  });
+  document.getElementById('rvHistory').addEventListener('change', (e) => {
+    if (!e.target.value) return;
+    rvState.period = 'history'; rvState.weekStart = e.target.value; rvState.editing = false; rvState.working = null;
+    renderWeeklyReview();
+  });
+  document.getElementById('btnReviewGenerate').addEventListener('click', () => {
+    const range = rvCurrentRange();
+    rvGenerate(range.weekStart, false);
+  });
+  document.getElementById('btnReviewEdit').addEventListener('click', () => {
+    if (rvState.editing) { rvSaveEdit(); return; }
+    rvState.editing = true; rvState.working = null;
+    renderWeeklyReview();
+  });
+  document.getElementById('btnReviewConfirm').addEventListener('click', () => {
+    if (rvState.editing) {
+      rvState.editing = false; rvState.working = null;
+      renderWeeklyReview();
+      return;
+    }
+    rvConfirmReview();
+  });
+}
+
 /* ---------- 侧栏 08 阻塞事项状态点（Blocked 数 > 0 红，否则绿） ---------- */
 function updateSidebarBlockedDot() {
   const dot = document.getElementById('navDotBlocked');
@@ -2059,9 +2444,9 @@ function bindEvents() {
   document.getElementById('btnExport').addEventListener('click', exportPipeline);
 }
 
-/* ---------- 启动：加载 10 个 JSON，任一失败自动用 FALLBACK ---------- */
+/* ---------- 启动：加载 11 个 JSON，任一失败自动用 FALLBACK ---------- */
 async function init() {
-  const [kpi, gantt, roadmap, pipeline, todo, milestones, weeklyLog, blockers, resources, tasks] = await Promise.all([
+  const [kpi, gantt, roadmap, pipeline, todo, milestones, weeklyLog, blockers, resources, tasks, weeklyReviews] = await Promise.all([
     loadJson('data/kpi.json', FALLBACK.kpi),
     loadJson('data/gantt.json', FALLBACK.gantt),
     loadJson('data/roadmap.json', FALLBACK.roadmap),
@@ -2071,7 +2456,8 @@ async function init() {
     loadJson('data/weekly-log.json', FALLBACK.weeklyLog),
     loadJson('data/blockers.json', FALLBACK.blockers),
     loadJson('data/resources.json', FALLBACK.resources),
-    loadJson('data/tasks.json', FALLBACK.tasks)
+    loadJson('data/tasks.json', FALLBACK.tasks),
+    loadJson('data/weekly-reviews.json', FALLBACK.weeklyReviews)
   ]);
   state.kpi = kpi;
   state.gantt = gantt;
@@ -2083,6 +2469,7 @@ async function init() {
   state.blockers = blockers;
   state.resources = resources;
   state.tasks = tasks;
+  state.weeklyReviews = weeklyReviews;
 
   renderSummary();
   renderKpi(state.kpi);
@@ -2095,6 +2482,8 @@ async function init() {
   renderTodo(state.todo);
   renderBlocked();
   renderWeekly(state.weeklyLog);
+  renderWeeklyReview();
+  initReview();
   updateSidebarBlockedDot();
   initTheme();
   bindEvents();

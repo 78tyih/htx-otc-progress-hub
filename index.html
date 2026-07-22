@@ -41,7 +41,8 @@
         <a class="nav-link" href="#sec-todo"><span class="nav-no">09</span>本周待办<span class="nav-dot dot-yellow" aria-hidden="true"></span></a>
         <a class="nav-link" href="#sec-blocked"><span class="nav-no">10</span>阻塞事项<span class="nav-dot dot-red" id="navDotBlocked" aria-hidden="true"></span></a>
         <a class="nav-link" href="#sec-weekly"><span class="nav-no">11</span>周更记录<span class="nav-dot dot-green" aria-hidden="true"></span></a>
-        <a class="nav-link" href="#sec-system"><span class="nav-no">12</span>系统状态<span class="nav-dot dot-green" aria-hidden="true"></span></a>
+        <a class="nav-link" href="#sec-review"><span class="nav-no">12</span>每周总结与复盘<span class="nav-dot dot-yellow" aria-hidden="true"></span></a>
+        <a class="nav-link" href="#sec-system"><span class="nav-no">13</span>系统状态<span class="nav-dot dot-green" aria-hidden="true"></span></a>
       </nav>
       <div class="side-foot"><span id="sideCadence">每周更新一次</span> · 本周更新：<b id="sideUpdated">2026-07-21</b></div>
     </aside>
@@ -146,7 +147,7 @@
             <span class="sec-no">06</span>
             <div>
               <h2>任务依赖关系图</h2>
-              <p class="section-sub">主链路（黄色渐变） · 支线 A 获客线索（浅色） · 支线 B 看板交付（淡蓝） · 支线 C 设计物料（浅灰）</p>
+              <p class="section-sub">主链路（黄色渐变） · 支线 A 获客线索（浅色） · 支线 C 设计物料（浅灰）</p>
             </div>
           </div>
           <div class="panel dep-panel">
@@ -156,7 +157,6 @@
             <div class="dep-legend">
               <span class="legend-item"><span class="legend-line ll-main"></span>主链路 · 绩效交付</span>
               <span class="legend-item"><span class="legend-line ll-a"></span>支线 A · 获客线索汇入</span>
-              <span class="legend-item"><span class="legend-line ll-b"></span>支线 B · 看板交付与访问</span>
               <span class="legend-item"><span class="legend-line ll-c"></span>支线 C · 设计物料制作</span>
             </div>
           </div>
@@ -251,10 +251,39 @@
           </div>
         </section>
 
-        <!-- ========== 12 系统状态与最近更新（Agent / Webhook / 通知联调） ========== -->
-        <section class="section" id="sec-system">
+        <!-- ========== 12 每周总结与复盘（weekly-reviews.json 驱动 · PIP 助手生成草稿 · 确认归档） ========== -->
+        <section class="section" id="sec-review">
           <div class="section-head">
             <span class="sec-no">12</span>
+            <div>
+              <h2>每周总结与复盘</h2>
+              <p class="section-sub">基于真实任务数据 · PIP 助手生成草稿 · 编辑确认后归档</p>
+            </div>
+          </div>
+          <div class="panel review-panel">
+            <div class="review-toolbar">
+              <div class="review-period" role="group" aria-label="周期选择">
+                <button class="rv-period-btn" id="rvPrevWeek" type="button">上一周</button>
+                <button class="rv-period-btn" id="rvThisWeek" type="button">本周</button>
+                <select class="rv-history" id="rvHistory" aria-label="历史周报">
+                  <option value="">历史周报</option>
+                </select>
+              </div>
+              <div class="review-actions">
+                <button class="btn btn-agent" id="btnReviewGenerate" type="button">PIP 助手生成复盘</button>
+                <button class="btn btn-outline" id="btnReviewEdit" type="button">编辑</button>
+                <button class="btn btn-confirm" id="btnReviewConfirm" type="button">确认归档</button>
+              </div>
+            </div>
+            <div class="review-metabar" id="reviewMetabar"></div>
+            <div class="review-body" id="reviewBody"></div>
+          </div>
+        </section>
+
+        <!-- ========== 13 系统状态与最近更新（PIP 助手 / Webhook / 通知联调） ========== -->
+        <section class="section" id="sec-system">
+          <div class="section-head">
+            <span class="sec-no">13</span>
             <div>
               <h2>系统状态与最近更新</h2>
               <p class="section-sub">PIP 助手 / Webhook 在线状态 · PIP 助手修改记录 · 手机通知联调</p>
@@ -312,6 +341,7 @@
       <button type="button" data-q="Simon 的任务">Simon 的任务</button>
       <button type="button" data-q="哪些任务被其他任务阻塞？">阻塞任务</button>
       <button type="button" data-q="本周需要优先处理什么？">本周优先级</button>
+      <button type="button" data-q="生成上周复盘">生成上周复盘</button>
       <button type="button" data-q="测试一次手机通知">测试手机通知</button>
     </div>
     <div class="agent-log" id="agentLog" aria-live="polite"></div>

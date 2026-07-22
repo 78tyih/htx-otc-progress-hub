@@ -9,9 +9,27 @@
     "end": "2026-07-29",
     "next": "补充 FAQ 话术与禁用词审校",
     "children": [
-      {"task": "客户手册框架与内容", "start": "2026-07-21", "end": "2026-07-23", "status": "Doing", "progress": 70},
-      {"task": "FAQ 与客户话术", "start": "2026-07-23", "end": "2026-07-25", "status": "Next", "progress": 0},
-      {"task": "禁用词与合规审校", "start": "2026-07-25", "end": "2026-07-29", "status": "Next", "progress": 0}
+      {
+        "task": "客户手册框架与内容",
+        "start": "2026-07-21",
+        "end": "2026-07-23",
+        "status": "Doing",
+        "progress": 70
+      },
+      {
+        "task": "FAQ 与客户话术",
+        "start": "2026-07-23",
+        "end": "2026-07-25",
+        "status": "Next",
+        "progress": 0
+      },
+      {
+        "task": "禁用词与合规审校",
+        "start": "2026-07-25",
+        "end": "2026-07-29",
+        "status": "Next",
+        "progress": 0
+      }
     ]
   },
   {
@@ -24,9 +42,27 @@
     "end": "2026-07-31",
     "next": "完善渠道拓展与目标拆解章节",
     "children": [
-      {"task": "绩效目标拆解", "start": "2026-07-21", "end": "2026-07-24", "status": "Doing", "progress": 60},
-      {"task": "获客路径与渠道计划", "start": "2026-07-24", "end": "2026-07-28", "status": "Next", "progress": 0},
-      {"task": "文档定稿与内部对齐", "start": "2026-07-28", "end": "2026-07-31", "status": "Next", "progress": 0}
+      {
+        "task": "绩效目标拆解",
+        "start": "2026-07-21",
+        "end": "2026-07-24",
+        "status": "Doing",
+        "progress": 60
+      },
+      {
+        "task": "获客路径与渠道计划",
+        "start": "2026-07-24",
+        "end": "2026-07-28",
+        "status": "Next",
+        "progress": 0
+      },
+      {
+        "task": "文档定稿与内部对齐",
+        "start": "2026-07-28",
+        "end": "2026-07-31",
+        "status": "Next",
+        "progress": 0
+      }
     ]
   },
   {
@@ -39,9 +75,27 @@
     "end": "2026-07-24",
     "next": "等待设计团队排期反馈",
     "children": [
-      {"task": "资料整理（背景/流程/FAQ/禁用词/参考图）", "start": "2026-07-21", "end": "2026-07-22", "status": "Done", "progress": 100},
-      {"task": "提交设计团队", "start": "2026-07-22", "end": "2026-07-23", "status": "Done", "progress": 100},
-      {"task": "确认排期与反馈", "start": "2026-07-23", "end": "2026-07-24", "status": "Next", "progress": 0}
+      {
+        "task": "资料整理（背景/流程/FAQ/禁用词/参考图）",
+        "start": "2026-07-21",
+        "end": "2026-07-22",
+        "status": "Done",
+        "progress": 100
+      },
+      {
+        "task": "提交设计团队",
+        "start": "2026-07-22",
+        "end": "2026-07-23",
+        "status": "Done",
+        "progress": 100
+      },
+      {
+        "task": "确认排期与反馈",
+        "start": "2026-07-23",
+        "end": "2026-07-24",
+        "status": "Next",
+        "progress": 0
+      }
     ]
   },
   {
@@ -49,14 +103,32 @@
     "name": "客户 Pipeline 建档",
     "owner": "Sera",
     "status": "Doing",
-    "progress": 80,
+    "progress": 90,
     "start": "2026-07-21",
     "end": "2026-07-25",
-    "next": "输出五星重点客户名单",
+    "next": "按客户优先级逐一推进注册 / KYC / 首单",
     "children": [
-      {"task": "TG 客户 CRM 初版", "start": "2026-07-21", "end": "2026-07-21", "status": "Done", "progress": 100},
-      {"task": "五星重点客户筛选", "start": "2026-07-22", "end": "2026-07-25", "status": "Doing", "progress": 30},
-      {"task": "注册/KYC 推进名单", "start": "2026-07-25", "end": "2026-07-25", "status": "Next", "progress": 0}
+      {
+        "task": "TG 客户 CRM 初版",
+        "start": "2026-07-21",
+        "end": "2026-07-21",
+        "status": "Done",
+        "progress": 100
+      },
+      {
+        "task": "五星重点客户筛选",
+        "start": "2026-07-22",
+        "end": "2026-07-25",
+        "status": "Done",
+        "progress": 100
+      },
+      {
+        "task": "注册/KYC 推进名单",
+        "start": "2026-07-25",
+        "end": "2026-07-25",
+        "status": "Next",
+        "progress": 0
+      }
     ]
   },
   {
@@ -69,10 +141,34 @@
     "end": "2026-08-08",
     "next": "确认首批唤醒客户并启动注册推进",
     "children": [
-      {"task": "确认首批唤醒客户", "start": "2026-07-25", "end": "2026-07-26", "status": "Next", "progress": 0},
-      {"task": "推动个人/机构注册", "start": "2026-07-26", "end": "2026-08-04", "status": "Next", "progress": 0},
-      {"task": "跟进 KYC/KYB", "start": "2026-07-28", "end": "2026-08-06", "status": "Next", "progress": 0},
-      {"task": "首单交易测试（配合静格）", "start": "2026-07-24", "end": "2026-07-25", "status": "Next", "progress": 0}
+      {
+        "task": "确认首批唤醒客户",
+        "start": "2026-07-25",
+        "end": "2026-07-26",
+        "status": "Next",
+        "progress": 0
+      },
+      {
+        "task": "推动个人/机构注册",
+        "start": "2026-07-26",
+        "end": "2026-08-04",
+        "status": "Next",
+        "progress": 0
+      },
+      {
+        "task": "跟进 KYC/KYB",
+        "start": "2026-07-28",
+        "end": "2026-08-06",
+        "status": "Next",
+        "progress": 0
+      },
+      {
+        "task": "首单交易测试（配合静格）",
+        "start": "2026-07-24",
+        "end": "2026-07-25",
+        "status": "Next",
+        "progress": 0
+      }
     ]
   },
   {
@@ -85,8 +181,20 @@
     "end": "2026-08-31",
     "next": "本周五完成首次周更",
     "children": [
-      {"task": "每周看板数据更新", "start": "2026-07-21", "end": "2026-08-31", "status": "Doing", "progress": 20},
-      {"task": "月度 CRIB 复盘", "start": "2026-08-25", "end": "2026-08-31", "status": "Next", "progress": 0}
+      {
+        "task": "每周总结与复盘",
+        "start": "2026-07-21",
+        "end": "2026-08-31",
+        "status": "Doing",
+        "progress": 20
+      },
+      {
+        "task": "月度 CRIB 复盘",
+        "start": "2026-08-25",
+        "end": "2026-08-31",
+        "status": "Next",
+        "progress": 0
+      }
     ]
   }
 ]

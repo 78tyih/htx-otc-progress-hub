@@ -1,4 +1,12 @@
-/** 全链路验收脚本：dev-server + webhook 桩 */
+/** 全链路验收脚本：dev-server + webhook 桩
+ *
+ * 运行方式（数据隔离，绝不触碰仓库内 data/）：
+ *   1. TMP=$(mktemp -d) && cp data/*.json "$TMP"/
+ *   2. node /tmp/webhook-stub.js            # 8399 端口，返回 errcode=0
+ *   3. HUB_DATA_DIR="$TMP" PORT=8124 WECHAT_WEBHOOK_URL='http://127.0.0.1:8399/cgi-bin/webhook/send?key=test' \
+ *      NOTIFY_WEBHOOK_URL='http://127.0.0.1:8399/webhook' node tests/dev-server.js
+ *   4. HUB_DATA_DIR="$TMP" node tests/web-e2e.js
+ */
 'use strict';
 const BASE = 'http://127.0.0.1:8124';
 
@@ -50,9 +58,9 @@ const post = (path, body) => api(path, { method: 'POST', headers: { 'content-typ
   check('今日进度', q7.status === 200 && !!q7.json.reply, q7.json);
 
   console.log('== 4. Agent 状态变更 → 确认卡 ==');
-  // 找一个进行中任务
-  const doing = tk.json.tasks.find((t) => t.status === '进行中');
-  check('存在进行中任务', !!doing);
+  // 找一个可迁移到「已完成」的非终态任务（待启动/进行中/已提醒/待输出）
+  const doing = tk.json.tasks.find((t) => ['待启动', '进行中', '已提醒', '待输出'].includes(t.status));
+  check('存在可推进任务', !!doing);
   const u1 = await post('/api/agent/chat', { message: `把 ${doing.id} 标记为已完成` });
   check('返回确认卡', u1.status === 200 && u1.json.kind === 'update' && u1.json.confirm, u1.json);
   check('确认卡含 taskId/newStatus', u1.json.confirm.taskId === doing.id && u1.json.confirm.newStatus === '已完成', u1.json.confirm);
@@ -63,7 +71,7 @@ const post = (path, body) => api(path, { method: 'POST', headers: { 'content-typ
   const c1 = await post('/api/agent/confirm', { taskId: doing.id, newStatus: '已完成', operator: 'Sera', evidence: '全链路测试交付物' });
   check('confirm 200', c1.status === 200, c1.text);
   check('confirm ok', c1.json && c1.json.ok === true, c1.json);
-  check('记录 previousStatus', c1.json.previousStatus === '进行中', c1.json);
+  check('记录 previousStatus', c1.json.previousStatus === doing.status, c1.json);
   check('触发 webhook 成功', c1.json.notify && c1.json.notify.ok === true, c1.json.notify);
   const after = (await api('/api/tasks')).json.tasks.find((t) => t.id === doing.id);
   check('状态已更新为已完成', after.status === '已完成', after);
@@ -127,8 +135,51 @@ const post = (path, body) => api(path, { method: 'POST', headers: { 'content-typ
   }
 
   console.log('== 10. 展示层同步 ==');
-  const todo = require('../data/todo.json');
+  const dataDir = process.env.HUB_DATA_DIR || require('path').join(__dirname, '..', 'data');
+  const todo = JSON.parse(fs.readFileSync(require('path').join(dataDir, 'todo.json'), 'utf8'));
   check('todo.json 已投影完成态', todo.some((r) => r.task === doing.title && r.status === 'Done'));
+
+  console.log('== 11. 每周总结与复盘 API ==');
+  const q8 = await post('/api/agent/chat', { message: '生成上周复盘' });
+  check('PIP 意图识别 weeklyGenerate', q8.status === 200 && q8.json.weeklyGenerate === true && q8.json.kind === 'weekly-generate', q8.json);
+  const g0 = await api('/api/weekly/generate');
+  check('weekly/generate GET 被拒 405', g0.status === 405, g0);
+  const wl0 = await post('/api/weekly/list', {});
+  check('weekly/list POST 被拒 405', wl0.status === 405, wl0);
+
+  const wg = await post('/api/weekly/generate', { operator: 'Sera' });
+  check('generate 200', wg.status === 200, wg.text);
+  check('generate ok 且为草稿', wg.json && wg.json.ok === true && wg.json.review && wg.json.review.status === 'draft', wg.json);
+  const rv = wg.json.review;
+  check('generatedBy=pip-assistant', rv.generatedBy === 'pip-assistant', rv.generatedBy);
+  // 默认 weekStart = 上一自然周周一（与服务端同一 +08:00 墙钟算法）
+  const shNow = new Date(Date.now() + 8 * 3600000);
+  const prevW = new Date(shNow.getTime() - 7 * 86400000);
+  const expStart = new Date(prevW.getTime() - ((prevW.getUTCDay() + 6) % 7) * 86400000).toISOString().slice(0, 10);
+  check('默认生成上一自然周（周一起始）', rv.weekStart === expStart && rv.weekEnd > rv.weekStart, { got: rv.weekStart, exp: expStart });
+  check('含七板块字段', ['summary', 'completedTasks', 'deferredTasks', 'problems', 'improvements', 'nextWeekPriorities', 'metricSnapshot'].every((k) => k in rv), Object.keys(rv));
+  check('completedTaskIds 与 completedTasks 一致', Array.isArray(rv.completedTaskIds) && rv.completedTaskIds.length === rv.completedTasks.length, rv.completedTaskIds);
+  check('metricSnapshot 含 8 项数值指标', ['completedThisWeek', 'uncompleted', 'newBlocked', 'unblocked', 'highValueCustomer', 'registration', 'kyc', 'firstOrder'].every((k) => typeof rv.metricSnapshot[k] === 'number'), rv.metricSnapshot);
+  check('下周重点含负责人与预期字段', rv.nextWeekPriorities.every((n) => 'owner' in n && 'expected' in n && 'dueAt' in n), rv.nextWeekPriorities[0]);
+
+  const wl = await api('/api/weekly/list');
+  check('list 200 且含该复盘', wl.status === 200 && wl.json.ok && wl.json.reviews.some((r) => r.id === rv.id), wl.json);
+
+  const wu = await post('/api/weekly/update', { id: rv.id, operator: 'Sera', patch: { summary: '人工修订后的概览', improvements: [{ area: '数据记录', note: '完成证据填写更及时', action: '每日下班前核对' }] } });
+  check('update 200', wu.status === 200, wu.text);
+  check('summary 已更新', wu.json.review.summary === '人工修订后的概览', wu.json.review.summary);
+  check('improvements 已更新', wu.json.review.improvements.length === 1 && wu.json.review.improvements[0].area === '数据记录', wu.json.review.improvements);
+  const wuBad = await post('/api/weekly/update', { id: rv.id, patch: { improvements: '不是数组' } });
+  check('非法 patch 被拒 400', wuBad.status === 400, wuBad);
+
+  const wc = await post('/api/weekly/confirm', { id: rv.id, operator: 'Sera' });
+  check('confirm 200 且已归档', wc.status === 200 && wc.json.review.status === 'confirmed' && !!wc.json.review.confirmedAt, wc.json);
+  const wu2 = await post('/api/weekly/update', { id: rv.id, patch: { summary: 'x' } });
+  check('已归档不可再编辑 409', wu2.status === 409, wu2);
+  const wc2 = await post('/api/weekly/confirm', { id: rv.id, operator: 'Sera' });
+  check('重复归档幂等 noop', wc2.status === 200 && wc2.json.noop === true, wc2.json);
+  const wn = await post('/api/weekly/confirm', { id: 'WR-1999-01-04' });
+  check('归档不存在复盘 404', wn.status === 404, wn);
 
   console.log(`\n结果：${pass} 通过 / ${fail} 失败`);
   process.exit(fail ? 1 : 0);

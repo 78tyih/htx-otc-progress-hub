@@ -117,6 +117,7 @@ const HELP = [
   '- 查进度：已完成 / 未完成 / 进行中 / 逾期 / 阻塞任务',
   '- 看重点：今日进度、本周优先级、某负责人的任务（如「检查 Simon 的任务」）',
   '- 改状态：「把 T-0001 标记为已完成」「把 T-0002 改为进行中」（会先让你确认）',
+  '- 周复盘：「生成上周复盘」（草稿确认后归档）',
   '- 发通知：「测试一次手机通知」',
 ].join('\n');
 
@@ -133,6 +134,11 @@ function route(rawMessage, ctx) {
   // 1. 测试手机通知
   if (/测试.*通知|通知.*测试|发.*手机通知|手机通知/.test(msg)) {
     return { reply: '好的，正在发送一条测试手机通知…', notifyTest: true, kind: 'notify-test' };
+  }
+
+  // 1b. 生成周复盘（前端调用 /api/weekly/generate，草稿确认后归档）
+  if (/复盘|周报/.test(msg) && /生成|做|写|出一份|来一份/.test(msg)) {
+    return { reply: '好的，正在读取真实任务数据生成上周复盘草稿…', weeklyGenerate: true, kind: 'weekly-generate' };
   }
 
   // 2. 状态变更（先于查询判定，避免「完成」误匹配）
