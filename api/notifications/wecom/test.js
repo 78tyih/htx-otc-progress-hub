@@ -54,6 +54,19 @@ module.exports = async (req, res) => {
       error: result.error,
     };
     if (result.ok) state.notify.lastSuccessAt = result.at;
+    if (!state.notify.channelStatus) state.notify.channelStatus = {};
+    state.notify.channelStatus.wecom = {
+      lastTest: {
+        at: result.at,
+        ok: result.ok,
+        httpStatus: result.httpStatus,
+        code: result.errcode,
+        message: result.errmsg,
+        durationMs: result.durationMs,
+        error: result.error,
+      },
+      lastSuccessAt: result.ok ? result.at : (state.notify.channelStatus.wecom || {}).lastSuccessAt || null,
+    };
     try { await saveState(state); } catch { /* 诊断状态丢失不阻断 */ }
 
     sendJson(res, 200, {

@@ -2,28 +2,15 @@
  * POST /api/weekly/confirm — 确认归档周复盘（draft → confirmed，不可逆）
  *
  * body: { id, operator? }
- * 归档成功后发送企微通知（失败不阻断，响应附 notify 诊断）；重复归档 noop 不发通知。
+ * 归档成功后双通道推送企微（Sera）+ 飞书（Simon）（失败不阻断，响应附 notify 诊断）；
+ * 重复归档 noop 不发通知；同一复盘 eventId 防重复推送。
  */
 'use strict';
 
-const { sendJson, readBody, methodGuard, sectionUrl } = require('../_lib/http');
+const { sendJson, readBody, methodGuard, dashboardUrl } = require('../_lib/http');
 const { loadState, saveState, appendAuditEntry } = require('../_lib/store');
 const { nowIso } = require('../_lib/weekly');
-const { sendWecomMarkdown } = require('../_lib/wecom');
-
-/** 归档通知正文（企微 markdown） */
-function buildArchivedContent(req, review) {
-  const count = (a) => (Array.isArray(a) ? a.length : 0);
-  return (
-    '【PIP 每周复盘已归档】\n' +
-    `> 复盘周期：${review.weekStart} ~ ${review.weekEnd}\n` +
-    `> 本周完成：${count(review.completedTasks)} 项\n` +
-    `> 顺延任务：${count(review.deferredTasks)} 项\n` +
-    `> 遇到的问题：${count(review.problems)} 项\n` +
-    `> 下周重点：${count(review.nextWeekPriorities)} 项\n` +
-    `[查看本周总结与复盘](${sectionUrl(req, { section: 'weekly-review', week: review.weekStart, source: 'wecom' })})`
-  );
-}
+const { sendPipNotification } = require('../_lib/dual');
 
 module.exports = async (req, res) => {
   if (!methodGuard(req, res, 'POST')) return;
@@ -52,9 +39,36 @@ module.exports = async (req, res) => {
     });
     await saveState(state);
 
-    // 企微通知（失败不阻断归档结果）
-    const r = await sendWecomMarkdown(buildArchivedContent(req, review));
-    sendJson(res, 200, { ok: true, review, notify: { ok: r.ok, error: r.error } });
+    // 双通道通知（失败不阻断归档结果；eventId 含复盘 id 防重复）
+    const count = (a) => (Array.isArray(a) ? a.length : 0);
+    const dual = await sendPipNotification(state, {
+      eventId: `weekly-archived:${review.id}`,
+      title: '【PIP 每周总结与复盘】',
+      lines: [
+        `复盘周期：${review.weekStart} ~ ${review.weekEnd}`,
+        `本周完成：${count(review.completedTasks)} 项`,
+        `顺延任务：${count(review.deferredTasks)} 项`,
+        `遇到的问题：${count(review.problems)} 项`,
+        `下周重点：${count(review.nextWeekPriorities)} 项`,
+        `操作人：${operator}`,
+      ],
+      linkBase: dashboardUrl(req),
+      linkParams: { section: 'weekly-review', week: review.weekStart },
+    });
+    try { await saveState(state); } catch { /* 通知状态丢失不阻断 */ }
+
+    sendJson(res, 200, {
+      ok: true,
+      review,
+      notify: {
+        ok: dual.ok,
+        partial: dual.partial,
+        allFailed: dual.allFailed,
+        message: dual.ok ? '双通道推送成功' : dual.partial ? '部分发送成功' : '双通道均发送失败',
+        wecom: dual.wecom,
+        feishu: dual.feishu,
+      },
+    });
   } catch (e) {
     sendJson(res, 500, { ok: false, error: String((e && e.message) || e) });
   }

@@ -31,6 +31,8 @@ const post = (path, body) => api(path, { method: 'POST', headers: { 'content-typ
   check('agent 在线', st.json && st.json.agent && st.json.agent.online === true, st.json);
   check('webhook 已配置', st.json && st.json.webhook && st.json.webhook.configured === true, st.json);
   check('返回任务统计', st.json && st.json.stats && typeof st.json.stats.total === 'number' && typeof st.json.stats.completionRate === 'number', st.json);
+  check('企微渠道已配置', st.json && st.json.channels && st.json.channels.wecom && st.json.channels.wecom.configured === true, st.json && st.json.channels);
+  check('飞书渠道已配置', st.json && st.json.channels && st.json.channels.feishu && st.json.channels.feishu.configured === true, st.json && st.json.channels);
 
   console.log('== 2. /api/tasks ==');
   const tk = await api('/api/tasks');
@@ -73,6 +75,10 @@ const post = (path, body) => api(path, { method: 'POST', headers: { 'content-typ
   check('confirm ok', c1.json && c1.json.ok === true, c1.json);
   check('记录 previousStatus', c1.json.previousStatus === doing.status, c1.json);
   check('触发 webhook 成功', c1.json.notify && c1.json.notify.ok === true, c1.json.notify);
+  check('notify 双通道模式', c1.json.notify && c1.json.notify.mode === 'dual', c1.json.notify);
+  check('notify 企微渠道成功', c1.json.notify && c1.json.notify.wecom && c1.json.notify.wecom.success === true, c1.json.notify && c1.json.notify.wecom);
+  check('notify 飞书渠道成功', c1.json.notify && c1.json.notify.feishu && c1.json.notify.feishu.success === true, c1.json.notify && c1.json.notify.feishu);
+  check('notify 双通道文案', c1.json.notify && c1.json.notify.message === '双通道推送成功', c1.json.notify);
   const after = (await api('/api/tasks')).json.tasks.find((t) => t.id === doing.id);
   check('状态已更新为已完成', after.status === '已完成', after);
   check('updatedBy=Sera', after.updatedBy === 'Sera', after);
@@ -105,6 +111,31 @@ const post = (path, body) => api(path, { method: 'POST', headers: { 'content-typ
   const wtGet = await api('/api/notifications/wecom/test');
   check('wecom/test GET 被拒 405', wtGet.status === 405, wtGet);
 
+  console.log('== 7c. /api/notifications/feishu/test 诊断 ==');
+  const ft = await post('/api/notifications/feishu/test', { operator: 'Sera' });
+  check('feishu/test 200', ft.status === 200, ft.text);
+  check('feishu 发送成功', ft.json && ft.json.ok === true, ft.json);
+  check('feishu HTTP 状态码 200', ft.json.httpStatus === 200, ft.json);
+  check('feishu code=0', ft.json.code === 0, ft.json);
+  check('feishu message=success', ft.json.message === 'success', ft.json);
+  check('feishu 含响应耗时', typeof ft.json.durationMs === 'number', ft.json);
+  check('feishu 含最近成功时间', !!ft.json.lastSuccessAt, ft.json);
+  const ftGet = await api('/api/notifications/feishu/test');
+  check('feishu/test GET 被拒 405', ftGet.status === 405, ftGet);
+
+  console.log('== 7d. /api/notifications/test-all 双通道诊断 ==');
+  const ta = await post('/api/notifications/test-all', { operator: 'Sera' });
+  check('test-all 200', ta.status === 200, ta.text);
+  check('test-all 双通道推送成功', ta.json && ta.json.ok === true, ta.json);
+  check('test-all 非部分成功', ta.json.partial === false, ta.json);
+  check('test-all 双通道文案', ta.json.message === '双通道推送成功', ta.json);
+  check('test-all 企微成功', ta.json.wecom && ta.json.wecom.success === true, ta.json.wecom);
+  check('test-all 企微 errcode=0', ta.json.wecom && ta.json.wecom.code === 0, ta.json.wecom);
+  check('test-all 飞书成功', ta.json.feishu && ta.json.feishu.success === true, ta.json.feishu);
+  check('test-all 飞书 code=0', ta.json.feishu && ta.json.feishu.code === 0, ta.json.feishu);
+  const taGet = await api('/api/notifications/test-all');
+  check('test-all GET 被拒 405', taGet.status === 405, taGet);
+
   console.log('== 8. 防重复 ==');
   const d1 = await post('/api/agent/confirm', { taskId: doing.id, newStatus: '已完成', operator: 'Sera' });
   check('重复 confirm noop', d1.status === 200 && d1.json.noop === true, d1.json);
@@ -127,12 +158,43 @@ const post = (path, body) => api(path, { method: 'POST', headers: { 'content-typ
     check('通用 payload 存在', false, bodies.length);
   }
   check('收到企微 msgtype markdown 推送', wecomMsgs.length >= 1, bodies.map((l) => l.body && l.body.msgtype));
-  if (wecomMsgs.length) {
-    const content = wecomMsgs[wecomMsgs.length - 1].body.markdown.content;
+  // 定位 wecom/test 的测试消息（不能取最后一条：test-all/summary 等也会推企微 markdown）
+  const wecomTestMsg = [...wecomMsgs].reverse().find((l) => {
+    const c = l.body && l.body.markdown && l.body.markdown.content;
+    return typeof c === 'string' && c.includes('【HTX OTC PIP 看板】');
+  });
+  if (wecomTestMsg) {
+    const content = wecomTestMsg.body.markdown.content;
     check('测试消息含看板标题', content.includes('【HTX OTC PIP 看板】'), content.slice(0, 120));
     check('测试消息含交付进度', content.includes('OTC 设计交付包：已交付') && content.includes('设计团队交互包：已传回品牌技能包'), content.slice(0, 200));
     check('测试消息含发送时间', /发送时间：\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/.test(content), content.slice(-80));
+  } else {
+    check('测试消息含看板标题', false, '未找到 wecom/test 测试消息');
+    check('测试消息含交付进度', false);
+    check('测试消息含发送时间', false);
   }
+
+  // 飞书富文本推送（confirm / feishu/test / test-all 均会发送）
+  const feishuMsgs = bodies.filter((l) => l.body && l.body.msg_type === 'post');
+  check('桩收到飞书 post 消息 ≥2 条', feishuMsgs.length >= 2, feishuMsgs.length);
+  if (feishuMsgs.length) {
+    const lastFeishu = feishuMsgs[feishuMsgs.length - 1].body;
+    const zh = lastFeishu.content && lastFeishu.content.post && lastFeishu.content.post.zh_cn;
+    check('飞书消息标题非空', !!(zh && typeof zh.title === 'string' && zh.title.length > 0), lastFeishu);
+  } else {
+    check('飞书消息标题非空', false, '无飞书消息');
+  }
+  // 看板深链：非本地环境企微 markdown 必含 taskId 深链参数（source=wecom）；
+  // 本地 127.0.0.1 下 dashboardUrl 为空，链接行被省略（飞书 link 行为空数组、不含 a 标签）属预期
+  const deepLinked = wecomMsgs.some((l) => {
+    const c = l.body && l.body.markdown && l.body.markdown.content;
+    return typeof c === 'string' && c.includes(`taskId=${doing.id}`) && c.includes('source=wecom');
+  });
+  const feishuHasAnchor = feishuMsgs.some((l) => {
+    const zh = l.body && l.body.content && l.body.content.post && l.body.content.post.zh_cn;
+    return !!(zh && Array.isArray(zh.content) && zh.content.some((seg) => Array.isArray(seg) && seg.some((el) => el && el.tag === 'a')));
+  });
+  check('企微 taskId 深链（source=wecom）或本地无链接结构（预期）', deepLinked || (feishuMsgs.length > 0 && !feishuHasAnchor), { deepLinked, feishuHasAnchor });
 
   console.log('== 10. 展示层同步 ==');
   const dataDir = process.env.HUB_DATA_DIR || require('path').join(__dirname, '..', 'data');
@@ -187,6 +249,7 @@ const post = (path, body) => api(path, { method: 'POST', headers: { 'content-typ
   const s1 = await post('/api/notifications/wecom/summary', {});
   check('summary 默认 body 200', s1.status === 200, s1.text);
   check('summary 发送成功且 errcode=0', s1.json && s1.json.ok === true && s1.json.errcode === 0, s1.json);
+  check('summary 含飞书渠道且发送成功', s1.json && s1.json.feishu && s1.json.feishu.success === true, s1.json && s1.json.feishu);
   const s2 = await post('/api/notifications/wecom/summary', { section: '"><script>' });
   check('summary 非法 section 被忽略仍成功', s2.status === 200 && s2.json && s2.json.ok === true, s2.json);
   const s3 = await post('/api/notifications/wecom/summary', { scope: 'x', items: ['a'] });
@@ -199,6 +262,8 @@ const post = (path, body) => api(path, { method: 'POST', headers: { 'content-typ
   const wc3 = await post('/api/weekly/confirm', { id: wg2.json.review.id, operator: 'Sera' });
   check('归档响应含 notify 字段', wc3.status === 200 && wc3.json && !!wc3.json.notify, wc3.json);
   check('归档通知发送成功', wc3.json && wc3.json.notify && wc3.json.notify.ok === true, wc3.json.notify);
+  check('归档通知企微渠道成功', wc3.json && wc3.json.notify && wc3.json.notify.wecom && wc3.json.notify.wecom.success === true, wc3.json.notify && wc3.json.notify.wecom);
+  check('归档通知飞书渠道成功', wc3.json && wc3.json.notify && wc3.json.notify.feishu && wc3.json.notify.feishu.success === true, wc3.json.notify && wc3.json.notify.feishu);
 
   console.log(`\n结果：${pass} 通过 / ${fail} 失败`);
   process.exit(fail ? 1 : 0);

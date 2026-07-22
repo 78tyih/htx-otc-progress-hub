@@ -6,6 +6,7 @@
 const { sendJson, methodGuard } = require('./_lib/http');
 const { loadState, recentAgentUpdates, useKv } = require('./_lib/store');
 const { webhookConfigured } = require('./_lib/notify');
+const { feishuConfigured } = require('./_lib/feishu');
 const { llmConfigured } = require('./_lib/llm');
 const { classifyAll, byClass } = require('../agent/classify');
 
@@ -31,6 +32,7 @@ module.exports = async (req, res) => {
   if (!methodGuard(req, res, 'GET')) return;
   try {
     const state = await loadState();
+    const cs = state.notify.channelStatus || {};
     sendJson(res, 200, {
       ok: true,
       at: new Date().toISOString(),
@@ -44,6 +46,21 @@ module.exports = async (req, res) => {
         configured: webhookConfigured(),
         lastSuccessAt: state.notify.lastSuccessAt || null,
         lastTest: state.notify.lastTest || null,
+      },
+      // 双通道独立状态：企业微信（Sera）/ 飞书（Simon）
+      channels: {
+        wecom: {
+          configured: webhookConfigured(),
+          lastSuccessAt: (cs.wecom && cs.wecom.lastSuccessAt) || state.notify.lastSuccessAt || null,
+          lastTest: (cs.wecom && cs.wecom.lastTest) || state.notify.lastTest || null,
+          lastSummary: (state.notify.lastSummary && state.notify.lastSummary.wecom) || null,
+        },
+        feishu: {
+          configured: feishuConfigured(),
+          lastSuccessAt: (cs.feishu && cs.feishu.lastSuccessAt) || null,
+          lastTest: (cs.feishu && cs.feishu.lastTest) || null,
+          lastSummary: (state.notify.lastSummary && state.notify.lastSummary.feishu) || null,
+        },
       },
       storage: useKv() ? 'kv' : 'fs',
       stats: computeStats(state.tasks.tasks),

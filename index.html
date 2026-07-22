@@ -354,13 +354,13 @@
           <div class="res-grid" id="resGrid"></div>
         </section>
 
-        <!-- ========== 13 系统状态与最近更新（PIP 助手 / Webhook / 通知联调） ========== -->
+        <!-- ========== 13 系统状态与最近更新（PIP 助手 / 双通道通知 / 通知联调） ========== -->
         <section class="section" id="sec-system">
           <div class="section-head">
             <span class="sec-no">13</span>
             <div>
               <h2>系统状态与最近更新</h2>
-              <p class="section-sub">PIP 助手 / Webhook 在线状态 · PIP 助手修改记录 · 手机通知联调</p>
+              <p class="section-sub">PIP 助手 / 企业微信 + 飞书双通道通知状态 · PIP 助手修改记录 · 手机通知联调</p>
             </div>
           </div>
           <div class="sys-layout">
@@ -368,13 +368,42 @@
               <h3 class="blk-title">服务状态</h3>
               <ul class="sys-list">
                 <li><span class="sys-k">PIP 助手</span><span class="st-chip" id="sysAgent">检测中…</span></li>
-                <li><span class="sys-k">Webhook</span><span class="st-chip" id="sysWebhook">检测中…</span></li>
-                <li><span class="sys-k">最近通知成功</span><b id="sysLastSuccess">—</b></li>
-                <li><span class="sys-k">最近测试</span><span id="sysLastTest">—</span></li>
               </ul>
+              <div class="chan-list">
+                <div class="chan-card">
+                  <div class="chan-head">
+                    <span class="chan-name">企业微信通知</span>
+                    <span class="chan-for">供 Sera 查看</span>
+                    <span class="st-chip" id="sysChanWecom">检测中…</span>
+                  </div>
+                  <ul class="chan-meta">
+                    <li><span>最近发送</span><b id="wecomLastSent">—</b></li>
+                    <li><span>最近成功</span><b id="wecomLastSuccess">—</b></li>
+                    <li><span>状态码</span><b id="wecomLastHttp">—</b></li>
+                    <li><span>响应耗时</span><b id="wecomLastDuration">—</b></li>
+                  </ul>
+                  <div class="chan-error" id="wecomLastError" hidden></div>
+                </div>
+                <div class="chan-card">
+                  <div class="chan-head">
+                    <span class="chan-name">飞书通知</span>
+                    <span class="chan-for">供 Simon 查看</span>
+                    <span class="st-chip" id="sysChanFeishu">检测中…</span>
+                  </div>
+                  <ul class="chan-meta">
+                    <li><span>最近发送</span><b id="feishuLastSent">—</b></li>
+                    <li><span>最近成功</span><b id="feishuLastSuccess">—</b></li>
+                    <li><span>状态码</span><b id="feishuLastHttp">—</b></li>
+                    <li><span>响应耗时</span><b id="feishuLastDuration">—</b></li>
+                  </ul>
+                  <div class="chan-error" id="feishuLastError" hidden></div>
+                </div>
+              </div>
               <div class="sys-actions">
                 <input type="text" id="operatorInput" placeholder="操作人（默认 Sera）" autocomplete="off">
-                <button class="btn btn-outline" id="btnTestNotify" type="button">测试手机通知</button>
+                <button class="btn btn-outline" id="btnTestWecom" type="button">测试企业微信</button>
+                <button class="btn btn-outline" id="btnTestFeishu" type="button">测试飞书</button>
+                <button class="btn btn-outline" id="btnTestAll" type="button">测试全部</button>
               </div>
               <div class="notify-result" id="notifyResult" hidden></div>
             </div>
@@ -418,7 +447,8 @@
     </div>
     <div class="agent-statusbar">
       <span class="st-chip" id="stAgent">PIP 助手检测中…</span>
-      <span class="st-chip" id="stWebhook">Webhook 检测中…</span>
+      <span class="st-chip" id="stChanWecom">企业微信检测中…</span>
+      <span class="st-chip" id="stChanFeishu">飞书检测中…</span>
     </div>
     <div class="agent-quick">
       <button type="button" data-q="今日进度">今日进度</button>
@@ -427,7 +457,7 @@
       <button type="button" data-q="哪些任务被其他任务阻塞？">阻塞任务</button>
       <button type="button" data-q="本周需要优先处理什么？">本周优先级</button>
       <button type="button" data-q="生成上周复盘">生成上周复盘</button>
-      <button type="button" data-q="测试一次手机通知">测试手机通知</button>
+      <button type="button" id="btnAgentTestAll">双通道测试通知</button>
     </div>
     <div class="agent-log" id="agentLog" aria-live="polite"></div>
     <form class="agent-inputbar" id="agentForm">

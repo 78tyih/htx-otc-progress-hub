@@ -2140,6 +2140,62 @@ button { font-family: inherit; cursor: pointer; }
 }
 .nr-row span { color: var(--text-muted); }
 .nr-row b { font-weight: 600; text-align: right; word-break: break-all; }
+.nr-row b.nr-ok { color: var(--success); }
+.nr-row b.nr-bad { color: var(--danger); }
+
+/* 双通道通知状态卡（企业微信 / 飞书） */
+.chan-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.chan-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--row-hover);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.chan-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.chan-name { font-size: 12.5px; font-weight: 700; }
+.chan-for {
+  flex: 1;
+  min-width: 0;
+  font-size: 10.5px;
+  color: var(--text-muted);
+}
+.chan-meta {
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 14px;
+}
+.chan-meta li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  min-width: 0;
+}
+.chan-meta span { color: var(--text-muted); flex: 0 0 auto; }
+.chan-meta b { font-weight: 600; font-size: 12px; text-align: right; word-break: break-all; }
+.chan-error {
+  font-size: 12px;
+  color: var(--danger);
+  word-break: break-all;
+}
+@media (max-width: 560px) {
+  .chan-meta { grid-template-columns: 1fr; }
+}
 
 .upd-list {
   list-style: none;

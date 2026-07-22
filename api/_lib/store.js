@@ -34,7 +34,7 @@ function seedState() {
     weeklyLog: require('../../data/weekly-log.json'),
     weeklyReviews: require('../../data/weekly-reviews.json'),
     audit: require('../../data/audit-log.json'),
-    notify: { dedupe: {}, lastTest: null, lastSuccessAt: null },
+    notify: { dedupe: {}, dualDedupe: {}, channelStatus: {}, lastTest: null, lastSuccessAt: null },
   };
 }
 
@@ -80,17 +80,22 @@ async function loadState() {
       state = seedState();
       await kvSet(state);
     }
-    if (!state.notify) state.notify = { dedupe: {}, lastTest: null, lastSuccessAt: null };
+    if (!state.notify) state.notify = { dedupe: {}, dualDedupe: {}, channelStatus: {}, lastTest: null, lastSuccessAt: null };
     if (!state.notify.dedupe) state.notify.dedupe = {};
+    if (!state.notify.dualDedupe) state.notify.dualDedupe = {};
+    if (!state.notify.channelStatus) state.notify.channelStatus = {};
     if (!state.weeklyReviews || !Array.isArray(state.weeklyReviews.reviews)) {
       state.weeklyReviews = { version: 1, reviews: [] };
     }
     return state;
   }
-  let notify = { dedupe: {}, lastTest: null, lastSuccessAt: null };
+  let notify = { dedupe: {}, dualDedupe: {}, channelStatus: {}, lastTest: null, lastSuccessAt: null };
   try {
     notify = JSON.parse(fs.readFileSync(NOTIFY_FILE, 'utf8'));
   } catch { /* 首次运行无通知状态 */ }
+  if (!notify.dedupe) notify.dedupe = {};
+  if (!notify.dualDedupe) notify.dualDedupe = {};
+  if (!notify.channelStatus) notify.channelStatus = {};
   let weeklyReviews = { version: 1, reviews: [] };
   try {
     weeklyReviews = fsRead('weekly-reviews.json');

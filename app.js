@@ -2946,10 +2946,25 @@ async function doConfirmUpdate(confirm, card, okBtn, evidenceInput) {
     }
     let html = '✅ 已更新：<b>' + escapeHtml(r.task.id) + '｜' + escapeHtml(r.task.title) + '</b> 「' + escapeHtml(r.previousStatus) + '」→「' + escapeHtml(r.newStatus) + '」';
     if (r.notify) {
-      if (r.notify.configured === false) html += '<br><span class="ag-muted">手机通知：未配置 WECHAT_WEBHOOK_URL，已跳过</span>';
-      else if (r.notify.skipped) html += '<br><span class="ag-muted">手机通知：10 分钟内同状态已推送过，本次跳过</span>';
-      else if (r.notify.ok) html += '<br><span class="ag-ok">手机通知已推送（' + (r.notify.durationMs != null ? r.notify.durationMs + 'ms' : '—') + '）</span>';
-      else html += '<br><span class="ag-warn">任务已经更新，但企业微信通知发送失败。' + (r.notify.error ? '原因：' + escapeHtml(r.notify.error) : '') + '</span>';
+      const n = r.notify;
+      if (n.configured === false) {
+        html += '<br><span class="ag-muted">手机通知：' + escapeHtml(n.message || '未配置通知渠道，已跳过') + '</span>';
+      } else if (n.mode === 'dual') {
+        const marks = '企业微信 ' + chanMark(n.wecom) + ' / 飞书 ' + chanMark(n.feishu);
+        if (r.notifyFailed && n.allFailed) {
+          html += '<br><span class="ag-warn">任务已经更新，但通知发送失败（企业微信和飞书均未送达）。' + escapeHtml(chanErrors(n)) + '</span>';
+        } else if (r.notifyFailed && n.partial) {
+          html += '<br><span class="ag-warn">任务已经更新，通知部分发送成功（' + escapeHtml(marks) + '）。' + escapeHtml(chanErrors(n)) + '</span>';
+        } else if (!r.notifyFailed) {
+          html += '<br><span class="ag-ok">手机通知：' + escapeHtml(n.message || '双通道推送成功') + '（' + escapeHtml(marks) + '）</span>';
+        }
+      } else if (n.skipped) {
+        html += '<br><span class="ag-muted">手机通知：10 分钟内同状态已推送过，本次跳过</span>';
+      } else if (n.ok) {
+        html += '<br><span class="ag-ok">手机通知已推送（' + (n.durationMs != null ? n.durationMs + 'ms' : '—') + '）</span>';
+      } else {
+        html += '<br><span class="ag-warn">任务已经更新，但通知发送失败。' + (n.error ? '原因：' + escapeHtml(n.error) : '') + '</span>';
+      }
     }
     agentBubble('agent', html);
     await refreshHubData();
@@ -2973,7 +2988,7 @@ async function agentSend(text) {
     if (r.reply) agentBubble('agent', mdLite(r.reply));
     if (r.tasks && r.tasks.length) renderAgentTaskCards(r.tasks);
     if (r.confirm) renderConfirmCard(r.confirm);
-    if (r.notifyTest) await runNotifyTest(true);
+    if (r.notifyTest) await runNotifyTestAll(true);
   } catch (e) {
     thinking.remove();
     if (agentState.apiOnline === false) {
@@ -2986,39 +3001,104 @@ async function agentSend(text) {
   }
 }
 
-/* 测试手机通知：渲染完整诊断（发送状态/HTTP/errcode/errmsg/耗时/最近成功时间），失败展示真实原因 */
-async function runNotifyTest(inDrawer) {
+/* 渠道结果标记：✓ 成功 / ✗ 失败 / 未配置 / 跳过（防重） */
+function chanMark(c) {
+  if (!c || c.configured === false) return '未配置';
+  if (c.skipped) return '✓（已跳过）';
+  return c.success ? '✓' : '✗';
+}
+
+/* 汇总双通道失败原因（仅列出失败渠道的真实 error） */
+function chanErrors(n) {
+  const parts = [];
+  if (n.wecom && !n.wecom.success && n.wecom.error) parts.push('企业微信：' + n.wecom.error);
+  if (n.feishu && !n.feishu.success && n.feishu.error) parts.push('飞书：' + n.feishu.error);
+  return parts.length ? '原因：' + parts.join('；') : '';
+}
+
+/* 单渠道诊断简述：✓/✗ HTTP 状态码 业务码 业务消息 耗时 */
+function channelDiag(c, codeLabel) {
+  if (!c) return { text: '—（无返回数据）', ok: false };
+  if (c.configured === false) return { text: '未配置', ok: false };
+  if (c.skipped) return { text: '✓ 已跳过（10 分钟内同事件已推送过）', ok: true };
+  const parts = [c.success ? '✓' : '✗'];
+  if (c.httpStatus != null) parts.push(String(c.httpStatus));
+  if (c.code != null) parts.push(codeLabel + '=' + c.code);
+  if (c.message) parts.push(c.message);
+  if (c.durationMs != null) parts.push(c.durationMs + 'ms');
+  return { text: parts.join(' '), ok: c.success === true, error: c.error || null };
+}
+
+function nrRow(k, v, cls) {
+  return '<div class="nr-row"><span>' + k + '</span><b' + (cls ? ' class="' + cls + '"' : '') + '>' + escapeHtml(v) + '</b></div>';
+}
+
+function setBtnBusy(btn, busy, busyText, idleText) {
+  if (!btn) return;
+  btn.disabled = busy;
+  btn.textContent = busy ? busyText : idleText;
+}
+
+/* 单通道测试（企业微信 / 飞书）：渲染发送状态/HTTP/业务返回码/耗时/失败真实原因 */
+async function runChannelTest(channel, btn) {
   const box = document.getElementById('notifyResult');
+  const label = channel === 'wecom' ? '企业微信' : '飞书';
+  setBtnBusy(btn, true, '发送中…', '');
   box.hidden = false;
-  box.innerHTML = '<span class="ag-muted">发送中…</span>';
-  if (inDrawer) agentBubble('agent', '<span class="ag-muted">手机通知发送中…</span>');
+  box.innerHTML = '<span class="ag-muted">' + label + '通知发送中…</span>';
   let r;
   try {
-    r = await apiFetch('/api/notifications/wecom/test', { method: 'POST', body: JSON.stringify({ operator: agentState.operator }) });
+    r = await apiFetch('/api/notifications/' + channel + '/test', { method: 'POST', body: JSON.stringify({ operator: agentState.operator }) });
+  } catch (e) {
+    box.innerHTML = '<span class="ag-warn">' + label + '通知发送失败：' + escapeHtml(e.message) + '</span>';
+    setBtnBusy(btn, false, '', '测试' + label);
+    return;
+  }
+  setBtnBusy(btn, false, '', '测试' + label);
+  const bizRows = channel === 'wecom'
+    ? [nrRow('企业微信 errcode', r.errcode != null ? String(r.errcode) : '—'), nrRow('企业微信 errmsg', r.errmsg || '—')]
+    : [nrRow('飞书 code', r.code != null ? String(r.code) : '—'), nrRow('飞书 message', r.message || '—')];
+  box.innerHTML =
+    nrRow('发送状态', r.ok ? '发送成功' : '发送失败', r.ok ? 'nr-ok' : 'nr-bad') +
+    (!r.ok && r.error ? nrRow('失败原因', r.error, 'nr-bad') : '') +
+    nrRow('HTTP 状态码', r.httpStatus != null ? String(r.httpStatus) : '—') +
+    bizRows.join('') +
+    nrRow('响应耗时', r.durationMs != null ? r.durationMs + ' ms' : '—') +
+    nrRow('请求时间', r.requestedAt || '—') +
+    nrRow('最近一次成功', r.lastSuccessAt || '—');
+  loadHubStatus();
+}
+
+/* 双通道测试：企业微信 + 飞书同时推送，按 message 显示总体结果并分行展示各渠道诊断 */
+async function runNotifyTestAll(inDrawer, btn) {
+  const box = document.getElementById('notifyResult');
+  setBtnBusy(btn, true, '发送中…', '');
+  box.hidden = false;
+  box.innerHTML = '<span class="ag-muted">双通道通知发送中…</span>';
+  if (inDrawer) agentBubble('agent', '<span class="ag-muted">双通道通知发送中…</span>');
+  let r;
+  try {
+    r = await apiFetch('/api/notifications/test-all', { method: 'POST', body: JSON.stringify({ operator: agentState.operator }) });
   } catch (e) {
     box.innerHTML = '<span class="ag-warn">发送失败：' + escapeHtml(e.message) + '</span>';
     if (inDrawer) agentBubble('sys', '⚠️ 发送失败：' + escapeHtml(e.message));
+    setBtnBusy(btn, false, '', '测试全部');
     return;
   }
-  const rows = [
-    ['发送状态', r.ok ? '发送成功' : '发送失败'],
-    ['HTTP 状态码', r.httpStatus != null ? String(r.httpStatus) : '—'],
-    ['企业微信 errcode', r.errcode != null ? String(r.errcode) : '—'],
-    ['企业微信 errmsg', r.errmsg || '—'],
-    ['响应耗时', r.durationMs != null ? r.durationMs + ' ms' : '—'],
-    ['请求时间', r.requestedAt || '—'],
-    ['最近一次成功', r.lastSuccessAt || '—'],
-  ];
-  if (!r.ok && r.error) rows.splice(1, 0, ['失败原因', r.error]);
-  box.innerHTML = rows.map(([k, v]) => '<div class="nr-row"><span>' + k + '</span><b>' + escapeHtml(v) + '</b></div>').join('');
+  setBtnBusy(btn, false, '', '测试全部');
+  const w = channelDiag(r.wecom, 'errcode');
+  const f = channelDiag(r.feishu, 'code');
+  const summaryCls = r.ok ? 'nr-ok' : (r.partial ? '' : 'nr-bad');
+  box.innerHTML =
+    nrRow('推送结果', r.message || (r.ok ? '双通道推送成功' : '发送失败'), summaryCls) +
+    nrRow('企业微信', w.text + (w.error ? '（' + w.error + '）' : ''), w.ok ? 'nr-ok' : 'nr-bad') +
+    nrRow('飞书', f.text + (f.error ? '（' + f.error + '）' : ''), f.ok ? 'nr-ok' : 'nr-bad') +
+    nrRow('请求时间', r.requestedAt || '—');
   if (inDrawer) {
     agentBubble('agent',
-      '手机通知测试：' + (r.ok ? '✅ 发送成功' : '❌ 发送失败') +
-      '（HTTP ' + (r.httpStatus != null ? r.httpStatus : '—') +
-      '，errcode=' + (r.errcode != null ? r.errcode : '—') +
-      ' ' + (r.errmsg || '') +
-      '，' + (r.durationMs != null ? r.durationMs + 'ms' : '—') + '）' +
-      (r.error ? '<br>失败原因：' + escapeHtml(r.error) : ''));
+      '双通道测试通知：<b>' + escapeHtml(r.message || '—') + '</b>' +
+      '<br>' + (w.ok ? '✅' : '❌') + ' 企业微信 ' + escapeHtml(w.text) + (w.error ? '<br>失败原因：' + escapeHtml(w.error) : '') +
+      '<br>' + (f.ok ? '✅' : '❌') + ' 飞书 ' + escapeHtml(f.text) + (f.error ? '<br>失败原因：' + escapeHtml(f.error) : ''));
   }
   loadHubStatus();
 }
@@ -3069,28 +3149,75 @@ function setChip(id, cls, text) {
   chip.textContent = text;
 }
 
+/* 双渠道状态渲染（数据来自 /api/status 的 channels 字段，不再使用旧 webhook 字段） */
+const CHANNEL_DOM = {
+  wecom: { chip: 'sysChanWecom', drawerChip: 'stChanWecom', sent: 'wecomLastSent', success: 'wecomLastSuccess', http: 'wecomLastHttp', duration: 'wecomLastDuration', error: 'wecomLastError', drawerLabel: '企业微信' },
+  feishu: { chip: 'sysChanFeishu', drawerChip: 'stChanFeishu', sent: 'feishuLastSent', success: 'feishuLastSuccess', http: 'feishuLastHttp', duration: 'feishuLastDuration', error: 'feishuLastError', drawerLabel: '飞书' },
+};
+
+/* 取 lastTest / lastSummary 中时间较新的一条；都无时间时优先 lastTest */
+function newerChanRecord(ch) {
+  const a = ch.lastTest || null;
+  const b = ch.lastSummary || null;
+  if (a && b) {
+    const ta = Date.parse(a.at || '') || 0;
+    const tb = Date.parse(b.at || '') || 0;
+    return tb > ta ? b : a;
+  }
+  return a || b || null;
+}
+
+/* 渠道时间显示：ISO(UTC) → 本地 MM-DD HH:mm:ss（与最近更新列表的本地时间一致） */
+function fmtChanTs(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return String(iso);
+  const p = (n) => String(n).padStart(2, '0');
+  return p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+}
+
+function paintChannel(channel, ch, offline) {
+  const ids = CHANNEL_DOM[channel];
+  const setText = (id, v) => { const n = document.getElementById(id); if (n) n.textContent = v; };
+  const errBox = document.getElementById(ids.error);
+  if (offline || !ch) {
+    setChip(ids.chip, 'st-off', '未连接');
+    setChip(ids.drawerChip, 'st-off', ids.drawerLabel + ' 未连接');
+    setText(ids.sent, '—');
+    setText(ids.success, '—');
+    setText(ids.http, '—');
+    setText(ids.duration, '—');
+    if (errBox) { errBox.hidden = true; errBox.textContent = ''; }
+    return;
+  }
+  setChip(ids.chip, ch.configured ? 'st-on' : '', ch.configured ? '已配置' : '未配置');
+  setChip(ids.drawerChip, ch.configured ? 'st-on' : '', ids.drawerLabel + (ch.configured ? ' 已配置' : ' 未配置'));
+  const last = newerChanRecord(ch);
+  setText(ids.sent, fmtChanTs(last && last.at));
+  setText(ids.success, fmtChanTs(ch.lastSuccessAt));
+  setText(ids.http, last && last.httpStatus != null ? String(last.httpStatus) : '—');
+  setText(ids.duration, last && last.durationMs != null ? last.durationMs + 'ms' : '—');
+  if (errBox) {
+    const err = last && last.error;
+    if (err) { errBox.hidden = false; errBox.textContent = '失败原因：' + err; }
+    else { errBox.hidden = true; errBox.textContent = ''; }
+  }
+}
+
 function paintHubStatus(s) {
   if (!s) {
     setChip('stAgent', 'st-off', 'PIP 助手未连接');
     setChip('sysAgent', 'st-off', 'PIP 助手未连接（静态模式）');
-    setChip('stWebhook', 'st-off', 'Webhook 未连接');
-    setChip('sysWebhook', 'st-off', 'Webhook 未连接');
-    const ls = document.getElementById('sysLastSuccess');
-    const lt = document.getElementById('sysLastTest');
-    if (ls) ls.textContent = '—';
-    if (lt) lt.textContent = '—';
+    paintChannel('wecom', null, true);
+    paintChannel('feishu', null, true);
     return;
   }
   const agentText = s.agent.llmConfigured ? 'PIP 助手在线（规则+LLM）' : 'PIP 助手在线（规则模式）';
   setChip('stAgent', 'st-on', agentText);
   setChip('sysAgent', 'st-on', agentText);
-  const hookText = s.webhook.configured ? 'Webhook 已配置' : 'Webhook 未配置';
-  setChip('stWebhook', s.webhook.configured ? 'st-on' : 'st-warn', hookText);
-  setChip('sysWebhook', s.webhook.configured ? 'st-on' : 'st-warn', hookText);
-  const ls = document.getElementById('sysLastSuccess');
-  const lt = document.getElementById('sysLastTest');
-  if (ls) ls.textContent = s.webhook.lastSuccessAt || '—';
-  if (lt) lt.textContent = s.webhook.lastTest ? ((s.webhook.lastTest.ok ? '成功' : '失败') + ' · ' + s.webhook.lastTest.at) : '—';
+  const channels = s.channels || {};
+  paintChannel('wecom', channels.wecom, false);
+  paintChannel('feishu', channels.feishu, false);
 }
 
 async function loadHubStatus() {
@@ -3139,7 +3266,10 @@ function initAgent() {
     b.addEventListener('click', () => agentSend(b.dataset.q));
   });
 
-  document.getElementById('btnTestNotify').addEventListener('click', () => runNotifyTest(false));
+  document.getElementById('btnTestWecom').addEventListener('click', (e) => runChannelTest('wecom', e.currentTarget));
+  document.getElementById('btnTestFeishu').addEventListener('click', (e) => runChannelTest('feishu', e.currentTarget));
+  document.getElementById('btnTestAll').addEventListener('click', (e) => runNotifyTestAll(false, e.currentTarget));
+  document.getElementById('btnAgentTestAll').addEventListener('click', () => runNotifyTestAll(true));
 
   const opInput = document.getElementById('operatorInput');
   opInput.addEventListener('input', () => {

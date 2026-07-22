@@ -9,7 +9,8 @@
 
 const { sendJson, readBody, methodGuard, dashboardUrl } = require('../_lib/http');
 const { loadState, saveState, appendAuditEntry, recentAgentUpdates } = require('../_lib/store');
-const { sendWebhook } = require('../_lib/notify');
+const { sendPipNotification } = require('../_lib/dual');
+const { beijingNow } = require('../_lib/wecom');
 const { STATUS_TRANSITIONS, TASK_STATUSES } = require('../../agent/schema');
 const { projectPresentation } = require('../../agent/presenter');
 
@@ -76,30 +77,45 @@ module.exports = async (req, res) => {
     // 先落库（校验失败则不会有任何通知，杜绝“幽灵推送”）
     await saveState(state);
 
-    // 手机通知（失败不影响已落库的状态更新）
-    const notify = await sendWebhook(state, {
-      event: 'task_status_changed',
-      task,
-      previousStatus,
-      newStatus,
-      operator,
-      message: `${task.id}｜${task.title} 已更新为 ${newStatus === '已完成' ? 'done' : 'in_progress'}`,
-      dashboardUrl: dashboardUrl(req),
+    // 双通道手机通知：企业微信（Sera）+ 飞书（Simon），失败不影响已落库的状态更新
+    const dual = await sendPipNotification(state, {
+      eventId: `task-status:${task.id}:${newStatus}:${nowIso.slice(0, 13)}`, // 小时分桶：同时段防重，后续真实变更仍可推送
+      title: '【PIP 任务状态更新】',
+      lines: [
+        `任务：${task.id}｜${task.title}`,
+        `原状态：${previousStatus}`,
+        `新状态：${newStatus}`,
+        `负责人：${task.owner || '—'}`,
+        `操作人：${operator}`,
+        `时间：${beijingNow()}（北京时间）`,
+      ],
+      linkBase: dashboardUrl(req),
+      linkParams: { taskId: task.id },
     });
-    // 通知防重复/最近成功时间有变更时尽力二次落库
-    if (notify.ok || notify.skipped) {
+    // 通知防重复/分渠道最近成功时间有变更时尽力二次落库
+    if (dual.wecom.success || dual.feishu.success) {
       try { await saveState(state); } catch { /* 通知状态丢失不阻断 */ }
     }
 
+    const anyConfigured = dual.wecom.configured || dual.feishu.configured;
     sendJson(res, 200, {
       ok: true,
       task,
       previousStatus,
       newStatus,
-      notify: notify.configured === false
-        ? { configured: false, message: '未配置 WECHAT_WEBHOOK_URL，已跳过通知' }
-        : notify,
-      notifyFailed: notify.configured !== false && !notify.ok && !notify.skipped,
+      notify: !anyConfigured
+        ? { configured: false, message: '未配置通知渠道（WECHAT_WEBHOOK_URL / FEISHU_WEBHOOK_URL），已跳过通知' }
+        : {
+            configured: true,
+            mode: 'dual',
+            ok: dual.ok,
+            partial: dual.partial,
+            allFailed: dual.allFailed,
+            message: dual.ok ? '双通道推送成功' : dual.partial ? '部分发送成功' : '双通道均发送失败',
+            wecom: dual.wecom,
+            feishu: dual.feishu,
+          },
+      notifyFailed: anyConfigured && !dual.ok,
       recentUpdates: recentAgentUpdates(state, 8),
     });
   } catch (e) {

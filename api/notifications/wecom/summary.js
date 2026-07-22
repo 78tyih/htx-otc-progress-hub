@@ -1,5 +1,5 @@
 /**
- * POST /api/notifications/wecom/summary — 发送「PIP 看板优化完成」总结通知，返回完整诊断
+ * POST /api/notifications/wecom/summary — 发送「PIP 看板优化完成」总结通知（双通道：企微 + 飞书），返回完整诊断
  *
  * 受保护约定（与 ./test.js 一致）：
  *   - 仅接受 POST；webhook URL 只从服务端环境变量读取，接口不接受任何 URL 参数；
@@ -11,9 +11,11 @@
  */
 'use strict';
 
-const { sendJson, readBody, methodGuard, sectionUrl } = require('../../_lib/http');
+const { sendJson, readBody, methodGuard, dashboardUrl } = require('../../_lib/http');
 const { loadState, saveState } = require('../../_lib/store');
-const { wecomConfigured, beijingNow, sendWecomMarkdown } = require('../../_lib/wecom');
+const { wecomConfigured, beijingNow } = require('../../_lib/wecom');
+const { feishuConfigured } = require('../../_lib/feishu');
+const { sendPipNotification } = require('../../_lib/dual');
 
 const MAX_LEN = 500;
 const MAX_ITEMS = 10;
@@ -66,19 +68,16 @@ function parseSection(body) {
   return SECTION_SLUGS.has(s) ? s : null;
 }
 
-/** 总结消息正文（企微 markdown） */
-function buildSummaryContent(req, { scope, items, checks, section }) {
-  const link = sectionUrl(req, section ? { section, source: 'wecom' } : { source: 'wecom' });
-  return (
-    '【PIP 看板优化完成】\n' +
-    `> 优化板块：${scope}\n` +
-    '本次完成：\n' +
-    items.map((it, i) => `${i + 1}. ${it}`).join('\n') + '\n' +
-    '验证结果：\n' +
-    Object.entries(checks).map(([k, v]) => `- ${k}：${v}`).join('\n') + '\n' +
-    `[点击打开 PIP 绩效看板](${link})\n` +
-    `> 更新时间：${beijingNow()}（北京时间）`
-  );
+/** 总结消息正文行（双渠道共用；链接由 dual 按渠道追加 source 参数） */
+function buildSummaryLines({ scope, items, checks }) {
+  return [
+    `优化板块：${scope}`,
+    '本次完成：',
+    ...items.map((it, i) => `${i + 1}. ${it}`),
+    '验证结果：',
+    ...Object.entries(checks).map(([k, v]) => `- ${k}：${v}`),
+    `更新时间：${beijingNow()}（北京时间）`,
+  ];
 }
 
 module.exports = async (req, res) => {
@@ -86,46 +85,61 @@ module.exports = async (req, res) => {
   try {
     const body = await readBody(req);
 
-    if (!wecomConfigured()) {
+    if (!wecomConfigured() && !feishuConfigured()) {
       return sendJson(res, 200, {
         ok: false,
         configured: false,
-        error: 'WECHAT_WEBHOOK_URL 未配置（请在部署平台环境变量中设置，勿使用 NEXT_PUBLIC_ 前缀）',
+        error: 'WECHAT_WEBHOOK_URL / FEISHU_WEBHOOK_URL 均未配置（请在部署平台环境变量中设置，勿使用 NEXT_PUBLIC_ 前缀）',
         requestedAt: new Date().toISOString(),
       });
     }
 
-    const content = buildSummaryContent(req, {
+    const parsed = {
       scope: parseScope(body),
       items: parseItems(body),
       checks: parseChecks(body),
       section: parseSection(body),
+    };
+    const state = await loadState();
+    const dual = await sendPipNotification(state, {
+      eventId: `summary:${beijingNow().slice(0, 13)}:${parsed.scope}`, // 小时分桶防重
+      title: '【PIP 看板优化完成】',
+      lines: buildSummaryLines(parsed),
+      linkBase: dashboardUrl(req),
+      linkParams: parsed.section ? { section: parsed.section } : {},
     });
 
-    const state = await loadState();
-    const result = await sendWecomMarkdown(content);
-
     state.notify.lastSummary = {
-      at: result.at,
-      ok: result.ok,
-      httpStatus: result.httpStatus,
-      errcode: result.errcode,
-      errmsg: result.errmsg,
-      durationMs: result.durationMs,
-      error: result.error,
+      at: dual.wecom.at || dual.feishu.at,
+      ok: dual.ok,
+      partial: dual.partial,
+      wecom: { success: dual.wecom.success, code: dual.wecom.code, message: dual.wecom.message, httpStatus: dual.wecom.httpStatus, durationMs: dual.wecom.durationMs, error: dual.wecom.error },
+      feishu: { success: dual.feishu.success, code: dual.feishu.code, message: dual.feishu.message, httpStatus: dual.feishu.httpStatus, durationMs: dual.feishu.durationMs, error: dual.feishu.error },
     };
-    if (result.ok) state.notify.lastSuccessAt = result.at;
+    if (dual.wecom.success) state.notify.lastSuccessAt = dual.wecom.at;
     try { await saveState(state); } catch { /* 诊断状态丢失不阻断 */ }
 
     sendJson(res, 200, {
-      ok: result.ok,
+      ok: dual.ok,
+      partial: dual.partial,
       configured: true,
-      requestedAt: result.at,
-      httpStatus: result.httpStatus,
-      errcode: result.errcode,
-      errmsg: result.errmsg,
-      durationMs: result.durationMs,
-      error: result.error,
+      requestedAt: state.notify.lastSummary.at,
+      // 企微渠道诊断（保持原字段兼容）
+      httpStatus: dual.wecom.httpStatus,
+      errcode: dual.wecom.code,
+      errmsg: dual.wecom.message,
+      durationMs: dual.wecom.durationMs,
+      error: dual.wecom.error,
+      // 飞书渠道诊断
+      feishu: {
+        configured: dual.feishu.configured,
+        success: dual.feishu.success,
+        httpStatus: dual.feishu.httpStatus,
+        code: dual.feishu.code,
+        message: dual.feishu.message,
+        durationMs: dual.feishu.durationMs,
+        error: dual.feishu.error,
+      },
     });
   } catch (e) {
     sendJson(res, 500, { ok: false, error: String((e && e.message) || e) });
