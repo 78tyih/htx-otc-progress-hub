@@ -47,7 +47,11 @@ function toWecomBody(p) {
   const statusLine = p.previousStatus || p.newStatus
     ? `\n> 状态：<font color="comment">${p.previousStatus || '—'}</font> → <font color="info">${p.newStatus || '—'}</font>`
     : '';
-  const link = p.dashboardUrl ? `\n[打开看板](${p.dashboardUrl})` : '';
+  const link = p.dashboardUrl
+    ? p.taskId
+      ? `\n[打开任务详情](${p.dashboardUrl}?taskId=${encodeURIComponent(p.taskId)}&source=wecom)`
+      : `\n[打开 PIP 绩效看板](${p.dashboardUrl})`
+    : '';
   return {
     msgtype: 'markdown',
     markdown: {
@@ -135,4 +139,4 @@ async function notifyDiscoveries(state, classified, kind, dashboardUrl) {
   return { sent };
 }
 
-module.exports = { webhookConfigured, buildPayload, sendWebhook, notifyDiscoveries };
+module.exports = { webhookConfigured, buildPayload, toWecomBody, sendWebhook, notifyDiscoveries };

@@ -181,6 +181,25 @@ const post = (path, body) => api(path, { method: 'POST', headers: { 'content-typ
   const wn = await post('/api/weekly/confirm', { id: 'WR-1999-01-04' });
   check('归档不存在复盘 404', wn.status === 404, wn);
 
+  console.log('== 12. 企微 summary 通知 ==');
+  const sg = await api('/api/notifications/wecom/summary');
+  check('summary GET 被拒 405', sg.status === 405, sg);
+  const s1 = await post('/api/notifications/wecom/summary', {});
+  check('summary 默认 body 200', s1.status === 200, s1.text);
+  check('summary 发送成功且 errcode=0', s1.json && s1.json.ok === true && s1.json.errcode === 0, s1.json);
+  const s2 = await post('/api/notifications/wecom/summary', { section: '"><script>' });
+  check('summary 非法 section 被忽略仍成功', s2.status === 200 && s2.json && s2.json.ok === true, s2.json);
+  const s3 = await post('/api/notifications/wecom/summary', { scope: 'x', items: ['a'] });
+  check('summary 自定义 body 成功', s3.status === 200 && s3.json && s3.json.ok === true, s3.json);
+
+  console.log('== 12b. 周复盘归档企微通知 ==');
+  // 避开上方默认周（上一自然周），显式归档 2026-07-06 所在周
+  const wg2 = await post('/api/weekly/generate', { operator: 'Sera', weekStart: '2026-07-06' });
+  check('指定周（2026-07-06）生成草稿', wg2.status === 200 && wg2.json && wg2.json.ok === true && wg2.json.review.status === 'draft', wg2.json);
+  const wc3 = await post('/api/weekly/confirm', { id: wg2.json.review.id, operator: 'Sera' });
+  check('归档响应含 notify 字段', wc3.status === 200 && wc3.json && !!wc3.json.notify, wc3.json);
+  check('归档通知发送成功', wc3.json && wc3.json.notify && wc3.json.notify.ok === true, wc3.json.notify);
+
   console.log(`\n结果：${pass} 通过 / ${fail} 失败`);
   process.exit(fail ? 1 : 0);
 })().catch((e) => { console.error('FATAL', e); process.exit(1); });

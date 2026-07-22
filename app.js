@@ -1369,6 +1369,7 @@ function renderCountdown(tasksData) {
       + (urgency === 'overdue' ? ' cd-overdue' : '')
       + (urgency === 'done' ? ' cd-done' : ''));
     card.dataset.status = t.status;
+    card.dataset.taskid = t.id;
 
     const head = el('div', 'cd-head');
     head.appendChild(el('span', 'cd-id', t.id));
@@ -2351,15 +2352,6 @@ function initReview() {
   });
 }
 
-/* ---------- 侧栏 08 阻塞事项状态点（Blocked 数 > 0 红，否则绿） ---------- */
-function updateSidebarBlockedDot() {
-  const dot = document.getElementById('navDotBlocked');
-  if (!dot) return;
-  const n = ((state.blockers && state.blockers.current) || []).length;
-  dot.classList.toggle('dot-red', n > 0);
-  dot.classList.toggle('dot-green', n === 0);
-}
-
 /* ---------- 导出：导出 Pipeline JSON 下载 ---------- */
 function exportPipeline() {
   const date = (state.weeklyLog && state.weeklyLog.updatedAt) || TODAY;
@@ -2374,7 +2366,130 @@ function exportPipeline() {
   URL.revokeObjectURL(url);
 }
 
-/* ---------- 左侧目录 scroll-spy（滚动高亮当前区块） ---------- */
+/* ============================================================
+ * 侧边目录导航系统
+ * 一二级菜单（Accordion 手风琴）+ 整体折叠（图标态）+ ScrollSpy 滚动定位
+ * + 一二级状态聚合圆点 + 浏览器前进后退恢复 + 深链落地
+ * 展开状态与折叠状态均持久化到 localStorage。
+ * ============================================================ */
+const NAV_GROUPS = [
+  { key: 'overview', sections: ['sec-summary', 'sec-kpi', 'sec-countdown'] },
+  { key: 'progress', sections: ['sec-roadmap', 'sec-pipeline', 'sec-gantt', 'sec-depmap'] },
+  { key: 'action',   sections: ['sec-todo', 'sec-blocked'] },
+  { key: 'review',   sections: ['sec-review', 'sec-weekly'] },
+  { key: 'system',   sections: ['sec-resources', 'sec-system'] },
+];
+const SECTION_GROUP = {};
+NAV_GROUPS.forEach((g) => g.sections.forEach((id) => { SECTION_GROUP[id] = g.key; }));
+
+/* 深链 slug → 板块 id（与服务端通知链接的参数契约一致） */
+const SECTION_SLUGS = {
+  summary: 'sec-summary', kpi: 'sec-kpi', countdown: 'sec-countdown',
+  roadmap: 'sec-roadmap', pipeline: 'sec-pipeline', gantt: 'sec-gantt', depmap: 'sec-depmap',
+  todo: 'sec-todo', blockers: 'sec-blocked',
+  'weekly-review': 'sec-review', 'weekly-log': 'sec-weekly',
+  resources: 'sec-resources', system: 'sec-system',
+};
+
+const LS_NAV_GROUP = 'navGroup';
+const LS_NAV_COLLAPSED = 'navCollapsed';
+
+function navGroupEl(key) {
+  return document.querySelector('.nav-group[data-group="' + key + '"]');
+}
+
+/* 展开/收起某个一级菜单（persist=false 时不写 localStorage） */
+function setGroupExpanded(key, expanded, opts) {
+  const g = navGroupEl(key);
+  if (!g) return;
+  g.classList.toggle('open', expanded);
+  g.querySelector('.nav-l1').setAttribute('aria-expanded', expanded ? 'true' : 'false');
+  if (!opts || opts.persist !== false) {
+    try { localStorage.setItem(LS_NAV_GROUP, expanded ? key : ''); } catch (e) { /* 隐私模式降级 */ }
+  }
+}
+
+/* 手风琴：展开一个，其余全部收起；展开态只持久化一次（避免逐个收起把 key 覆盖成空） */
+function expandGroupExclusive(key, opts) {
+  NAV_GROUPS.forEach((g) => setGroupExpanded(g.key, g.key === key, { persist: false }));
+  if (!opts || opts.persist !== false) {
+    try { localStorage.setItem(LS_NAV_GROUP, key); } catch (e) { /* 隐私模式降级 */ }
+  }
+}
+
+/* 当前高亮：二级菜单 + 所属一级菜单（opts.expand=false 时不触碰展开状态） */
+function setActiveNav(id, opts) {
+  document.querySelectorAll('#sideNav .nav-link').forEach((a) => {
+    a.classList.toggle('active', a.getAttribute('href') === '#' + id);
+  });
+  const key = SECTION_GROUP[id];
+  document.querySelectorAll('.nav-group').forEach((g) => {
+    g.querySelector('.nav-l1').classList.toggle('active', g.dataset.group === key);
+  });
+  if (key && (!opts || opts.expand !== false)) {
+    const g = navGroupEl(key);
+    if (g && g.querySelector('.nav-l1').getAttribute('aria-expanded') !== 'true') {
+      expandGroupExclusive(key);
+    }
+  }
+  if (!opts || opts.hash !== false) {
+    try { history.replaceState(null, '', '#' + id); } catch (e) { /* file:// 下降级 */ }
+  }
+}
+
+/* ---------- Accordion 交互绑定 + 展开状态恢复 ---------- */
+function initNavAccordion() {
+  let saved = '';
+  try { saved = localStorage.getItem(LS_NAV_GROUP) || ''; } catch (e) { /* 忽略 */ }
+  expandGroupExclusive(NAV_GROUPS.some((g) => g.key === saved) ? saved : 'overview', { persist: false });
+
+  document.querySelectorAll('.nav-group .nav-l1').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const key = btn.closest('.nav-group').dataset.group;
+      // 整体折叠态：点击一级图标 = 展开目录并定位该组
+      if (document.body.classList.contains('nav-collapsed')) {
+        setSidebarCollapsed(false);
+        expandGroupExclusive(key);
+        return;
+      }
+      if (btn.getAttribute('aria-expanded') === 'true') {
+        setGroupExpanded(key, false);
+      } else {
+        expandGroupExclusive(key);
+      }
+    });
+  });
+}
+
+/* ---------- 侧边目录整体折叠（56-64px 图标态 + 状态记忆） ---------- */
+function setSidebarCollapsed(collapsed, opts) {
+  document.body.classList.toggle('nav-collapsed', collapsed);
+  const btn = document.getElementById('sideCollapse');
+  if (btn) {
+    btn.setAttribute('aria-pressed', collapsed ? 'true' : 'false');
+    btn.setAttribute('aria-label', collapsed ? '展开目录' : '收起目录');
+    btn.title = collapsed ? '展开目录' : '收起目录';
+    const txt = btn.querySelector('.side-collapse-text');
+    if (txt) txt.textContent = collapsed ? '展开目录' : '收起目录';
+  }
+  if (!opts || opts.persist !== false) {
+    try { localStorage.setItem(LS_NAV_COLLAPSED, collapsed ? '1' : ''); } catch (e) { /* 忽略 */ }
+  }
+}
+
+function initSidebarCollapse() {
+  let saved = '';
+  try { saved = localStorage.getItem(LS_NAV_COLLAPSED) || ''; } catch (e) { /* 忽略 */ }
+  setSidebarCollapsed(saved === '1', { persist: false });
+  const btn = document.getElementById('sideCollapse');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      setSidebarCollapsed(!document.body.classList.contains('nav-collapsed'));
+    });
+  }
+}
+
+/* ---------- 左侧目录 scroll-spy（滚动高亮当前区块 + 所属一级菜单） ---------- */
 function initScrollSpy() {
   const links = Array.from(document.querySelectorAll('#sideNav .nav-link'));
   const sections = links
@@ -2382,17 +2497,226 @@ function initScrollSpy() {
     .filter(Boolean);
   if (!('IntersectionObserver' in window) || !sections.length) return;
 
-  const setActive = (id) => {
-    links.forEach((a) => a.classList.toggle('active', a.getAttribute('href') === '#' + id));
-  };
-  setActive(sections[0].id);
+  setActiveNav(sections[0].id, { expand: false, hash: false });
 
   const io = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
-      if (entry.isIntersecting) setActive(entry.target.id);
+      // 滚动只更新高亮与 hash，不强开分组（保留用户手动展开状态，刷新后记忆生效）
+      if (entry.isIntersecting) setActiveNav(entry.target.id, { expand: false });
     });
   }, { rootMargin: '-30% 0px -60% 0px', threshold: 0 });
   sections.forEach((s) => io.observe(s));
+
+  // 浏览器前进 / 后退：按 hash 恢复导航状态
+  window.addEventListener('hashchange', () => {
+    const id = window.location.hash.slice(1);
+    if (id && SECTION_GROUP[id] && document.getElementById(id)) {
+      setActiveNav(id, { hash: false });
+      document.getElementById(id).scrollIntoView({ behavior: REDUCED_MOTION ? 'auto' : 'smooth' });
+    }
+  });
+}
+
+/* ---------- 导航状态聚合圆点（红=阻塞 · 黄=进行中 · 绿=全部完成 · 灰=无数据） ---------- */
+const DOT_CLASSES = ['dot-gray', 'dot-green', 'dot-yellow', 'dot-red'];
+function setDotColor(dot, color) {
+  if (!dot) return;
+  DOT_CLASSES.forEach((c) => dot.classList.remove(c));
+  dot.classList.add('dot-' + color);
+}
+function navRank(color) {
+  return color === 'red' ? 3 : color === 'yellow' ? 2 : color === 'green' ? 1 : 0;
+}
+/* 英文状态集合（roadmap / pipeline / todo / gantt 共用） */
+function enStatusColor(items) {
+  if (!items || !items.length) return 'gray';
+  if (items.some((x) => x.status === 'Blocked')) return 'red';
+  if (items.some((x) => x.status === 'Doing' || x.status === 'Next')) return 'yellow';
+  if (items.every((x) => x.status === 'Done')) return 'green';
+  return 'gray';
+}
+
+function computeSectionStatus() {
+  const map = {};
+  const tasks = (state.tasks && state.tasks.tasks) || [];
+  const nowMs = Date.now();
+  const blockedN = ((state.blockers && state.blockers.current) || []).length;
+  const tBlocked = tasks.filter((t) => t.status === '阻塞').length;
+  const tOverdue = tasks.filter((t) => t.status !== '已完成' && t.dueAt && Date.parse(t.dueAt) < nowMs).length;
+  const tDoing = tasks.filter((t) => ['进行中', '已提醒', '待输出', '已延期'].indexOf(t.status) >= 0).length;
+
+  /* 01 经营总览 */
+  map['sec-summary'] = (blockedN + tBlocked) > 0 ? 'red' : (tDoing > 0 ? 'yellow' : 'green');
+  const kpis = state.kpi || [];
+  map['sec-kpi'] = !kpis.length ? 'gray'
+    : kpis.some((k) => k.status === 'blocked') ? 'red'
+    : kpis.every((k) => k.status === 'done') ? 'green' : 'yellow';
+  map['sec-countdown'] = !tasks.length ? 'gray'
+    : (tBlocked + tOverdue) > 0 ? 'red'
+    : tDoing > 0 ? 'yellow' : 'green';
+
+  /* 02 任务推进 */
+  map['sec-roadmap'] = enStatusColor(state.roadmap);
+  map['sec-pipeline'] = enStatusColor(state.pipeline);
+  const ganttItems = [];
+  (state.gantt || []).forEach((m) => {
+    ganttItems.push(m);
+    ((m && m.children) || []).forEach((c) => ganttItems.push(c));
+  });
+  map['sec-gantt'] = enStatusColor(ganttItems);
+  map['sec-depmap'] = 'gray'; // 依赖图无独立状态数据
+
+  /* 03 本周行动 */
+  map['sec-todo'] = enStatusColor(state.todo);
+  map['sec-blocked'] = blockedN > 0 ? 'red' : 'green';
+
+  /* 04 总结复盘 */
+  const reviews = (state.weeklyReviews && state.weeklyReviews.reviews) || [];
+  map['sec-review'] = !reviews.length ? 'gray'
+    : reviews.some((r) => r.status === 'draft') ? 'yellow' : 'green';
+  map['sec-weekly'] = ((state.weeklyLog && state.weeklyLog.done) || []).length ? 'green' : 'gray';
+
+  /* 05 资料与系统 */
+  const res = state.resources || [];
+  map['sec-resources'] = !res.length ? 'gray'
+    : res.every((r) => (RES_STATUS_CLS[r.status] || 'next') === 'done') ? 'green' : 'yellow';
+  map['sec-system'] = agentState.apiOnline === true ? 'green' : agentState.apiOnline === false ? 'red' : 'gray';
+
+  return map;
+}
+
+function updateNavDots() {
+  const map = computeSectionStatus();
+  document.querySelectorAll('#sideNav .nav-link').forEach((a) => {
+    const id = a.getAttribute('href').slice(1);
+    setDotColor(a.querySelector('.nav-dot'), map[id] || 'gray');
+  });
+  NAV_GROUPS.forEach((g) => {
+    let agg = 'gray';
+    g.sections.forEach((id) => {
+      if (navRank(map[id]) > navRank(agg)) agg = map[id];
+    });
+    const group = navGroupEl(g.key);
+    if (group) setDotColor(group.querySelector('.nav-l1-dot'), agg);
+  });
+}
+
+/* ---------- 任务详情弹窗（?taskId= 深链 / 倒计时卡片点击） ---------- */
+function openTaskModal(taskId) {
+  const task = ((state.tasks && state.tasks.tasks) || []).find((t) => t.id === taskId);
+  const modal = document.getElementById('taskModal');
+  if (!task || !modal) return;
+  document.getElementById('taskModalTitle').textContent = task.id + '｜' + task.title;
+  const body = document.getElementById('taskModalBody');
+  body.innerHTML = '';
+  const rows = [
+    ['状态', task.status + '（' + (task.priority || '—') + '）'],
+    ['负责人', task.owner || '—'],
+    ['进度', (task.progress || 0) + '%'],
+    ['截止时间', (task.dueAt || '—').replace('T', ' ').slice(0, 16)],
+    ['提醒时间', (task.remindAt || '—').replace('T', ' ').slice(0, 16)],
+    ['所属主线', task.workstream || '—'],
+    ['下一步', task.nextAction || '—'],
+    ['输出条件', task.outputCondition || '—'],
+  ];
+  if (task.status === '已完成') {
+    rows.push(['完成时间', (task.completedAt || '—').replace('T', ' ').slice(0, 16)]);
+    if (task.result) rows.push(['完成结果', task.result]);
+    if (task.completionEvidence) rows.push(['完成证据', task.completionEvidence]);
+  }
+  rows.push(['最近更新', (task.updatedAt || '—').replace('T', ' ').slice(0, 16) + (task.updatedBy ? ' · ' + task.updatedBy : '')]);
+  rows.forEach((kv) => {
+    const row = el('div', 'tm-row');
+    row.appendChild(el('span', 'tm-k', kv[0]));
+    row.appendChild(el('span', 'tm-v', kv[1]));
+    body.appendChild(row);
+  });
+  modal.hidden = false;
+  document.getElementById('taskModalClose').focus();
+}
+
+function closeTaskModal() {
+  const modal = document.getElementById('taskModal');
+  if (modal && !modal.hidden) modal.hidden = true;
+}
+
+function initTaskModal() {
+  const modal = document.getElementById('taskModal');
+  document.getElementById('taskModalClose').addEventListener('click', closeTaskModal);
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeTaskModal(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeTaskModal(); });
+  // 倒计时卡片点击 = 打开任务详情
+  document.getElementById('cdGrid').addEventListener('click', (e) => {
+    const card = e.target.closest('.cd-card[data-taskid]');
+    if (card) openTaskModal(card.dataset.taskid);
+  });
+}
+
+/* ---------- 深链落地（?section= &taskId= &week= &source= ，参数全校验） ---------- */
+function activateSection(id, opts) {
+  const key = SECTION_GROUP[id];
+  if (!key || !document.getElementById(id)) { // 目标不存在：回退看板首页
+    id = 'sec-summary';
+  }
+  expandGroupExclusive(SECTION_GROUP[id]);
+  setActiveNav(id, { expand: false, hash: false });
+  if (!opts || opts.scroll !== false) {
+    requestAnimationFrame(() => {
+      document.getElementById(id).scrollIntoView({ behavior: REDUCED_MOTION ? 'auto' : 'smooth', block: 'start' });
+    });
+  }
+}
+
+function applyDeepLink() {
+  let params;
+  try { params = new URLSearchParams(window.location.search); } catch (e) { params = new URLSearchParams(); }
+  const sectionRaw = (params.get('section') || '').trim();
+  const taskId = (params.get('taskId') || '').trim();
+  const week = (params.get('week') || '').trim();
+
+  // section：白名单 slug，兼容直接传板块 id；其他一律忽略
+  let sectionId = SECTION_SLUGS[sectionRaw] || null;
+  if (!sectionId && /^sec-[a-z]+$/.test(sectionRaw) && document.getElementById(sectionRaw)) {
+    sectionId = sectionRaw;
+  }
+
+  // week：合法日期且存在对应周复盘时才落地
+  if (week && /^\d{4}-\d{2}-\d{2}$/.test(week)) {
+    const hit = ((state.weeklyReviews && state.weeklyReviews.reviews) || []).find((r) => r.weekStart === week);
+    if (hit) {
+      rvState.period = 'history';
+      rvState.weekStart = week;
+      renderWeeklyReview();
+      if (!sectionId) sectionId = 'sec-review';
+    }
+  }
+
+  // taskId：严格 T-xxxx 格式且任务存在，否则回退首页
+  if (taskId) {
+    const task = /^T-\d{4}$/.test(taskId)
+      ? ((state.tasks && state.tasks.tasks) || []).find((t) => t.id === taskId)
+      : null;
+    if (!task) { activateSection(sectionId || 'sec-summary'); return; }
+    activateSection(sectionId || 'sec-countdown');
+    openTaskModal(taskId);
+    const card = document.querySelector('.cd-card[data-taskid="' + taskId + '"]');
+    if (card) {
+      card.classList.add('cd-flash');
+      setTimeout(() => card.classList.remove('cd-flash'), 2400);
+    }
+    return;
+  }
+
+  if (sectionId) { activateSection(sectionId); return; }
+
+  // 无查询参数：尊重已有 #hash 定位板块，但分组展开以 localStorage 记忆为准（刷新保留展开状态）
+  const hash = window.location.hash.slice(1);
+  if (hash && SECTION_GROUP[hash]) {
+    setActiveNav(hash, { expand: false, hash: false });
+    return;
+  }
+  // 无参数无 hash：尊重 localStorage 恢复的分组（刷新保留展开状态），仅高亮首页板块
+  setActiveNav('sec-summary', { expand: false, hash: false });
 }
 
 /* ---------- 移动端目录抽屉 ---------- */
@@ -2404,13 +2728,15 @@ function initDrawer() {
   const close = () => {
     sidebar.classList.remove('open');
     overlay.hidden = true;
+    menuBtn.setAttribute('aria-expanded', 'false');
   };
   menuBtn.addEventListener('click', () => {
     const open = sidebar.classList.toggle('open');
     overlay.hidden = !open;
+    menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
   });
   overlay.addEventListener('click', close);
-  // 移动端点击导航项后自动收起抽屉
+  // 移动端点击二级导航项后自动收起抽屉
   document.getElementById('sideNav').addEventListener('click', (e) => {
     if (e.target.closest('.nav-link') && window.innerWidth <= 900) close();
   });
@@ -2484,13 +2810,17 @@ async function init() {
   renderWeekly(state.weeklyLog);
   renderWeeklyReview();
   initReview();
-  updateSidebarBlockedDot();
+  updateNavDots();
   initTheme();
   bindEvents();
+  initNavAccordion();
+  initSidebarCollapse();
   initScrollSpy();
   initDrawer();
+  initTaskModal();
   initAgent();
   loadHubStatus();
+  applyDeepLink();
 }
 
 /* ============================================================
@@ -2706,7 +3036,7 @@ async function refreshHubData() {
     renderPipeline(state.pipeline);
     renderTodo(state.todo);
     renderWeekly(state.weeklyLog);
-    updateSidebarBlockedDot();
+    updateNavDots();
     renderRecentUpdates(d.recentUpdates || []);
     applyFilters();
   } catch (e) {
@@ -2774,6 +3104,7 @@ async function loadHubStatus() {
     paintHubStatus(null);
     renderRecentUpdates([]);
   }
+  updateNavDots();
 }
 
 function initAgent() {
