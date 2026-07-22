@@ -1,0 +1,8 @@
+# 敏感配置与本地产物永不部署
+.env
+.env.local
+.env.*.local
+.vercel
+node_modules
+*.log
+data/.hub-notify.json
