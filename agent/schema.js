@@ -61,8 +61,14 @@ function validateTask(task, index) {
   if (!Number.isInteger(task.progress) || task.progress < 0 || task.progress > 100) errors.push(`${where}.progress: 须为 0-100 整数`);
   if (typeof task.nextAction !== 'string' || !task.nextAction.trim()) errors.push(`${where}.nextAction: 必填`);
   if (typeof task.outputCondition !== 'string' || !task.outputCondition.trim()) errors.push(`${where}.outputCondition: 必填`);
-  if (task.result !== null && typeof task.result !== 'string') errors.push(`${where}.result: 须为字符串或 null`);
+  if (typeof task.result !== 'string' && task.result !== null) errors.push(`${where}.result: 须为字符串或 null`);
   if (typeof task.source !== 'string' || !task.source.trim()) errors.push(`${where}.source: 必填`);
+  if (!Array.isArray(task.dependencies) || task.dependencies.some((d) => typeof d !== 'string' || !TASK_ID_RE.test(d))) {
+    errors.push(`${where}.dependencies: 须为任务 ID 数组（形如 ["T-0002"]）`);
+  }
+  if (Array.isArray(task.dependencies) && task.dependencies.includes(task.id)) errors.push(`${where}.dependencies: 不允许依赖自身`);
+  if (task.updatedBy !== null && typeof task.updatedBy !== 'string') errors.push(`${where}.updatedBy: 须为字符串或 null`);
+  if (task.completionEvidence !== null && typeof task.completionEvidence !== 'string') errors.push(`${where}.completionEvidence: 须为字符串或 null`);
   if (isIso(task.dueAt) && isIso(task.remindAt) && Date.parse(task.remindAt) > Date.parse(task.dueAt)) {
     errors.push(`${where}: remindAt 不得晚于 dueAt`);
   }
@@ -86,6 +92,13 @@ function validateTasksFile(data) {
     if (t && typeof t.id === 'string') {
       if (seen.has(t.id)) errors.push(`tasks[${i}].id: ${t.id} 重复`);
       seen.add(t.id);
+    }
+  });
+  // 依赖引用必须指向已存在的任务
+  data.tasks.forEach((t, i) => {
+    if (!t || !Array.isArray(t.dependencies)) return;
+    for (const dep of t.dependencies) {
+      if (!seen.has(dep)) errors.push(`tasks[${i}](${t.id}).dependencies: 引用了不存在的任务 ${dep}`);
     }
   });
   return errors;

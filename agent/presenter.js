@@ -40,25 +40,23 @@ function progressText(t) {
   }
 }
 
-/** todo.json：全量投影（字段序与原文件一致：task/owner/due/priority/status） */
-function projectTodo(tasks) {
-  const rows = tasks.map((t) => ({
+/** todo.json：全量投影（纯函数，字段序与原文件一致：task/owner/due/priority/status） */
+function projectTodoRows(tasks) {
+  return tasks.map((t) => ({
     task: t.title,
     owner: t.owner,
     due: t.dueAt.slice(0, 10),
     priority: t.priority,
     status: STATUS_MAP[t.status],
   }));
-  writeJsonAtomic('todo.json', rows);
 }
 
-/** pipeline.json：仅镜像 CLI 来源任务；删除任务时移除对应镜像；策展条目不动 */
-function mirrorPipeline(tasks) {
-  const pipe = readJson('pipeline.json');
+/** pipeline.json：仅镜像 CLI/Agent 来源任务（纯函数）；删除任务时移除对应镜像；策展条目不动 */
+function mirrorPipelineEntries(tasks, pipe) {
   const ids = new Set(tasks.map((t) => t.id));
-  const next = pipe.filter((p) => !p.mirrorOf || ids.has(p.mirrorOf));
+  const next = (Array.isArray(pipe) ? pipe : []).filter((p) => !p.mirrorOf || ids.has(p.mirrorOf));
   for (const t of tasks) {
-    if (t.source !== 'cli') continue;
+    if (t.source !== 'cli' && t.source !== 'web') continue;
     const fields = {
       module: t.title,
       pipGoal: t.workstream || null,
@@ -76,32 +74,50 @@ function mirrorPipeline(tasks) {
     if (entry) Object.assign(entry, fields);
     else next.push(fields);
   }
-  writeJsonAtomic('pipeline.json', next);
+  return next;
 }
 
-/** weekly-log.json：新完成任务追加 done 记录（按「标题」去重）；无变化不写盘 */
-function logWeeklyDone(tasks) {
-  const log = readJson('weekly-log.json');
-  if (!Array.isArray(log.done)) log.done = [];
+/** weekly-log.json：新完成任务追加 done 记录（纯函数，按「标题」去重） */
+function weeklyDoneEntries(tasks, log) {
+  const next = { ...(log || {}) };
+  if (!Array.isArray(next.done)) next.done = [];
   let changed = false;
   for (const t of tasks) {
     if (t.status !== '已完成') continue;
-    if (log.done.some((d) => d.includes(`「${t.title}」`))) continue;
-    log.done.push(t.result ? `完成「${t.title}」：${t.result}` : `完成「${t.title}」`);
+    if (next.done.some((d) => d.includes(`「${t.title}」`))) continue;
+    next.done = [...next.done, t.result ? `完成「${t.title}」：${t.result}` : `完成「${t.title}」`];
     changed = true;
   }
-  if (changed) {
-    log.updatedAt = todayStr();
-    writeJsonAtomic('weekly-log.json', log);
-  }
+  if (changed) next.updatedAt = todayStr();
+  return { log: next, changed };
 }
 
-/** 执行层变更后的展示层统一投影（幂等） */
+/**
+ * 展示层统一投影（纯函数，供 serverless 复用）：
+ * 输入执行层 tasks + 现有展示层文件内容，返回投影后的完整展示层对象。
+ */
+function projectPresentation({ tasks, pipeline, weeklyLog }) {
+  const list = Array.isArray(tasks) ? tasks : [];
+  const weekly = weeklyDoneEntries(list, weeklyLog);
+  return {
+    todo: projectTodoRows(list),
+    pipeline: mirrorPipelineEntries(list, pipeline),
+    weeklyLog: weekly.log,
+    weeklyChanged: weekly.changed,
+  };
+}
+
+/** 执行层变更后的展示层统一投影（幂等，fs 包装，供 CLI / Scheduler 使用） */
 function syncPresentation(data) {
   const tasks = (data && Array.isArray(data.tasks)) ? data.tasks : [];
-  projectTodo(tasks);
-  mirrorPipeline(tasks);
-  logWeeklyDone(tasks);
+  const projected = projectPresentation({
+    tasks,
+    pipeline: readJson('pipeline.json'),
+    weeklyLog: readJson('weekly-log.json'),
+  });
+  writeJsonAtomic('todo.json', projected.todo);
+  writeJsonAtomic('pipeline.json', projected.pipeline);
+  if (projected.weeklyChanged) writeJsonAtomic('weekly-log.json', projected.weeklyLog);
 }
 
-module.exports = { STATUS_MAP, syncPresentation };
+module.exports = { STATUS_MAP, syncPresentation, projectTodoRows, mirrorPipelineEntries, weeklyDoneEntries, projectPresentation };

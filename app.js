@@ -638,7 +638,10 @@ const FALLBACK = {
         "nextAction": "提交设计团队并确认排期",
         "outputCondition": "设计团队确认收到交付包并给出排期",
         "result": null,
-        "source": "seed"
+        "source": "seed",
+        "dependencies": [],
+        "updatedBy": "seed",
+        "completionEvidence": null
       },
       {
         "id": "T-0002",
@@ -656,7 +659,10 @@ const FALLBACK = {
         "nextAction": "按金额和成交概率安排优先跟进顺序",
         "outputCondition": "输出五星客户优先跟进清单",
         "result": null,
-        "source": "seed"
+        "source": "seed",
+        "dependencies": [],
+        "updatedBy": "seed",
+        "completionEvidence": null
       },
       {
         "id": "T-0003",
@@ -674,7 +680,10 @@ const FALLBACK = {
         "nextAction": "与 Simon 确认 Cloudflare Access 验证方式",
         "outputCondition": "Simon 确认访问方式，Sera 提供 Cloudflare 账号",
         "result": null,
-        "source": "seed"
+        "source": "seed",
+        "dependencies": [],
+        "updatedBy": "seed",
+        "completionEvidence": null
       },
       {
         "id": "T-0004",
@@ -692,7 +701,12 @@ const FALLBACK = {
         "nextAction": "配合静格完成周四/周五首单测试",
         "outputCondition": "首单 COBO/POBO 流程跑通并记录结果",
         "result": null,
-        "source": "seed"
+        "source": "seed",
+        "dependencies": [
+          "T-0002"
+        ],
+        "updatedBy": "seed",
+        "completionEvidence": null
       },
       {
         "id": "T-0005",
@@ -710,7 +724,10 @@ const FALLBACK = {
         "nextAction": "请 Simon 协助调取名单并确认筛选条件",
         "outputCondition": "拿到名单并完成筛选条件确认",
         "result": null,
-        "source": "seed"
+        "source": "seed",
+        "dependencies": [],
+        "updatedBy": "seed",
+        "completionEvidence": null
       }
     ]
   }
