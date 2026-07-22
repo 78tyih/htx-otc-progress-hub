@@ -29,7 +29,7 @@ const STATUS_TRANSITIONS = {
   已完成: [],
 };
 
-const ISO_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?([+-]\d{2}:\d{2}|Z)$/;
+const ISO_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?(\.\d{1,3})?([+-]\d{2}:\d{2}|Z)$/;
 const TASK_ID_RE = /^T-\d{4}$/;
 
 function isIso(v) {
@@ -54,6 +54,7 @@ function validateTask(task, index) {
   if (task.workstream !== null && typeof task.workstream !== 'string') errors.push(`${where}.workstream: 须为字符串或 null`);
   if (typeof task.owner !== 'string' || !task.owner.trim()) errors.push(`${where}.owner: 必填`);
   if (!isIso(task.createdAt)) errors.push(`${where}.createdAt: 须为 ISO 时间`);
+  if (!isIso(task.updatedAt)) errors.push(`${where}.updatedAt: 须为 ISO 时间`);
   if (!isIso(task.dueAt)) errors.push(`${where}.dueAt: 必填且须为 ISO 时间`);
   if (!isIso(task.remindAt)) errors.push(`${where}.remindAt: 必填且须为 ISO 时间`);
   if (!isIsoOrNull(task.remindedAt)) errors.push(`${where}.remindedAt: 须为 ISO 时间或 null`);

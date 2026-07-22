@@ -41,6 +41,7 @@
         <a class="nav-link" href="#sec-todo"><span class="nav-no">09</span>本周待办<span class="nav-dot dot-yellow" aria-hidden="true"></span></a>
         <a class="nav-link" href="#sec-blocked"><span class="nav-no">10</span>阻塞事项<span class="nav-dot dot-red" id="navDotBlocked" aria-hidden="true"></span></a>
         <a class="nav-link" href="#sec-weekly"><span class="nav-no">11</span>周更记录<span class="nav-dot dot-green" aria-hidden="true"></span></a>
+        <a class="nav-link" href="#sec-system"><span class="nav-no">12</span>系统状态<span class="nav-dot dot-green" aria-hidden="true"></span></a>
       </nav>
       <div class="side-foot"><span id="sideCadence">每周更新一次</span> · 本周更新：<b id="sideUpdated">2026-07-21</b></div>
     </aside>
@@ -66,6 +67,7 @@
             <span class="search-icon" aria-hidden="true">⌕</span>
             <input type="search" id="searchInput" placeholder="搜索 Pipeline / 待办 / 主线…" autocomplete="off">
           </div>
+          <button class="btn btn-agent" id="btnAgent" type="button" title="打开 Agent 助手">Agent 助手</button>
           <button class="btn btn-outline" id="btnExport" type="button" title="导出 Pipeline JSON">导出</button>
         </div>
       </header>
@@ -249,6 +251,37 @@
           </div>
         </section>
 
+        <!-- ========== 12 系统状态与最近更新（Agent / Webhook / 通知联调） ========== -->
+        <section class="section" id="sec-system">
+          <div class="section-head">
+            <span class="sec-no">12</span>
+            <div>
+              <h2>系统状态与最近更新</h2>
+              <p class="section-sub">Agent / Webhook 在线状态 · Agent 修改记录 · 手机通知联调</p>
+            </div>
+          </div>
+          <div class="sys-layout">
+            <div class="panel sys-panel">
+              <h3 class="blk-title">服务状态</h3>
+              <ul class="sys-list">
+                <li><span class="sys-k">Agent</span><span class="st-chip" id="sysAgent">检测中…</span></li>
+                <li><span class="sys-k">Webhook</span><span class="st-chip" id="sysWebhook">检测中…</span></li>
+                <li><span class="sys-k">最近通知成功</span><b id="sysLastSuccess">—</b></li>
+                <li><span class="sys-k">最近测试</span><span id="sysLastTest">—</span></li>
+              </ul>
+              <div class="sys-actions">
+                <input type="text" id="operatorInput" placeholder="操作人（默认 Sera）" autocomplete="off">
+                <button class="btn btn-outline" id="btnTestNotify" type="button">测试手机通知</button>
+              </div>
+              <div class="notify-result" id="notifyResult" hidden></div>
+            </div>
+            <div class="panel sys-panel">
+              <h3 class="blk-title">最近更新（Agent）</h3>
+              <ul class="upd-list" id="recentUpdates"></ul>
+            </div>
+          </div>
+        </section>
+
       </main>
 
       <!-- ========== 页脚 / Last Updated ========== -->
@@ -258,6 +291,34 @@
 
     </div>
   </div>
+
+  <!-- ========== Agent 助手抽屉（右侧滑出，不遮挡主内容） ========== -->
+  <div class="agent-overlay" id="agentOverlay" hidden></div>
+  <aside class="agent-drawer" id="agentDrawer" aria-label="Agent 助手">
+    <div class="agent-head">
+      <div>
+        <h2>Agent 助手</h2>
+        <p class="agent-sub">读取真实任务数据 · 状态变更需确认后执行</p>
+      </div>
+      <button class="icon-btn" id="agentClose" type="button" aria-label="关闭 Agent 助手">×</button>
+    </div>
+    <div class="agent-statusbar">
+      <span class="st-chip" id="stAgent">Agent 检测中…</span>
+      <span class="st-chip" id="stWebhook">Webhook 检测中…</span>
+    </div>
+    <div class="agent-quick">
+      <button type="button" data-q="今日进度">今日进度</button>
+      <button type="button" data-q="哪些任务还没有完成？">未完成任务</button>
+      <button type="button" data-q="哪些任务被其他任务阻塞？">阻塞任务</button>
+      <button type="button" data-q="本周需要优先处理什么？">本周优先级</button>
+      <button type="button" data-q="测试一次手机通知">测试手机通知</button>
+    </div>
+    <div class="agent-log" id="agentLog" aria-live="polite"></div>
+    <form class="agent-inputbar" id="agentForm">
+      <input type="text" id="agentText" placeholder="问点什么，如：哪些任务已经逾期？" autocomplete="off">
+      <button type="submit" class="btn btn-agent">发送</button>
+    </form>
+  </aside>
 
   <script src="app.js" defer></script>
 </body>

@@ -630,6 +630,7 @@ const FALLBACK = {
         "workstream": "设计交付包",
         "owner": "Sera",
         "createdAt": "2026-07-21T09:00:00+08:00",
+        "updatedAt": "2026-07-21T09:00:00+08:00",
         "dueAt": "2026-07-22T18:00:00+08:00",
         "remindAt": "2026-07-22T09:00:00+08:00",
         "remindedAt": null,
@@ -651,6 +652,7 @@ const FALLBACK = {
         "workstream": "注册 / KYC / 首单推进",
         "owner": "Sera",
         "createdAt": "2026-07-21T09:00:00+08:00",
+        "updatedAt": "2026-07-21T09:00:00+08:00",
         "dueAt": "2026-07-23T18:00:00+08:00",
         "remindAt": "2026-07-23T09:00:00+08:00",
         "remindedAt": null,
@@ -672,6 +674,7 @@ const FALLBACK = {
         "workstream": "看板交付与访问",
         "owner": "Sera / Simon",
         "createdAt": "2026-07-21T09:00:00+08:00",
+        "updatedAt": "2026-07-21T09:00:00+08:00",
         "dueAt": "2026-07-23T18:00:00+08:00",
         "remindAt": "2026-07-23T10:00:00+08:00",
         "remindedAt": null,
@@ -693,6 +696,7 @@ const FALLBACK = {
         "workstream": "注册 / KYC / 首单推进",
         "owner": "Sera / 静格",
         "createdAt": "2026-07-21T09:00:00+08:00",
+        "updatedAt": "2026-07-21T09:00:00+08:00",
         "dueAt": "2026-07-25T18:00:00+08:00",
         "remindAt": "2026-07-24T09:00:00+08:00",
         "remindedAt": null,
@@ -716,6 +720,7 @@ const FALLBACK = {
         "workstream": "渠道拓展",
         "owner": "Sera / Simon",
         "createdAt": "2026-07-21T09:00:00+08:00",
+        "updatedAt": "2026-07-21T09:00:00+08:00",
         "dueAt": "2026-07-26T18:00:00+08:00",
         "remindAt": "2026-07-24T09:00:00+08:00",
         "remindedAt": null,
@@ -1297,8 +1302,12 @@ function renderResources(list) {
     grid.appendChild(card);
 
     if (canProbe) {
-      fetch(resTargetUrl(item), { method: 'HEAD', cache: 'no-store' })
-        .then((res) => { if (!res.ok) throw new Error('HTTP ' + res.status); })
+      // 用 GET 而非 HEAD 探测：HEAD 响应无 Content-Length 时 Chromium 会在控制台报 net::ERR_ABORTED 噪音
+      fetch(resTargetUrl(item), { cache: 'no-store' })
+        .then(async (res) => {
+          await res.arrayBuffer(); // 消费响应体，避免连接悬挂
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+        })
         .catch(() => {
           card.classList.add('res-missing');
           statusBadge.className = 'badge badge-blocked';
@@ -2078,6 +2087,333 @@ async function init() {
   bindEvents();
   initScrollSpy();
   initDrawer();
+  initAgent();
+  loadHubStatus();
+}
+
+/* ============================================================
+ * Agent 助手（服务端 /api/* 驱动；纯静态托管时自动降级提示）
+ * 安全约定：前端不含任何密钥；状态变更必须经确认卡二次确认。
+ * ============================================================ */
+const agentState = { open: false, busy: false, apiOnline: null, operator: 'Sera' };
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+/* markdown-lite：转义后支持 **加粗** 与换行 */
+function mdLite(text) {
+  return escapeHtml(text).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+}
+
+function fmtDueLocal(iso) {
+  return String(iso || '').slice(5, 16).replace('T', ' ');
+}
+
+function fmtUpdTs(iso) {
+  return String(iso || '').slice(5, 16).replace('T', ' ');
+}
+
+async function apiFetch(path, options) {
+  const opts = Object.assign({}, options || {});
+  opts.headers = Object.assign({ 'content-type': 'application/json' }, opts.headers || {});
+  const res = await fetch(path, opts);
+  if (!res.ok) {
+    let msg = 'HTTP ' + res.status;
+    try {
+      const j = await res.json();
+      if (j && j.error) msg = j.error;
+    } catch (err) { /* 非 JSON 响应 */ }
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+function agentBubble(kind, html) {
+  const log = document.getElementById('agentLog');
+  const div = el('div', 'agent-msg agent-msg-' + kind);
+  div.innerHTML = html;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+  return div;
+}
+
+const AGENT_CLASS_BADGE = {
+  done: 'done',
+  in_progress: 'doing',
+  blocked: 'blocked',
+  overdue: 'late',
+  pending: 'next',
+  needs_confirmation: 'warn',
+};
+
+function renderAgentTaskCards(tasks) {
+  const log = document.getElementById('agentLog');
+  const wrap = el('div', 'agent-tasks');
+  tasks.forEach((t) => {
+    const card = el('div', 'agent-task');
+    card.innerHTML =
+      '<div class="at-head"><b>' + escapeHtml(t.id) + '</b>｜' + escapeHtml(t.title) +
+      '<span class="badge badge-' + (AGENT_CLASS_BADGE[t.class] || 'next') + '">' + escapeHtml(t.label) + '</span></div>' +
+      '<div class="at-meta">状态 ' + escapeHtml(t.status) + ' ｜ 负责人 ' + escapeHtml(t.owner) + ' ｜ 截止 ' + fmtDueLocal(t.dueAt) + '</div>' +
+      '<div class="at-row">判定依据：' + escapeHtml((t.basis || []).join('；') || '—') + '</div>' +
+      '<div class="at-row">建议下一步：' + escapeHtml(t.suggestion || '—') + '</div>';
+    wrap.appendChild(card);
+  });
+  log.appendChild(wrap);
+  log.scrollTop = log.scrollHeight;
+}
+
+/* 状态变更确认卡：用户点「确认更新」后才调用写接口 */
+function renderConfirmCard(confirm) {
+  const log = document.getElementById('agentLog');
+  const card = el('div', 'agent-confirm');
+  card.innerHTML =
+    '<div class="ac-title">确认把 <b>' + escapeHtml(confirm.taskId) + '｜' + escapeHtml(confirm.title) + '</b> 修改为「' + escapeHtml(confirm.newStatus) + '」吗？</div>' +
+    '<div class="ac-meta">当前状态：' + escapeHtml(confirm.previousStatus) + ' ｜ 负责人：' + escapeHtml(confirm.owner || '—') + ' ｜ 操作人：' + escapeHtml(agentState.operator) + '</div>';
+
+  let evidenceInput = null;
+  if (confirm.needsEvidence) {
+    evidenceInput = el('input', 'ac-evidence');
+    evidenceInput.type = 'text';
+    evidenceInput.placeholder = '交付证据（可选）：如「交付包已提交设计团队」';
+    card.appendChild(evidenceInput);
+  }
+
+  const row = el('div', 'ac-actions');
+  const okBtn = el('button', 'btn btn-confirm', '确认更新');
+  okBtn.type = 'button';
+  const cancelBtn = el('button', 'btn btn-outline', '取消');
+  cancelBtn.type = 'button';
+  row.appendChild(okBtn);
+  row.appendChild(cancelBtn);
+  card.appendChild(row);
+  log.appendChild(card);
+  log.scrollTop = log.scrollHeight;
+
+  cancelBtn.addEventListener('click', () => {
+    card.remove();
+    agentBubble('sys', '已取消本次状态变更。');
+  });
+  okBtn.addEventListener('click', () => doConfirmUpdate(confirm, card, okBtn, evidenceInput));
+}
+
+async function doConfirmUpdate(confirm, card, okBtn, evidenceInput) {
+  okBtn.disabled = true;
+  okBtn.textContent = '更新中…';
+  const evidence = evidenceInput ? evidenceInput.value.trim() : '';
+  try {
+    const r = await apiFetch('/api/agent/confirm', {
+      method: 'POST',
+      body: JSON.stringify({ taskId: confirm.taskId, newStatus: confirm.newStatus, evidence, operator: agentState.operator }),
+    });
+    card.remove();
+    if (r.noop) {
+      agentBubble('sys', escapeHtml(r.message || '无需变更'));
+      return;
+    }
+    let html = '✅ 已更新：<b>' + escapeHtml(r.task.id) + '｜' + escapeHtml(r.task.title) + '</b> 「' + escapeHtml(r.previousStatus) + '」→「' + escapeHtml(r.newStatus) + '」';
+    if (r.notify) {
+      if (r.notify.configured === false) html += '<br><span class="ag-muted">手机通知：未配置 NOTIFY_WEBHOOK_URL，已跳过</span>';
+      else if (r.notify.skipped) html += '<br><span class="ag-muted">手机通知：10 分钟内同状态已推送过，本次跳过</span>';
+      else if (r.notify.ok) html += '<br><span class="ag-ok">手机通知已推送（' + (r.notify.durationMs != null ? r.notify.durationMs + 'ms' : '—') + '）</span>';
+      else html += '<br><span class="ag-warn">任务已更新，通知发送失败：' + escapeHtml(r.notify.error || '未知原因') + '</span>';
+    }
+    agentBubble('agent', html);
+    await refreshHubData();
+    loadHubStatus();
+  } catch (e) {
+    okBtn.disabled = false;
+    okBtn.textContent = '确认更新';
+    agentBubble('sys', '⚠️ 更新失败：' + escapeHtml(e.message));
+  }
+}
+
+async function agentSend(text) {
+  const msg = String(text || '').trim();
+  if (!msg || agentState.busy) return;
+  agentState.busy = true;
+  agentBubble('user', escapeHtml(msg));
+  const thinking = agentBubble('agent', '<span class="ag-muted">思考中…</span>');
+  try {
+    const r = await apiFetch('/api/agent/chat', { method: 'POST', body: JSON.stringify({ message: msg }) });
+    thinking.remove();
+    if (r.reply) agentBubble('agent', mdLite(r.reply));
+    if (r.tasks && r.tasks.length) renderAgentTaskCards(r.tasks);
+    if (r.confirm) renderConfirmCard(r.confirm);
+    if (r.notifyTest) await runNotifyTest(true);
+  } catch (e) {
+    thinking.remove();
+    if (agentState.apiOnline === false) {
+      agentBubble('sys', '当前为纯静态模式（未连接服务端 API），Agent 与手机通知不可用。部署到 Vercel 后自动开启。');
+    } else {
+      agentBubble('sys', '⚠️ 请求失败：' + escapeHtml(e.message));
+    }
+  } finally {
+    agentState.busy = false;
+  }
+}
+
+/* 测试手机通知：渲染完整诊断（请求时间/状态码/是否成功/耗时/错误原因/最近成功时间） */
+async function runNotifyTest(inDrawer) {
+  const box = document.getElementById('notifyResult');
+  box.hidden = false;
+  box.innerHTML = '<span class="ag-muted">正在发送测试通知…</span>';
+  if (inDrawer) agentBubble('agent', '<span class="ag-muted">正在发送测试手机通知…</span>');
+  let r;
+  try {
+    r = await apiFetch('/api/notify/test', { method: 'POST', body: JSON.stringify({ operator: agentState.operator }) });
+  } catch (e) {
+    box.innerHTML = '<span class="ag-warn">测试请求失败：' + escapeHtml(e.message) + '</span>';
+    if (inDrawer) agentBubble('sys', '⚠️ 测试请求失败：' + escapeHtml(e.message));
+    return;
+  }
+  const rows = [
+    ['请求时间', r.requestedAt || '—'],
+    ['HTTP 状态码', r.httpStatus != null ? String(r.httpStatus) : '—'],
+    ['Webhook 是否成功', r.ok ? '成功' : '失败'],
+    ['响应耗时', r.durationMs != null ? r.durationMs + ' ms' : '—'],
+    ['错误原因', r.error || '无'],
+    ['最近一次成功', r.lastSuccessAt || '—'],
+  ];
+  box.innerHTML = rows.map(([k, v]) => '<div class="nr-row"><span>' + k + '</span><b>' + escapeHtml(v) + '</b></div>').join('');
+  if (inDrawer) {
+    agentBubble('agent',
+      '手机通知测试：' + (r.ok ? '✅ 成功' : '❌ 失败') +
+      '（HTTP ' + (r.httpStatus != null ? r.httpStatus : '—') + '，' + (r.durationMs != null ? r.durationMs + 'ms' : '—') + '）' +
+      (r.error ? '<br>错误原因：' + escapeHtml(r.error) : ''));
+  }
+  loadHubStatus();
+}
+
+/* Agent 修改后全量刷新：统计 / 倒计时 / Pipeline / 待办 / 周更 / 最近更新 */
+async function refreshHubData() {
+  try {
+    const d = await apiFetch('/api/tasks');
+    state.tasks = { version: 1, updatedAt: d.tasksUpdatedAt, tasks: d.tasks };
+    state.todo = d.todo;
+    state.pipeline = d.pipeline;
+    state.weeklyLog = d.weeklyLog;
+    renderSummary();
+    renderCountdown(state.tasks);
+    renderPipeline(state.pipeline);
+    renderTodo(state.todo);
+    renderWeekly(state.weeklyLog);
+    updateSidebarBlockedDot();
+    renderRecentUpdates(d.recentUpdates || []);
+    applyFilters();
+  } catch (e) {
+    console.warn('[绩效看板] 刷新任务数据失败', e);
+  }
+}
+
+function renderRecentUpdates(list) {
+  const ul = document.getElementById('recentUpdates');
+  if (!ul) return;
+  ul.innerHTML = '';
+  if (!list || !list.length) {
+    ul.appendChild(el('li', 'upd-empty', '暂无 Agent 修改记录'));
+    return;
+  }
+  list.forEach((u) => {
+    const li = el('li', 'upd-item');
+    li.innerHTML =
+      '<span class="upd-time">' + fmtUpdTs(u.ts) + '</span>' +
+      '<span class="upd-body"><b>' + escapeHtml(u.taskId || '—') + '</b> 「' + escapeHtml(u.previousStatus || '—') + ' → ' + escapeHtml(u.newStatus || '—') + '」</span>' +
+      '<span class="upd-op">' + escapeHtml(u.operator || 'agent') + '</span>';
+    ul.appendChild(li);
+  });
+}
+
+function setChip(id, cls, text) {
+  const chip = document.getElementById(id);
+  if (!chip) return;
+  chip.className = 'st-chip ' + cls;
+  chip.textContent = text;
+}
+
+function paintHubStatus(s) {
+  if (!s) {
+    setChip('stAgent', 'st-off', 'Agent 未连接');
+    setChip('sysAgent', 'st-off', 'Agent 未连接（静态模式）');
+    setChip('stWebhook', 'st-off', 'Webhook 未连接');
+    setChip('sysWebhook', 'st-off', 'Webhook 未连接');
+    const ls = document.getElementById('sysLastSuccess');
+    const lt = document.getElementById('sysLastTest');
+    if (ls) ls.textContent = '—';
+    if (lt) lt.textContent = '—';
+    return;
+  }
+  const agentText = s.agent.llmConfigured ? 'Agent 在线（规则+LLM）' : 'Agent 在线（规则模式）';
+  setChip('stAgent', 'st-on', agentText);
+  setChip('sysAgent', 'st-on', agentText);
+  const hookText = s.webhook.configured ? 'Webhook 已配置' : 'Webhook 未配置';
+  setChip('stWebhook', s.webhook.configured ? 'st-on' : 'st-warn', hookText);
+  setChip('sysWebhook', s.webhook.configured ? 'st-on' : 'st-warn', hookText);
+  const ls = document.getElementById('sysLastSuccess');
+  const lt = document.getElementById('sysLastTest');
+  if (ls) ls.textContent = s.webhook.lastSuccessAt || '—';
+  if (lt) lt.textContent = s.webhook.lastTest ? ((s.webhook.lastTest.ok ? '成功' : '失败') + ' · ' + s.webhook.lastTest.at) : '—';
+}
+
+async function loadHubStatus() {
+  try {
+    const s = await apiFetch('/api/status');
+    agentState.apiOnline = true;
+    paintHubStatus(s);
+    renderRecentUpdates(s.recentUpdates || []);
+  } catch (e) {
+    agentState.apiOnline = false;
+    paintHubStatus(null);
+    renderRecentUpdates([]);
+  }
+}
+
+function initAgent() {
+  const drawer = document.getElementById('agentDrawer');
+  const overlay = document.getElementById('agentOverlay');
+  const input = document.getElementById('agentText');
+
+  const setOpen = (open) => {
+    agentState.open = open;
+    drawer.classList.toggle('open', open);
+    overlay.hidden = !open;
+    if (open) {
+      loadHubStatus();
+      setTimeout(() => input.focus(), 220);
+    }
+  };
+  document.getElementById('btnAgent').addEventListener('click', () => setOpen(true));
+  document.getElementById('agentClose').addEventListener('click', () => setOpen(false));
+  overlay.addEventListener('click', () => setOpen(false));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && agentState.open) setOpen(false);
+  });
+
+  document.getElementById('agentForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const v = input.value;
+    input.value = '';
+    agentSend(v);
+  });
+
+  document.querySelectorAll('.agent-quick button[data-q]').forEach((b) => {
+    b.addEventListener('click', () => agentSend(b.dataset.q));
+  });
+
+  document.getElementById('btnTestNotify').addEventListener('click', () => runNotifyTest(false));
+
+  const opInput = document.getElementById('operatorInput');
+  opInput.addEventListener('input', () => {
+    agentState.operator = opInput.value.trim() || 'Sera';
+  });
+
+  agentBubble('agent',
+    '你好，我是看板 Agent，基于真实任务数据回答：<br>' +
+    '· 当前哪些任务已经完成 / 未完成 / 进行中 / 逾期 / 阻塞？<br>' +
+    '· 本周需要优先处理什么？今天进度如何？<br>' +
+    '· 检查 Simon / Sera 的任务进度<br>' +
+    '· 把 T-0001 标记为已完成（我会先请你确认）');
 }
 
 document.addEventListener('DOMContentLoaded', init);

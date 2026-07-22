@@ -57,6 +57,7 @@ function buildTask(fields, id, source) {
     workstream: fields.workstream || null,
     owner: fields.owner || 'Sera',
     createdAt: nowIso(),
+    updatedAt: nowIso(),
     dueAt: fields.dueAt,
     remindAt: fields.remindAt,
     remindedAt: null,
@@ -91,6 +92,7 @@ async function run(intent, hooks = {}) {
       if (intent.result) task.result = intent.result;
       if (intent.result) task.completionEvidence = intent.result;
       task.updatedBy = 'cli';
+      task.updatedAt = nowIso();
       let detail = `完成任务「${task.title}」${intent.result ? `，结果：${intent.result}` : ''}`;
       finalize(data, 'cli', 'complete', task.id, detail);
 
@@ -130,6 +132,7 @@ async function run(intent, hooks = {}) {
       task.remindAt = intent.remindAt || task.remindAt;
       task.remindedAt = null;
       task.updatedBy = 'cli';
+      task.updatedAt = nowIso();
       finalize(data, 'cli', 'postpone', task.id, `「${task.title}」截止 ${oldDue} → ${intent.to}${intent.reason ? `，原因：${intent.reason}` : ''}`);
       return `⏸️  已延期 ${fmtLine(task)}`;
     }
@@ -157,6 +160,7 @@ async function run(intent, hooks = {}) {
       if (intent.value > 0 && ['待启动', '已提醒'].includes(task.status)) transition(task, '进行中');
       if (intent.value >= 100 && task.status === '进行中') transition(task, '待输出');
       task.updatedBy = 'cli';
+      task.updatedAt = nowIso();
       finalize(data, 'cli', 'progress', task.id, `「${task.title}」进度更新为 ${intent.value}%`);
       return `📈 已更新 ${fmtLine(task)}`;
     }
@@ -170,6 +174,7 @@ async function run(intent, hooks = {}) {
       task.nextAction = intent.text;
       if (task.status === '已提醒') transition(task, '进行中');
       task.updatedBy = 'cli';
+      task.updatedAt = nowIso();
       finalize(data, 'cli', 'next', task.id, `「${task.title}」下一步：${old} → ${intent.text}`);
       return `👉 已更新 ${fmtLine(task)}`;
     }
@@ -183,6 +188,7 @@ async function run(intent, hooks = {}) {
         const task = findTask(data, intent.id);
         transition(task, '阻塞');
         task.updatedBy = 'cli';
+        task.updatedAt = nowIso();
         finalize(data, 'cli', 'block', task.id, `「${task.title}」标记阻塞：${intent.text}`);
         taskMsg = `，${task.id} 已标记阻塞`;
       } else {

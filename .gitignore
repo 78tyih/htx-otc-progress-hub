@@ -27,3 +27,9 @@ tmp/
 # 编辑器目录
 .idea/
 .vscode/
+
+# Vercel 本地链接信息
+.vercel
+
+# 本地 dev-server 通知状态（运行时产物，不入库）
+data/.hub-notify.json
