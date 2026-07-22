@@ -37,6 +37,29 @@ function buildPayload({ event, task, previousStatus, newStatus, operator, messag
   };
 }
 
+/** 企业微信群机器人 webhook？（其 API 只接受 msgtype 结构，通用 JSON 会被拒） */
+function isWecomUrl(url) {
+  return /qyapi\.weixin\.qq\.com\/cgi-bin\/webhook\/send/.test(String(url || ''));
+}
+
+/** 企微 markdown 消息体（支持：加粗 / 引用 / 链接 / 字体颜色 info·comment·warning） */
+function toWecomBody(p) {
+  const statusLine = p.previousStatus || p.newStatus
+    ? `\n> 状态：<font color="comment">${p.previousStatus || '—'}</font> → <font color="info">${p.newStatus || '—'}</font>`
+    : '';
+  const link = p.dashboardUrl ? `\n[打开看板](${p.dashboardUrl})` : '';
+  return {
+    msgtype: 'markdown',
+    markdown: {
+      content:
+        `**${p.title}**\n` +
+        `> 任务：${p.taskId}｜${p.taskName}${statusLine}\n` +
+        `> 操作人：${p.operator}\n` +
+        `> 时间：${p.timestamp.replace('T', ' ').slice(0, 19)}${link}`,
+    },
+  };
+}
+
 /** 发送 Webhook（带防重复）；返回诊断信息，永不抛异常 */
 async function sendWebhook(state, opts) {
   const url = process.env.NOTIFY_WEBHOOK_URL;
@@ -59,11 +82,21 @@ async function sendWebhook(state, opts) {
     const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
     const headers = { 'content-type': 'application/json' };
     if (process.env.NOTIFY_WEBHOOK_SECRET) headers['x-webhook-secret'] = process.env.NOTIFY_WEBHOOK_SECRET;
-    const res = await fetch(url, { method: 'POST', headers, body: JSON.stringify(payload), signal: ctrl.signal });
+    // 企微机器人：换用 msgtype 结构；响应恒为 HTTP 200，须看 errcode
+    const wecom = isWecomUrl(url);
+    const body = wecom ? toWecomBody(payload) : payload;
+    const res = await fetch(url, { method: 'POST', headers, body: JSON.stringify(body), signal: ctrl.signal });
     clearTimeout(timer);
     httpStatus = res.status;
-    ok = res.ok;
-    if (!res.ok) error = `Webhook 返回 HTTP ${res.status}`;
+    if (!res.ok) {
+      error = `Webhook 返回 HTTP ${res.status}`;
+    } else if (wecom) {
+      const data = await res.json().catch(() => null);
+      if (data && data.errcode === 0) ok = true;
+      else error = `企微返回错误：errcode=${data && data.errcode} ${(data && data.errmsg) || ''}`.trim();
+    } else {
+      ok = true;
+    }
   } catch (e) {
     error = e && e.name === 'AbortError' ? `请求超时（${TIMEOUT_MS / 1000}s）` : String((e && e.message) || e);
   }
@@ -95,7 +128,7 @@ async function notifyDiscoveries(state, classified, kind, dashboardUrl) {
       previousStatus: c.task.status,
       newStatus: c.task.status,
       operator: 'agent',
-      message: `Agent 发现${label}：${c.task.id}｜${c.task.title}（${c.task.status}，负责人 ${c.task.owner}）`,
+      message: `PIP 助手发现${label}：${c.task.id}｜${c.task.title}（${c.task.status}，负责人 ${c.task.owner}）`,
       dashboardUrl,
     });
     if (r.ok && !r.skipped) sent += 1;

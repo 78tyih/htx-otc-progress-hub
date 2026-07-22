@@ -67,7 +67,7 @@
             <span class="search-icon" aria-hidden="true">⌕</span>
             <input type="search" id="searchInput" placeholder="搜索 Pipeline / 待办 / 主线…" autocomplete="off">
           </div>
-          <button class="btn btn-agent" id="btnAgent" type="button" title="打开 Agent 助手">Agent 助手</button>
+          <button class="btn btn-agent" id="btnAgent" type="button" title="打开 PIP 助手">PIP 助手</button>
           <button class="btn btn-outline" id="btnExport" type="button" title="导出 Pipeline JSON">导出</button>
         </div>
       </header>
@@ -257,14 +257,14 @@
             <span class="sec-no">12</span>
             <div>
               <h2>系统状态与最近更新</h2>
-              <p class="section-sub">Agent / Webhook 在线状态 · Agent 修改记录 · 手机通知联调</p>
+              <p class="section-sub">PIP 助手 / Webhook 在线状态 · PIP 助手修改记录 · 手机通知联调</p>
             </div>
           </div>
           <div class="sys-layout">
             <div class="panel sys-panel">
               <h3 class="blk-title">服务状态</h3>
               <ul class="sys-list">
-                <li><span class="sys-k">Agent</span><span class="st-chip" id="sysAgent">检测中…</span></li>
+                <li><span class="sys-k">PIP 助手</span><span class="st-chip" id="sysAgent">检测中…</span></li>
                 <li><span class="sys-k">Webhook</span><span class="st-chip" id="sysWebhook">检测中…</span></li>
                 <li><span class="sys-k">最近通知成功</span><b id="sysLastSuccess">—</b></li>
                 <li><span class="sys-k">最近测试</span><span id="sysLastTest">—</span></li>
@@ -276,7 +276,7 @@
               <div class="notify-result" id="notifyResult" hidden></div>
             </div>
             <div class="panel sys-panel">
-              <h3 class="blk-title">最近更新（Agent）</h3>
+              <h3 class="blk-title">最近更新（PIP 助手）</h3>
               <ul class="upd-list" id="recentUpdates"></ul>
             </div>
           </div>
@@ -292,18 +292,18 @@
     </div>
   </div>
 
-  <!-- ========== Agent 助手抽屉（右侧滑出，不遮挡主内容） ========== -->
+  <!-- ========== PIP 助手抽屉（右侧滑出，不遮挡主内容） ========== -->
   <div class="agent-overlay" id="agentOverlay" hidden></div>
-  <aside class="agent-drawer" id="agentDrawer" aria-label="Agent 助手">
+  <aside class="agent-drawer" id="agentDrawer" aria-label="PIP 助手">
     <div class="agent-head">
       <div>
-        <h2>Agent 助手</h2>
+        <h2>PIP 助手</h2>
         <p class="agent-sub">读取真实任务数据 · 状态变更需确认后执行</p>
       </div>
-      <button class="icon-btn" id="agentClose" type="button" aria-label="关闭 Agent 助手">×</button>
+      <button class="icon-btn" id="agentClose" type="button" aria-label="关闭 PIP 助手">×</button>
     </div>
     <div class="agent-statusbar">
-      <span class="st-chip" id="stAgent">Agent 检测中…</span>
+      <span class="st-chip" id="stAgent">PIP 助手检测中…</span>
       <span class="st-chip" id="stWebhook">Webhook 检测中…</span>
     </div>
     <div class="agent-quick">

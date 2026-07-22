@@ -2245,7 +2245,7 @@ async function agentSend(text) {
   } catch (e) {
     thinking.remove();
     if (agentState.apiOnline === false) {
-      agentBubble('sys', '当前为纯静态模式（未连接服务端 API），Agent 与手机通知不可用。部署到 Vercel 后自动开启。');
+      agentBubble('sys', '当前为纯静态模式（未连接服务端 API），PIP 助手与手机通知不可用。部署到 Vercel 后自动开启。');
     } else {
       agentBubble('sys', '⚠️ 请求失败：' + escapeHtml(e.message));
     }
@@ -2312,7 +2312,7 @@ function renderRecentUpdates(list) {
   if (!ul) return;
   ul.innerHTML = '';
   if (!list || !list.length) {
-    ul.appendChild(el('li', 'upd-empty', '暂无 Agent 修改记录'));
+    ul.appendChild(el('li', 'upd-empty', '暂无 PIP 助手修改记录'));
     return;
   }
   list.forEach((u) => {
@@ -2334,8 +2334,8 @@ function setChip(id, cls, text) {
 
 function paintHubStatus(s) {
   if (!s) {
-    setChip('stAgent', 'st-off', 'Agent 未连接');
-    setChip('sysAgent', 'st-off', 'Agent 未连接（静态模式）');
+    setChip('stAgent', 'st-off', 'PIP 助手未连接');
+    setChip('sysAgent', 'st-off', 'PIP 助手未连接（静态模式）');
     setChip('stWebhook', 'st-off', 'Webhook 未连接');
     setChip('sysWebhook', 'st-off', 'Webhook 未连接');
     const ls = document.getElementById('sysLastSuccess');
@@ -2344,7 +2344,7 @@ function paintHubStatus(s) {
     if (lt) lt.textContent = '—';
     return;
   }
-  const agentText = s.agent.llmConfigured ? 'Agent 在线（规则+LLM）' : 'Agent 在线（规则模式）';
+  const agentText = s.agent.llmConfigured ? 'PIP 助手在线（规则+LLM）' : 'PIP 助手在线（规则模式）';
   setChip('stAgent', 'st-on', agentText);
   setChip('sysAgent', 'st-on', agentText);
   const hookText = s.webhook.configured ? 'Webhook 已配置' : 'Webhook 未配置';
@@ -2409,7 +2409,7 @@ function initAgent() {
   });
 
   agentBubble('agent',
-    '你好，我是看板 Agent，基于真实任务数据回答：<br>' +
+    '你好，我是 PIP 助手，基于真实任务数据回答：<br>' +
     '· 当前哪些任务已经完成 / 未完成 / 进行中 / 逾期 / 阻塞？<br>' +
     '· 本周需要优先处理什么？今天进度如何？<br>' +
     '· 检查 Simon / Sera 的任务进度<br>' +

@@ -15,6 +15,7 @@
 const fs = require('fs');
 const path = require('path');
 const { validateTasksFile, validateAuditFile } = require('../../agent/schema');
+const { projectTodoRows } = require('../../agent/presenter');
 
 const KV_KEY = 'hub:state';
 const DATA_DIR = process.env.HUB_DATA_DIR || path.join(__dirname, '..', '..', 'data');
@@ -111,6 +112,8 @@ async function saveState(state) {
   fsWriteAtomic('pipeline.json', state.pipeline);
   fsWriteAtomic('weekly-log.json', state.weeklyLog);
   fsWriteAtomic('audit-log.json', state.audit);
+  // 展示层 todo.json 全量投影（与 CLI 的 syncPresentation 行为一致）
+  fsWriteAtomic('todo.json', projectTodoRows(state.tasks.tasks));
   fs.writeFileSync(NOTIFY_FILE, JSON.stringify(state.notify, null, 2) + '\n', 'utf8');
   syncFallbackQuiet();
 }

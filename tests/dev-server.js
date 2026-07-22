@@ -12,6 +12,14 @@ const path = require('path');
 const ROOT = path.join(__dirname, '..');
 const PORT = Number(process.env.PORT || 8123);
 
+// 加载本地 .env（gitignored）：KEY=VALUE 逐行解析，已在环境变量中的键不覆盖
+try {
+  for (const line of fs.readFileSync(path.join(ROOT, '.env'), 'utf8').split('\n')) {
+    const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/);
+    if (m && !process.env[m[1]]) process.env[m[1]] = m[2].replace(/^["']|["']$/g, '');
+  }
+} catch { /* 无 .env 时忽略 */ }
+
 const MIME = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
