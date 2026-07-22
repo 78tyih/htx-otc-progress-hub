@@ -232,11 +232,13 @@ button { font-family: inherit; cursor: pointer; }
   transform: translateY(-50%);
   z-index: 60;
   width: var(--sidebar-w);
-  max-height: calc(100vh - 24px);
+  /* 固定高度：手风琴展开 / 整体折叠切换时，目录条上下边界与图标位置不抖动 */
+  height: calc(100vh - 24px);
   display: flex;
   flex-direction: column;
   gap: 14px;
-  padding: 10px 12px 10px 30px; /* 左侧留白：刻度线（marker）的空间 */
+  /* 左右统一 12px：一级图标中心固定在视口 42px 处，与折叠态轨道完全对齐（展开/折叠图标不横移） */
+  padding: 10px 12px;
   /* 悬浮式：无背景无描边，垂直居中悬浮在极光背景上（移动端抽屉态恢复玻璃面板） */
   background: transparent;
   border: none;
@@ -427,11 +429,12 @@ button { font-family: inherit; cursor: pointer; }
   body.nav-collapsed .nav-l1-name,
   body.nav-collapsed .nav-l1-dot,
   body.nav-collapsed .nav-chevron { display: none; }
-  body.nav-collapsed .side-nav { overflow: visible; }
+  body.nav-collapsed .side-nav { overflow: visible; justify-content: space-between; } /* 图标纵向铺满：首组置顶、末组沉底、间距拉宽 */
   body.nav-collapsed .nav-sub { display: none; }
-  body.nav-collapsed .nav-group { margin-bottom: 6px; }
+  body.nav-collapsed .nav-group { margin-bottom: 0; }
   body.nav-collapsed .nav-l1 { justify-content: center; padding: 10px 0; position: relative; }
-  /* 折叠态：位移归零，隐藏刻度线与小刻度 */
+  /* 折叠态图标放大（约 2 倍），位移归零，隐藏刻度线与小刻度 */
+  body.nav-collapsed .nav-l1-icon { width: 28px; height: 28px; }
   body.nav-collapsed .nav-l1 { transform: none; }
   body.nav-collapsed .nav-l1::before,
   body.nav-collapsed .nav-group::after { display: none; }
