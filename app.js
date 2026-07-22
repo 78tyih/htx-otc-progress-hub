@@ -1080,7 +1080,8 @@ function kpiBodyRing(item) {
   grad.setAttribute('id', 'ringGrad');
   grad.setAttribute('x1', '0'); grad.setAttribute('y1', '0');
   grad.setAttribute('x2', '1'); grad.setAttribute('y2', '1');
-  [['0%', '#FFE000'], ['100%', '#18A7E3']].forEach(([off, color]) => {
+  // 完成渐变：天蓝 → 克莱因蓝（深色主题由 style.css 的 stop-color 覆盖接管）
+  [['0%', '#62C9F5'], ['100%', '#002FA7']].forEach(([off, color]) => {
     const stop = document.createElementNS(NS, 'stop');
     stop.setAttribute('offset', off);
     stop.setAttribute('stop-color', color);
@@ -1583,7 +1584,7 @@ function renderDepMap() {
   mainGrad.setAttribute('gradientUnits', 'userSpaceOnUse');
   mainGrad.setAttribute('x1', '0'); mainGrad.setAttribute('y1', '0');
   mainGrad.setAttribute('x2', String(VB_W)); mainGrad.setAttribute('y2', '0');
-  [['0%', '#FFE000'], ['100%', '#FFB800']].forEach(([off, color]) => {
+  [['0%', '#0066FF'], ['100%', '#2692FF']].forEach(([off, color]) => {
     const stop = document.createElementNS(NS, 'stop');
     stop.setAttribute('offset', off);
     stop.setAttribute('stop-color', color);
@@ -1908,13 +1909,9 @@ function renderWeekly(log) {
   document.getElementById('weeklyCadence').textContent = (log && log.cadence) || '每周更新一次';
   document.getElementById('weeklyUpdated').textContent = (log && log.updatedAt) || TODAY;
 
-  // 侧栏与页脚更新时间与周更数据保持一致
+  // 页脚更新时间与周更数据保持一致
   if (log && log.updatedAt) {
-    document.getElementById('sideUpdated').textContent = log.updatedAt;
     document.getElementById('footerUpdated').textContent = log.updatedAt;
-  }
-  if (log && log.cadence) {
-    document.getElementById('sideCadence').textContent = log.cadence;
   }
 }
 
@@ -2461,6 +2458,17 @@ function initNavAccordion() {
   });
 }
 
+/* ---------- 顶栏固定定位：实测高度写入 --topbar-h，主区 padding-top 避让（窄屏换行时高度自适应） ---------- */
+function initTopbarHeight() {
+  const topbar = document.querySelector('.topbar');
+  if (!topbar) return;
+  const apply = () => {
+    document.documentElement.style.setProperty('--topbar-h', topbar.offsetHeight + 'px');
+  };
+  apply();
+  window.addEventListener('resize', apply);
+}
+
 /* ---------- 侧边目录整体折叠（56-64px 图标态 + 状态记忆） ---------- */
 function setSidebarCollapsed(collapsed, opts) {
   document.body.classList.toggle('nav-collapsed', collapsed);
@@ -2515,6 +2523,68 @@ function initScrollSpy() {
       document.getElementById(id).scrollIntoView({ behavior: REDUCED_MOTION ? 'auto' : 'smooth' });
     }
   });
+}
+
+/* ---------- 悬浮导航光标邻近动效（line-sidebar：rAF lerp 驱动 --effect，0..1） ---------- */
+function initNavProximity() {
+  const sidebar = document.getElementById('sidebar');
+  const nav = document.getElementById('sideNav');
+  if (!sidebar || !nav || REDUCED_MOTION) return;
+  const items = Array.from(nav.querySelectorAll('.nav-l1, .nav-link'));
+  if (!items.length) return;
+
+  const RANGE = 90;  // 邻近衰减半径（px）：光标 90px 内的项目被点亮
+  const LERP = 0.16; // 平滑系数：每帧向目标值靠拢 16%
+  const effects = new Map();
+  let mouseY = null;
+  let rafId = null;
+
+  function isItemVisible(item) {
+    if (item.classList.contains('nav-link')) {
+      const g = item.closest('.nav-group');
+      if (g && !g.classList.contains('open')) return false; // 手风琴收起
+      if (document.body.classList.contains('nav-collapsed')) return false; // 整体折叠态
+    }
+    return true;
+  }
+
+  function targetFor(item) {
+    const base = item.classList.contains('active') ? 0.85 : 0;
+    if (mouseY == null || !isItemVisible(item)) return base;
+    const r = item.getBoundingClientRect();
+    if (!r.height) return base;
+    const d = Math.abs(mouseY - (r.top + r.height / 2));
+    let t = Math.max(0, 1 - d / RANGE);
+    t = t * t * (3 - 2 * t); // smoothstep 衰减曲线
+    return Math.max(base, t);
+  }
+
+  function frame() {
+    let alive = false;
+    items.forEach((item) => {
+      const cur = effects.get(item) || 0;
+      const tgt = targetFor(item);
+      let next = cur + (tgt - cur) * LERP;
+      if (Math.abs(next - tgt) < 0.004) next = tgt;
+      if (next !== cur) {
+        effects.set(item, next);
+        item.style.setProperty('--effect', next.toFixed(3));
+      }
+      if (next !== tgt || next > 0.004) alive = true;
+    });
+    rafId = alive ? requestAnimationFrame(frame) : null;
+  }
+  function wake() { if (rafId == null) rafId = requestAnimationFrame(frame); }
+
+  sidebar.addEventListener('pointermove', (e) => { mouseY = e.clientY; wake(); });
+  sidebar.addEventListener('pointerleave', () => { mouseY = null; wake(); });
+  sidebar.addEventListener('click', wake);
+  nav.addEventListener('scroll', wake, { passive: true });
+  // scroll-spy 改 active / 手风琴展开收起 → 唤醒补间
+  if ('MutationObserver' in window) {
+    new MutationObserver(wake).observe(nav, { attributes: true, attributeFilter: ['class'], subtree: true });
+  }
+  wake(); // 首帧：让 active 项落到高亮态
 }
 
 /* ---------- 导航状态聚合圆点（红=阻塞 · 黄=进行中 · 绿=全部完成 · 灰=无数据） ---------- */
@@ -2814,8 +2884,10 @@ async function init() {
   initTheme();
   bindEvents();
   initNavAccordion();
+  initTopbarHeight();
   initSidebarCollapse();
   initScrollSpy();
+  initNavProximity();
   initDrawer();
   initTaskModal();
   initAgent();

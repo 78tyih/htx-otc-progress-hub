@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HTX OTC PIP 执行看板</title>
-  <meta name="description" content="Sera · OTC USD 大宗业务绩效任务进展 · 审核对象：Simon">
+  <meta name="description" content="HTX OTC PIP 执行看板">
   <link rel="icon" href="assets/brand/favicon.svg" type="image/svg+xml">
   <script>
     /* 主题防闪烁：CSS 加载前恢复用户偏好（默认日间） */
@@ -14,21 +14,18 @@
 </head>
 <body>
 
+  <!-- 极光流光背景层（白为底 · 淡蓝/灰缓慢流动）
+       结构：CSS 流光球（任何浏览器可见）+ WebGL 极光画布（增强，不支持时自动省略） -->
+  <div id="aurora-bg" aria-hidden="true">
+    <div class="aur-blob aur-b1"></div>
+    <div class="aur-blob aur-b2"></div>
+    <div class="aur-blob aur-b3"></div>
+  </div>
+
   <div class="layout">
 
-    <!-- ========== 左侧固定目录导航 ========== -->
+    <!-- ========== 左侧悬浮式刻度目录导航（纯菜单 · 垂直居中悬浮） ========== -->
     <aside class="sidebar" id="sidebar" aria-label="目录导航">
-      <div class="side-brand" title="HTX OTC BD">
-        <svg class="brand-icon" width="30" height="30" viewBox="0 0 64 64" role="img" aria-label="HTX OTC BD 双焰标识">
-          <path fill="#232B67" d="M39.5 6C31.5 8.5 23 14 18.3 22 13.8 29.8 14.3 40.8 20.8 48.2 24 52.2 27.8 54.8 31.2 54.2 33.4 53.7 34.3 50.3 33.4 45.8 32.5 41 30.7 35.3 31.3 29.8 31.9 23.3 34.2 13 39.5 6Z"/>
-          <path fill="#18A7E3" d="M24.5 6C32.5 8.5 41 14 45.7 22 50.2 29.8 49.7 40.8 43.2 48.2 40 52.2 36.2 54.8 32.8 54.2 30.6 53.7 29.7 50.3 30.6 45.8 31.5 41 33.3 35.3 32.7 29.8 32.1 23.3 29.8 13 24.5 6Z"/>
-          <path fill="#FFE000" d="M32 33.5Q33.2 37.3 37 38.5 33.2 39.7 32 43.5 30.8 39.7 27 38.5 30.8 37.3 32 33.5Z"/>
-        </svg>
-        <div class="brand-text">
-          <span class="brand-name">HTX OTC BD</span>
-          <span class="brand-sub">绩效进展中心</span>
-        </div>
-      </div>
       <nav class="side-nav" id="sideNav" aria-label="板块目录">
         <!-- 01 经营总览 -->
         <div class="nav-group" data-group="overview">
@@ -115,10 +112,9 @@
         </div>
       </nav>
       <button class="side-collapse" id="sideCollapse" type="button" aria-label="收起目录" aria-pressed="false" title="收起目录">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 6l-6 6 6 6"/><path d="M20 6l-6 6 6 6"/></svg>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         <span class="side-collapse-text">收起目录</span>
       </button>
-      <div class="side-foot"><span id="sideCadence">每周更新一次</span> · 本周更新：<b id="sideUpdated">2026-07-21</b></div>
     </aside>
     <div class="side-overlay" id="sideOverlay" hidden></div>
 
@@ -128,15 +124,24 @@
       <header class="topbar">
         <div class="topbar-left">
           <button class="icon-btn" id="menuBtn" type="button" aria-label="打开目录" aria-expanded="false" aria-controls="sidebar" title="目录">☰</button>
+          <svg class="brand-icon" width="30" height="30" viewBox="0 0 64 64" role="img" aria-label="HTX 水滴标识">
+            <g transform="translate(16 4) scale(0.2753)">
+              <path class="drop-outer" fill="#242D50" d="M87.0818 62.636C87.6838 32.826 70.8038 6.85 62.0118 0.606999C61.9718 0.566799 61.1888 0.145297 61.2488 1.3096C61.2488 1.3296 61.2288 1.3296 61.2288 1.3497C60.3258 57.658 31.3818 72.834 15.6658 93.47C-19.2592 139.359 9.88484 191.713 47.6398 201.629C48.2828 201.79 50.0288 202.312 53.3408 202.994C55.0668 203.356 55.5688 201.89 54.3038 199.702C49.7878 191.853 41.7588 178.604 40.1738 161.581C36.5608 122.055 86.3788 97.324 87.0818 62.636Z"/>
+              <path fill="#008CD6" d="M106.11 81.727C105.809 81.506 105.388 81.526 105.348 81.907C104.545 89.074 97.138 103.929 87.383 117.82C54.545 164.653 71.085 185.891 83.931 200.626C86.299 203.356 87.483 202.754 88.728 200.807C89.892 198.96 91.658 196.611 99.246 193.018C100.43 192.456 129.093 177.24 132.204 142.592C135.195 109.068 113.697 87.869 106.11 81.727Z"/>
+            </g>
+          </svg>
           <div class="title-block">
             <h1>HTX OTC PIP 执行看板</h1>
-            <p class="subtitle">Sera · OTC USD 大宗业务绩效任务进展<span class="reviewer-badge">审核对象：Simon</span></p>
           </div>
         </div>
         <div class="topbar-right">
           <div class="theme-toggle" role="group" aria-label="主题切换">
-            <button class="theme-btn" id="themeLight" type="button" data-set-theme="light">日间</button>
-            <button class="theme-btn" id="themeDark" type="button" data-set-theme="dark">夜间</button>
+            <button class="theme-btn" id="themeLight" type="button" data-set-theme="light" aria-label="日间模式" title="日间模式">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+            </button>
+            <button class="theme-btn" id="themeDark" type="button" data-set-theme="dark" aria-label="夜间模式" title="夜间模式">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </button>
           </div>
           <div class="search-box">
             <span class="search-icon" aria-hidden="true">⌕</span>
@@ -179,7 +184,7 @@
             <span class="sec-no">03</span>
             <div>
               <h2>任务倒计时</h2>
-              <p class="section-sub">任务闭环执行层 · 由 data/tasks.json 驱动 · 24 小时内到期黄色 · 逾期红色 · 完成绿色 · 秒级实时刷新</p>
+              <p class="section-sub">任务闭环执行层 · 由 data/tasks.json 驱动 · 24 小时内到期蓝色 · 逾期红色 · 完成蓝色 · 秒级实时刷新</p>
             </div>
           </div>
           <div class="cd-grid" id="cdGrid"></div>
@@ -233,7 +238,7 @@
             <span class="sec-no">07</span>
             <div>
               <h2>任务依赖关系图</h2>
-              <p class="section-sub">主链路（黄色渐变） · 支线 A 获客线索（浅色） · 支线 C 设计物料（浅灰）</p>
+              <p class="section-sub">主链路（品牌蓝渐变） · 支线 A 获客线索（浅色） · 支线 C 设计物料（浅灰）</p>
             </div>
           </div>
           <div class="panel dep-panel">
@@ -466,6 +471,7 @@
     </form>
   </aside>
 
+  <script src="aurora.js" defer></script>
   <script src="app.js" defer></script>
 </body>
 </html>
