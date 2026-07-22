@@ -23,6 +23,7 @@ function brief(c) {
     status: c.task.status,
     owner: c.task.owner,
     dueAt: c.task.dueAt,
+    progress: c.task.progress,
     class: c.class,
     label: c.label,
     basis: c.basis,
@@ -33,7 +34,7 @@ function brief(c) {
 function listReply(title, items, emptyText) {
   if (!items.length) return { reply: `📭 ${emptyText || `${title}：暂无`}`, tasks: [] };
   const lines = items.map((c) => [
-    `- **${c.task.id}｜${c.task.title}**｜${c.task.status}｜负责人 ${c.task.owner}｜截止 ${fmtDue(c.task.dueAt)}`,
+    `- **${c.task.id}｜${c.task.title}**｜${c.task.status}｜进度 ${c.task.progress}%｜负责人 ${c.task.owner}｜截止 ${fmtDue(c.task.dueAt)}`,
     `  - 判定依据：${c.basis.join('；')}`,
     `  - 建议下一步：${c.suggestion}`,
   ].join('\n'));
@@ -76,7 +77,7 @@ function parseUpdate(msg, tasks) {
     return { reply: `⚠️ 不允许把 ${task.id}「${task.title}」从「${task.status}」直接改为「${target}」。如需变更请先调整中间状态。` };
   }
   return {
-    reply: `请确认：把 **${task.id}｜${task.title}** 从「${task.status}」修改为「${target}」${target === '已完成' ? '（可附交付证据）' : ''}。`,
+    reply: `确认把 **${task.id}｜${task.title}** 从「${task.status}」修改为「${target}」吗？${target === '已完成' ? '（可附交付证据）' : ''}`,
     confirm: {
       taskId: task.id,
       title: task.title,

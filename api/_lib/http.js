@@ -27,8 +27,9 @@ function methodGuard(req, res, method) {
   return false;
 }
 
-/** 从请求推导线上看板地址（零配置） */
+/** 线上看板地址：优先 APP_URL 环境变量，其次从请求推导 */
 function dashboardUrl(req) {
+  if (process.env.APP_URL) return process.env.APP_URL;
   const host = (req.headers && (req.headers['x-forwarded-host'] || req.headers.host)) || '';
   return host ? `https://${host}` : '';
 }
