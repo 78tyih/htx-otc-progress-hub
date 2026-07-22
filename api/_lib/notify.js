@@ -1,8 +1,8 @@
 /**
  * 手机 Webhook 通知模块（服务端专用）
  *
- * 安全约定：NOTIFY_WEBHOOK_URL / NOTIFY_WEBHOOK_SECRET 只存在于环境变量，
- * 永不进入客户端源码、构建产物、日志或仓库。
+ * 安全约定：WECHAT_WEBHOOK_URL 只存在于环境变量，
+ * 永不进入客户端源码、构建产物、日志或仓库；服务端日志/错误信息必须脱敏（不得包含完整 URL 或 key）。
  *
  * 统一 POST JSON 载荷（event/title/message/taskId/taskName/previousStatus/newStatus/operator/timestamp/dashboardUrl）。
  * 防重复：同一 event + 任务 + 目标状态 10 分钟内只发一次（dedupe 状态随 hub state 持久化）。
@@ -17,7 +17,7 @@ const DEDUPE_TTL_MS = 24 * 3600 * 1000;
 const TIMEOUT_MS = 8000;
 
 function webhookConfigured() {
-  return !!process.env.NOTIFY_WEBHOOK_URL;
+  return !!process.env.WECHAT_WEBHOOK_URL;
 }
 
 function buildPayload({ event, task, previousStatus, newStatus, operator, message, dashboardUrl }) {
@@ -62,8 +62,8 @@ function toWecomBody(p) {
 
 /** 发送 Webhook（带防重复）；返回诊断信息，永不抛异常 */
 async function sendWebhook(state, opts) {
-  const url = process.env.NOTIFY_WEBHOOK_URL;
-  if (!url) return { configured: false, ok: false, skipped: false, error: 'NOTIFY_WEBHOOK_URL 未配置' };
+  const url = process.env.WECHAT_WEBHOOK_URL;
+  if (!url) return { configured: false, ok: false, skipped: false, error: 'WECHAT_WEBHOOK_URL 未配置' };
 
   const payload = buildPayload(opts);
   const key = `${opts.event}:${payload.taskId}:${payload.newStatus || ''}`;
@@ -81,7 +81,6 @@ async function sendWebhook(state, opts) {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
     const headers = { 'content-type': 'application/json' };
-    if (process.env.NOTIFY_WEBHOOK_SECRET) headers['x-webhook-secret'] = process.env.NOTIFY_WEBHOOK_SECRET;
     // 企微机器人：换用 msgtype 结构；响应恒为 HTTP 200，须看 errcode
     const wecom = isWecomUrl(url);
     const body = wecom ? toWecomBody(payload) : payload;

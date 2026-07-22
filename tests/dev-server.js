@@ -12,13 +12,15 @@ const path = require('path');
 const ROOT = path.join(__dirname, '..');
 const PORT = Number(process.env.PORT || 8123);
 
-// 加载本地 .env（gitignored）：KEY=VALUE 逐行解析，已在环境变量中的键不覆盖
-try {
-  for (const line of fs.readFileSync(path.join(ROOT, '.env'), 'utf8').split('\n')) {
-    const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/);
-    if (m && !process.env[m[1]]) process.env[m[1]] = m[2].replace(/^["']|["']$/g, '');
-  }
-} catch { /* 无 .env 时忽略 */ }
+// 加载本地 env 文件（均 gitignored）：.env.local 优先，其次 .env；KEY=VALUE 逐行解析，已在环境变量中的键不覆盖
+for (const name of ['.env.local', '.env']) {
+  try {
+    for (const line of fs.readFileSync(path.join(ROOT, name), 'utf8').split('\n')) {
+      const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/);
+      if (m && !process.env[m[1]]) process.env[m[1]] = m[2].replace(/^["']|["']$/g, '');
+    }
+  } catch { /* 文件不存在时忽略 */ }
+}
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',

@@ -33,14 +33,14 @@
     "id": "L3",
     "name": "设计交付包",
     "owner": "Sera",
-    "status": "Doing",
-    "progress": 90,
+    "status": "Done",
+    "progress": 100,
     "start": "2026-07-21",
     "end": "2026-07-24",
-    "next": "提交设计团队并确认排期",
+    "next": "等待设计团队排期反馈",
     "children": [
       {"task": "资料整理（背景/流程/FAQ/禁用词/参考图）", "start": "2026-07-21", "end": "2026-07-22", "status": "Done", "progress": 100},
-      {"task": "提交设计团队", "start": "2026-07-22", "end": "2026-07-23", "status": "Doing", "progress": 60},
+      {"task": "提交设计团队", "start": "2026-07-22", "end": "2026-07-23", "status": "Done", "progress": 100},
       {"task": "确认排期与反馈", "start": "2026-07-23", "end": "2026-07-24", "status": "Next", "progress": 0}
     ]
   },

@@ -7,6 +7,27 @@
       "action": "init",
       "taskId": null,
       "detail": "初始化 tasks.json：从 data/todo.json 迁移 5 项执行任务（T-0001 ~ T-0005），建立 任务新增 → 时间追踪 → 倒计时 → 提醒 → 结果输出 → Agent更新 闭环的数据底座。"
+    },
+    {
+      "ts": "2026-07-22T20:16:36+08:00",
+      "actor": "cli",
+      "action": "manual-update",
+      "taskId": "T-0001",
+      "detail": "{\"operator\":\"Sera\",\"previousStatus\":\"进行中\",\"newStatus\":\"已完成\",\"progress\":100,\"completionEvidence\":\"OTC 设计交付包已完成交付\",\"changeSource\":\"manual\"}"
+    },
+    {
+      "ts": "2026-07-22T20:16:36+08:00",
+      "actor": "cli",
+      "action": "manual-update",
+      "taskId": null,
+      "detail": "{\"operator\":\"Sera\",\"resource\":\"R003\",\"title\":\"设计团队交互包\",\"statusText\":\"已传回\",\"result\":\"设计团队品牌 Skill 包\",\"progress\":100,\"completionEvidence\":\"已传回设计团队品牌 Skill 包\",\"changeSource\":\"manual\"}"
+    },
+    {
+      "ts": "2026-07-22T12:21:35.913Z",
+      "actor": "web",
+      "action": "agent-update",
+      "taskId": "T-0002",
+      "detail": "{\"operator\":\"Sera\",\"previousStatus\":\"进行中\",\"newStatus\":\"已完成\",\"completionEvidence\":\"全链路测试交付物\",\"changeSource\":\"agent\"}"
     }
   ]
 }

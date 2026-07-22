@@ -85,6 +85,18 @@ const post = (path, body) => api(path, { method: 'POST', headers: { 'content-typ
   check('含请求时间', !!nt.json.requestedAt, nt.json);
   check('含最近成功时间', !!nt.json.lastSuccessAt, nt.json);
 
+  console.log('== 7b. /api/notifications/wecom/test 诊断 ==');
+  const wt = await post('/api/notifications/wecom/test', { operator: 'Sera' });
+  check('wecom/test 200', wt.status === 200, wt.text);
+  check('wecom 发送成功', wt.json && wt.json.ok === true, wt.json);
+  check('wecom HTTP 状态码 200', wt.json.httpStatus === 200, wt.json);
+  check('wecom errcode=0', wt.json.errcode === 0, wt.json);
+  check('wecom errmsg=ok', wt.json.errmsg === 'ok', wt.json);
+  check('wecom 含响应耗时', typeof wt.json.durationMs === 'number', wt.json);
+  check('wecom 含最近成功时间', !!wt.json.lastSuccessAt, wt.json);
+  const wtGet = await api('/api/notifications/wecom/test');
+  check('wecom/test GET 被拒 405', wtGet.status === 405, wtGet);
+
   console.log('== 8. 防重复 ==');
   const d1 = await post('/api/agent/confirm', { taskId: doing.id, newStatus: '已完成', operator: 'Sera' });
   check('重复 confirm noop', d1.status === 200 && d1.json.noop === true, d1.json);
@@ -92,15 +104,26 @@ const post = (path, body) => api(path, { method: 'POST', headers: { 'content-typ
   console.log('== 9. webhook 桩收到 payload ==');
   const fs = require('fs');
   const log = fs.existsSync('/tmp/hub-webhook-log.jsonl') ? fs.readFileSync('/tmp/hub-webhook-log.jsonl', 'utf8').trim().split('\n') : [];
-  check('桩收到 ≥2 条推送', log.length >= 2, log.length);
-  if (log.length) {
-    const last = JSON.parse(log[log.length - 1]);
+  check('桩收到 ≥3 条推送', log.length >= 3, log.length);
+  const bodies = log.map((l) => JSON.parse(l));
+  const generic = bodies.filter((l) => l.body && l.body.event);
+  const wecomMsgs = bodies.filter((l) => l.body && l.body.msgtype === 'markdown');
+  if (generic.length) {
+    const last = generic[generic.length - 1];
     const p = last.body;
-    check('payload 结构完整', ['event', 'title', 'message', 'taskId', 'taskName', 'operator', 'timestamp', 'dashboardUrl'].every((k) => k in p), p);
-    check('带 secret 头', last.headers['x-webhook-secret'] === 'test-secret-123', last.headers['x-webhook-secret']);
-    const evts = log.map((l) => JSON.parse(l).body.event);
+    check('通用 payload 结构完整', ['event', 'title', 'message', 'taskId', 'taskName', 'operator', 'timestamp', 'dashboardUrl'].every((k) => k in p), p);
+    const evts = generic.map((l) => l.body.event);
     check('含 task_status_changed', evts.includes('task_status_changed'), evts);
     check('含 test_notification', evts.includes('test_notification'), evts);
+  } else {
+    check('通用 payload 存在', false, bodies.length);
+  }
+  check('收到企微 msgtype markdown 推送', wecomMsgs.length >= 1, bodies.map((l) => l.body && l.body.msgtype));
+  if (wecomMsgs.length) {
+    const content = wecomMsgs[wecomMsgs.length - 1].body.markdown.content;
+    check('测试消息含看板标题', content.includes('【HTX OTC PIP 看板】'), content.slice(0, 120));
+    check('测试消息含交付进度', content.includes('OTC 设计交付包：已交付') && content.includes('设计团队交互包：已传回品牌技能包'), content.slice(0, 200));
+    check('测试消息含发送时间', /发送时间：\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/.test(content), content.slice(-80));
   }
 
   console.log('== 10. 展示层同步 ==');

@@ -59,7 +59,7 @@ const FALLBACK = {
       "target": "1套",
       "current": "1/1",
       "trend": "资料包已整理完成",
-      "next": "提交设计团队排版",
+      "next": "OTC 设计交付包已交付设计团队",
       "status": "done"
     },
     {
@@ -180,11 +180,11 @@ const FALLBACK = {
       "id": "L3",
       "name": "设计交付包",
       "owner": "Sera",
-      "status": "Doing",
-      "progress": 90,
+      "status": "Done",
+      "progress": 100,
       "start": "2026-07-21",
       "end": "2026-07-24",
-      "next": "提交设计团队并确认排期",
+      "next": "等待设计团队排期反馈",
       "children": [
         {
           "task": "资料整理（背景/流程/FAQ/禁用词/参考图）",
@@ -197,8 +197,8 @@ const FALLBACK = {
           "task": "提交设计团队",
           "start": "2026-07-22",
           "end": "2026-07-23",
-          "status": "Doing",
-          "progress": 60
+          "status": "Done",
+          "progress": 100
         },
         {
           "task": "确认排期与反馈",
@@ -314,14 +314,14 @@ const FALLBACK = {
       "id": "WS01",
       "name": "业务资料建设",
       "goal": "业务手册/FAQ、BD 计划文档、设计交付包",
-      "progress": 80,
-      "status": "Doing",
+      "progress": 100,
+      "status": "Done",
       "owner": "Sera",
       "subLabel": "手册 / FAQ / 流程说明",
-      "subDone": 9,
+      "subDone": 12,
       "subTotal": 12,
-      "next": "提交设计团队",
-      "risk": "设计排期待确认"
+      "next": "等待设计团队排期反馈",
+      "risk": "—"
     },
     {
       "id": "WS02",
@@ -492,14 +492,14 @@ const FALLBACK = {
       "owner": "Sera",
       "due": "2026-07-22",
       "priority": "P0",
-      "status": "Doing"
+      "status": "Done"
     },
     {
       "task": "筛选 TOP 五星客户",
       "owner": "Sera",
       "due": "2026-07-23",
       "priority": "P0",
-      "status": "Doing"
+      "status": "Done"
     },
     {
       "task": "确认访问权限",
@@ -527,7 +527,7 @@ const FALLBACK = {
     {
       "date": "2026-07-22",
       "title": "提交设计团队",
-      "status": "Doing"
+      "status": "Done"
     },
     {
       "date": "2026-07-25",
@@ -552,12 +552,15 @@ const FALLBACK = {
   ],
   "weeklyLog": {
     "cadence": "本看板每周更新一次",
-    "updatedAt": "2026-07-21",
+    "updatedAt": "2026-07-22",
     "done": [
       "完成 OTC 设计交付包整理",
+      "设计团队交互包已传回品牌 Skill 包（Sera，2026-07-22）",
       "完成 TG 客户 CRM 初版",
       "重构 PIP 绩效看板信息架构",
-      "明确 KPI、甘特图、依赖关系图与 Pipeline 结构"
+      "明确 KPI、甘特图、依赖关系图与 Pipeline 结构",
+      "完成「提交设计交付包」：OTC 设计交付包已完成交付",
+      "完成「筛选 TOP 五星客户」：全链路测试交付物"
     ]
   },
   "blockers": {
@@ -592,20 +595,29 @@ const FALLBACK = {
       "title": "OTC 设计交付包",
       "type": "Markdown Pack",
       "module": "设计交付",
-      "status": "待提交",
-      "updatedAt": "2026-07-21",
+      "status": "已交付",
+      "updatedAt": "2026-07-22",
       "description": "业务背景、页面结构、COBO/POBO、FAQ、禁用词与视觉参考。",
-      "url": "assets/files/design-brief/"
+      "url": "assets/files/design-brief/",
+      "progress": 100,
+      "completionEvidence": "OTC 设计交付包已完成交付",
+      "updatedBy": "Sera",
+      "changeSource": "manual"
     },
     {
       "id": "R003",
       "title": "设计团队交互包",
       "type": "Design Package",
       "module": "UI交付",
-      "status": "待同步",
-      "updatedAt": "2026-07-21",
+      "status": "已传回",
+      "updatedAt": "2026-07-22",
       "description": "由设计团队提供或待设计团队确认的交互资料。",
-      "url": "assets/files/design-interaction-package/"
+      "url": "assets/files/design-interaction-package/",
+      "result": "设计团队品牌 Skill 包",
+      "progress": 100,
+      "completionEvidence": "已传回设计团队品牌 Skill 包",
+      "updatedBy": "Sera",
+      "changeSource": "manual"
     },
     {
       "id": "R004",
@@ -620,51 +632,52 @@ const FALLBACK = {
   ],
   "tasks": {
     "version": 1,
-    "updatedAt": "2026-07-22T09:00:00+08:00",
+    "updatedAt": "2026-07-22T12:21:35.913Z",
     "tasks": [
       {
         "id": "T-0001",
         "title": "提交设计交付包",
-        "status": "进行中",
+        "status": "已完成",
         "priority": "P0",
         "workstream": "设计交付包",
         "owner": "Sera",
         "createdAt": "2026-07-21T09:00:00+08:00",
-        "updatedAt": "2026-07-21T09:00:00+08:00",
+        "updatedAt": "2026-07-22T20:16:36+08:00",
         "dueAt": "2026-07-22T18:00:00+08:00",
         "remindAt": "2026-07-22T09:00:00+08:00",
         "remindedAt": null,
-        "completedAt": null,
-        "progress": 80,
-        "nextAction": "提交设计团队并确认排期",
+        "completedAt": "2026-07-22T20:16:36+08:00",
+        "progress": 100,
+        "nextAction": "等待设计团队排期反馈",
         "outputCondition": "设计团队确认收到交付包并给出排期",
-        "result": null,
+        "result": "OTC 设计交付包已完成交付",
         "source": "seed",
         "dependencies": [],
-        "updatedBy": "seed",
-        "completionEvidence": null
+        "updatedBy": "Sera",
+        "completionEvidence": "OTC 设计交付包已完成交付",
+        "changeSource": "manual"
       },
       {
         "id": "T-0002",
         "title": "筛选 TOP 五星客户",
-        "status": "进行中",
+        "status": "已完成",
         "priority": "P0",
         "workstream": "注册 / KYC / 首单推进",
         "owner": "Sera",
         "createdAt": "2026-07-21T09:00:00+08:00",
-        "updatedAt": "2026-07-21T09:00:00+08:00",
+        "updatedAt": "2026-07-22T12:21:35.913Z",
         "dueAt": "2026-07-23T18:00:00+08:00",
         "remindAt": "2026-07-23T09:00:00+08:00",
         "remindedAt": null,
-        "completedAt": null,
-        "progress": 40,
+        "completedAt": "2026-07-22T12:21:35.913Z",
+        "progress": 100,
         "nextAction": "按金额和成交概率安排优先跟进顺序",
         "outputCondition": "输出五星客户优先跟进清单",
-        "result": null,
+        "result": "全链路测试交付物",
         "source": "seed",
         "dependencies": [],
-        "updatedBy": "seed",
-        "completionEvidence": null
+        "updatedBy": "Sera",
+        "completionEvidence": "全链路测试交付物"
       },
       {
         "id": "T-0003",
@@ -1260,7 +1273,7 @@ function renderKpi(list) {
 
 /* ---------- 04 资料访问中心（resources.json 驱动 · 文件存在性检测） ---------- */
 /* 资料卡状态 → badge 样式映射 */
-const RES_STATUS_CLS = { '已整理': 'done', '待提交': 'doing', '待同步': 'next', '待完善': 'next' };
+const RES_STATUS_CLS = { '已整理': 'done', '已交付': 'done', '已传回': 'done', '待提交': 'doing', '待同步': 'next', '待完善': 'next' };
 
 /* 目录型 url（以 / 结尾）默认打开其 README.md */
 function resTargetUrl(item) {
@@ -2092,7 +2105,7 @@ async function init() {
 }
 
 /* ============================================================
- * Agent 助手（服务端 /api/* 驱动；纯静态托管时自动降级提示）
+ * PIP 助手（服务端 /api/* 驱动；纯静态托管时自动降级提示）
  * 安全约定：前端不含任何密钥；状态变更必须经确认卡二次确认。
  * ============================================================ */
 const agentState = { open: false, busy: false, apiOnline: null, operator: 'Sera' };
@@ -2214,10 +2227,10 @@ async function doConfirmUpdate(confirm, card, okBtn, evidenceInput) {
     }
     let html = '✅ 已更新：<b>' + escapeHtml(r.task.id) + '｜' + escapeHtml(r.task.title) + '</b> 「' + escapeHtml(r.previousStatus) + '」→「' + escapeHtml(r.newStatus) + '」';
     if (r.notify) {
-      if (r.notify.configured === false) html += '<br><span class="ag-muted">手机通知：未配置 NOTIFY_WEBHOOK_URL，已跳过</span>';
+      if (r.notify.configured === false) html += '<br><span class="ag-muted">手机通知：未配置 WECHAT_WEBHOOK_URL，已跳过</span>';
       else if (r.notify.skipped) html += '<br><span class="ag-muted">手机通知：10 分钟内同状态已推送过，本次跳过</span>';
       else if (r.notify.ok) html += '<br><span class="ag-ok">手机通知已推送（' + (r.notify.durationMs != null ? r.notify.durationMs + 'ms' : '—') + '）</span>';
-      else html += '<br><span class="ag-warn">任务已更新，通知发送失败：' + escapeHtml(r.notify.error || '未知原因') + '</span>';
+      else html += '<br><span class="ag-warn">任务已经更新，但企业微信通知发送失败。' + (r.notify.error ? '原因：' + escapeHtml(r.notify.error) : '') + '</span>';
     }
     agentBubble('agent', html);
     await refreshHubData();
@@ -2254,34 +2267,39 @@ async function agentSend(text) {
   }
 }
 
-/* 测试手机通知：渲染完整诊断（请求时间/状态码/是否成功/耗时/错误原因/最近成功时间） */
+/* 测试手机通知：渲染完整诊断（发送状态/HTTP/errcode/errmsg/耗时/最近成功时间），失败展示真实原因 */
 async function runNotifyTest(inDrawer) {
   const box = document.getElementById('notifyResult');
   box.hidden = false;
-  box.innerHTML = '<span class="ag-muted">正在发送测试通知…</span>';
-  if (inDrawer) agentBubble('agent', '<span class="ag-muted">正在发送测试手机通知…</span>');
+  box.innerHTML = '<span class="ag-muted">发送中…</span>';
+  if (inDrawer) agentBubble('agent', '<span class="ag-muted">手机通知发送中…</span>');
   let r;
   try {
-    r = await apiFetch('/api/notify/test', { method: 'POST', body: JSON.stringify({ operator: agentState.operator }) });
+    r = await apiFetch('/api/notifications/wecom/test', { method: 'POST', body: JSON.stringify({ operator: agentState.operator }) });
   } catch (e) {
-    box.innerHTML = '<span class="ag-warn">测试请求失败：' + escapeHtml(e.message) + '</span>';
-    if (inDrawer) agentBubble('sys', '⚠️ 测试请求失败：' + escapeHtml(e.message));
+    box.innerHTML = '<span class="ag-warn">发送失败：' + escapeHtml(e.message) + '</span>';
+    if (inDrawer) agentBubble('sys', '⚠️ 发送失败：' + escapeHtml(e.message));
     return;
   }
   const rows = [
-    ['请求时间', r.requestedAt || '—'],
+    ['发送状态', r.ok ? '发送成功' : '发送失败'],
     ['HTTP 状态码', r.httpStatus != null ? String(r.httpStatus) : '—'],
-    ['Webhook 是否成功', r.ok ? '成功' : '失败'],
+    ['企业微信 errcode', r.errcode != null ? String(r.errcode) : '—'],
+    ['企业微信 errmsg', r.errmsg || '—'],
     ['响应耗时', r.durationMs != null ? r.durationMs + ' ms' : '—'],
-    ['错误原因', r.error || '无'],
+    ['请求时间', r.requestedAt || '—'],
     ['最近一次成功', r.lastSuccessAt || '—'],
   ];
+  if (!r.ok && r.error) rows.splice(1, 0, ['失败原因', r.error]);
   box.innerHTML = rows.map(([k, v]) => '<div class="nr-row"><span>' + k + '</span><b>' + escapeHtml(v) + '</b></div>').join('');
   if (inDrawer) {
     agentBubble('agent',
-      '手机通知测试：' + (r.ok ? '✅ 成功' : '❌ 失败') +
-      '（HTTP ' + (r.httpStatus != null ? r.httpStatus : '—') + '，' + (r.durationMs != null ? r.durationMs + 'ms' : '—') + '）' +
-      (r.error ? '<br>错误原因：' + escapeHtml(r.error) : ''));
+      '手机通知测试：' + (r.ok ? '✅ 发送成功' : '❌ 发送失败') +
+      '（HTTP ' + (r.httpStatus != null ? r.httpStatus : '—') +
+      '，errcode=' + (r.errcode != null ? r.errcode : '—') +
+      ' ' + (r.errmsg || '') +
+      '，' + (r.durationMs != null ? r.durationMs + 'ms' : '—') + '）' +
+      (r.error ? '<br>失败原因：' + escapeHtml(r.error) : ''));
   }
   loadHubStatus();
 }
@@ -2409,11 +2427,7 @@ function initAgent() {
   });
 
   agentBubble('agent',
-    '你好，我是 PIP 助手，基于真实任务数据回答：<br>' +
-    '· 当前哪些任务已经完成 / 未完成 / 进行中 / 逾期 / 阻塞？<br>' +
-    '· 本周需要优先处理什么？今天进度如何？<br>' +
-    '· 检查 Simon / Sera 的任务进度<br>' +
-    '· 把 T-0001 标记为已完成（我会先请你确认）');
+    '我是 PIP 助手，可以帮你核对已完成、未完成、逾期和阻塞任务，也可以更新任务状态并发送手机通知。');
 }
 
 document.addEventListener('DOMContentLoaded', init);

@@ -16,17 +16,20 @@ const https = require('https');
 
 const ROOT = path.join(__dirname, '..');
 
-/** 读取 webhook URL：环境变量优先，其次解析项目根目录 .env（简易 KEY=VALUE 解析） */
+/** 读取 webhook URL：环境变量优先，其次解析项目根目录 .env.local / .env（简易 KEY=VALUE 解析） */
 function loadWebhookUrl(env = process.env) {
   if (env.WECOM_WEBHOOK_URL && env.WECOM_WEBHOOK_URL.trim()) return env.WECOM_WEBHOOK_URL.trim();
-  try {
-    const text = fs.readFileSync(path.join(ROOT, '.env'), 'utf8');
-    for (const line of text.split('\n')) {
-      const m = line.match(/^\s*WECOM_WEBHOOK_URL\s*=\s*(.+?)\s*$/);
-      if (m && m[1]) return m[1].replace(/^["']|["']$/g, '');
+  if (env.WECHAT_WEBHOOK_URL && env.WECHAT_WEBHOOK_URL.trim()) return env.WECHAT_WEBHOOK_URL.trim();
+  for (const name of ['.env.local', '.env']) {
+    try {
+      const text = fs.readFileSync(path.join(ROOT, name), 'utf8');
+      for (const line of text.split('\n')) {
+        const m = line.match(/^\s*(?:WECOM_WEBHOOK_URL|WECHAT_WEBHOOK_URL)\s*=\s*(.+?)\s*$/);
+        if (m && m[1]) return m[1].replace(/^["']|["']$/g, '');
+      }
+    } catch {
+      /* 文件不存在时忽略 */
     }
-  } catch {
-    /* .env 不存在时忽略 */
   }
   return null;
 }

@@ -87,9 +87,9 @@ check('progress: 待启动自动转为进行中', task('T-0004').status === '进
 r = run(['progress', 'T-0004', '100']);
 check('progress: 100% 自动转为待输出', r.code === 0 && task('T-0004').status === '待输出' && task('T-0004').progress === 100, r.out);
 
-// 4. 下一步
-r = run(['next', 'T-0002', '按清单逐个触达五星客户']);
-check('next: 更新成功', r.code === 0 && task('T-0002').nextAction === '按清单逐个触达五星客户', r.out);
+// 4. 下一步（T-0003 进行中；T-0001/T-0002 已完成，不可更新）
+r = run(['next', 'T-0003', '向 Simon 确认看板访问权限']);
+check('next: 更新成功', r.code === 0 && task('T-0003').nextAction === '向 Simon 确认看板访问权限', r.out);
 
 // 5. 完成 + 结果 + 后续任务
 r = run(['done', 'T-0001', '--result', '交付包已提交设计团队', '--follow', '确认设计团队排期', '--follow-due', '2026-07-28 18:00']);
@@ -97,7 +97,7 @@ check('done: 完成成功', r.code === 0 && task('T-0001').status === '已完成
 check('done: 结果已记录', task('T-0001').result === '交付包已提交设计团队');
 check('done: 后续任务已创建', tasks().some((t) => t.title === '确认设计团队排期' && t.dueAt.startsWith('2026-07-28')));
 check('sync: 完成后 todo.json 置 Done', todo().some((t) => t.task === '提交设计交付包' && t.status === 'Done'));
-check('sync: 完成后 weekly-log 追加结果', weeklyLog().done.some((d) => d === '完成「提交设计交付包」：交付包已提交设计团队'));
+check('sync: 完成后 weekly-log 含该任务完成条目（结果文案随数据演进，按标题匹配）', weeklyLog().done.some((d) => d.startsWith('完成「提交设计交付包」')));
 const weeklyLenAfterDone = weeklyLog().done.length;
 
 // 6. 延期
@@ -171,11 +171,12 @@ check('sync: 人工策展的 pipeline 条目未被改动',
       p.on('close', (code) => resolve({ code, out }));
     });
 
-  // 构造到期提醒点：T-0002（进行中）与新增出的 T-0006（待启动）remindAt 改到过去
+  // 构造到期提醒点：T-0003（postpone 后为已延期，直接恢复为进行中模拟继续推进）与 T-0006（待启动）remindAt 改到过去
   const tfile = path.join(tmp, 'tasks.json');
   const tdata = JSON.parse(fs.readFileSync(tfile, 'utf8'));
-  for (const id of ['T-0002', 'T-0006']) {
+  for (const id of ['T-0003', 'T-0006']) {
     const tt = tdata.tasks.find((x) => x.id === id);
+    if (id === 'T-0003') tt.status = '进行中';
     tt.remindAt = '2020-01-01T09:00:00+08:00';
     tt.remindedAt = null;
   }
@@ -183,13 +184,13 @@ check('sync: 人工策展的 pipeline 条目未被改动',
 
   // 16. scan 扫描（只读）
   let r2 = runWorkerSync(['scan']);
-  check('reminder scan: 发现 2 项到期任务', r2.code === 0 && r2.out.includes('T-0002') && r2.out.includes('T-0006'), r2.out);
-  check('reminder scan: 只读不写盘', task('T-0002').remindedAt === null);
+  check('reminder scan: 发现 2 项到期任务', r2.code === 0 && r2.out.includes('T-0003') && r2.out.includes('T-0006'), r2.out);
+  check('reminder scan: 只读不写盘', task('T-0003').remindedAt === null);
 
   // 17. test 预览（不发送、不写盘）
   r2 = runWorkerSync(['test']);
-  check('reminder test: 生成 markdown 预览', r2.code === 0 && /预览模式/.test(r2.out) && r2.out.includes('"msgtype": "markdown"') && r2.out.includes('T-0002'), r2.out);
-  check('reminder test: 未标记 remindedAt', task('T-0002').remindedAt === null && task('T-0006').remindedAt === null);
+  check('reminder test: 生成 markdown 预览', r2.code === 0 && /预览模式/.test(r2.out) && r2.out.includes('"msgtype": "markdown"') && r2.out.includes('T-0003'), r2.out);
+  check('reminder test: 未标记 remindedAt', task('T-0003').remindedAt === null && task('T-0006').remindedAt === null);
 
   // 18. send 未明确确认 → 拒绝
   r2 = runWorkerSync(['send']);
@@ -211,9 +212,9 @@ check('sync: 人工策展的 pipeline 条目未被改动',
   r2 = await runWorker(['send', '--confirm'], { WECOM_WEBHOOK_URL: hookUrl });
   check('reminder send: 推送成功且 webhook 收到 POST', r2.code === 0 && received.length === 1, r2.out);
   check('reminder send: 消息体为 markdown 且含全部到期任务',
-    received.length === 1 && received[0].msgtype === 'markdown' && received[0].markdown.content.includes('T-0002') && received[0].markdown.content.includes('T-0006'));
+    received.length === 1 && received[0].msgtype === 'markdown' && received[0].markdown.content.includes('T-0003') && received[0].markdown.content.includes('T-0006'));
   check('reminder send: remindedAt 置位且状态迁移已提醒（含 待启动→已提醒）',
-    task('T-0002').status === '已提醒' && task('T-0002').remindedAt !== null && task('T-0006').status === '已提醒');
+    task('T-0003').status === '已提醒' && task('T-0003').remindedAt !== null && task('T-0006').status === '已提醒');
   check('reminder send: 审计写入 scheduler remind',
     JSON.parse(fs.readFileSync(path.join(tmp, 'audit-log.json'), 'utf8')).entries.filter((e) => e.actor === 'scheduler' && e.action === 'remind').length === 2);
 

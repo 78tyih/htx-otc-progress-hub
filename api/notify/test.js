@@ -20,7 +20,7 @@ module.exports = async (req, res) => {
       return sendJson(res, 200, {
         ok: false,
         configured: false,
-        error: 'NOTIFY_WEBHOOK_URL 未配置（请在部署平台环境变量中设置）',
+        error: 'WECHAT_WEBHOOK_URL 未配置（请在部署平台环境变量中设置）',
         requestedAt: new Date().toISOString(),
       });
     }

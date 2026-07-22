@@ -97,7 +97,7 @@ module.exports = async (req, res) => {
       previousStatus,
       newStatus,
       notify: notify.configured === false
-        ? { configured: false, message: '未配置 NOTIFY_WEBHOOK_URL，已跳过通知' }
+        ? { configured: false, message: '未配置 WECHAT_WEBHOOK_URL，已跳过通知' }
         : notify,
       notifyFailed: notify.configured !== false && !notify.ok && !notify.skipped,
       recentUpdates: recentAgentUpdates(state, 8),

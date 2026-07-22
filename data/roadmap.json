@@ -3,14 +3,14 @@
     "id": "WS01",
     "name": "业务资料建设",
     "goal": "业务手册/FAQ、BD 计划文档、设计交付包",
-    "progress": 80,
-    "status": "Doing",
+    "progress": 100,
+    "status": "Done",
     "owner": "Sera",
     "subLabel": "手册 / FAQ / 流程说明",
-    "subDone": 9,
+    "subDone": 12,
     "subTotal": 12,
-    "next": "提交设计团队",
-    "risk": "设计排期待确认"
+    "next": "等待设计团队排期反馈",
+    "risk": "—"
   },
   {
     "id": "WS02",
