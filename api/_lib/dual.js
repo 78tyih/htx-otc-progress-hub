@@ -120,4 +120,32 @@ async function sendPipNotification(state, opts) {
   return { wecom, feishu, ok, partial, allFailed };
 }
 
-module.exports = { sendPipNotification, channelLink };
+/**
+ * Agent 查询发现阻塞/逾期任务 → 双通道逐个推送（最多 3 条）。
+ * eventId 按小时分桶：同一任务同一类发现一小时内不重复推送；永不抛异常。
+ * 返回 { sent }：sent 为至少一个渠道真实发送成功（非跳过）的条数。
+ */
+async function notifyDiscoveries(state, classified, kind, dashboardUrl) {
+  const label = kind === 'blocked' ? '阻塞' : '逾期';
+  const bucket = new Date().toISOString().slice(0, 13);
+  let sent = 0;
+  for (const c of classified.slice(0, 3)) {
+    const t = c.task;
+    const r = await sendPipNotification(state, {
+      eventId: `discover-${kind}:${t.id}:${bucket}`,
+      title: `【PIP ${label}提醒】`,
+      lines: [
+        `PIP 助手发现${label}任务`,
+        `任务：${t.id}｜${t.title}`,
+        `状态：${t.status}`,
+        `负责人：${t.owner}`,
+      ],
+      linkBase: dashboardUrl,
+      linkParams: { taskId: t.id },
+    });
+    if ((r.wecom.success && !r.wecom.skipped) || (r.feishu.success && !r.feishu.skipped)) sent += 1;
+  }
+  return { sent };
+}
+
+module.exports = { sendPipNotification, channelLink, notifyDiscoveries };

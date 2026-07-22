@@ -5,7 +5,7 @@
 
 const { sendJson, methodGuard } = require('./_lib/http');
 const { loadState, recentAgentUpdates, useKv } = require('./_lib/store');
-const { webhookConfigured } = require('./_lib/notify');
+const { wecomConfigured } = require('./_lib/wecom');
 const { feishuConfigured } = require('./_lib/feishu');
 const { llmConfigured } = require('./_lib/llm');
 const { classifyAll, byClass } = require('../agent/classify');
@@ -43,14 +43,14 @@ module.exports = async (req, res) => {
         mode: llmConfigured() ? 'rules+llm' : 'rules',
       },
       webhook: {
-        configured: webhookConfigured(),
+        configured: wecomConfigured(),
         lastSuccessAt: state.notify.lastSuccessAt || null,
         lastTest: state.notify.lastTest || null,
       },
       // 双通道独立状态：企业微信（Sera）/ 飞书（Simon）
       channels: {
         wecom: {
-          configured: webhookConfigured(),
+          configured: wecomConfigured(),
           lastSuccessAt: (cs.wecom && cs.wecom.lastSuccessAt) || state.notify.lastSuccessAt || null,
           lastTest: (cs.wecom && cs.wecom.lastTest) || state.notify.lastTest || null,
           lastSummary: (state.notify.lastSummary && state.notify.lastSummary.wecom) || null,

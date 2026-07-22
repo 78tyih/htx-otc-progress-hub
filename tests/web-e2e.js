@@ -25,6 +25,8 @@ async function api(path, opts) {
 const post = (path, body) => api(path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
 
 (async () => {
+  // 清空 webhook 桩日志，保证第 9 节断言只统计本次运行收到的推送
+  require('fs').writeFileSync('/tmp/hub-webhook-log.jsonl', '');
   console.log('== 1. /api/status ==');
   const st = await api('/api/status');
   check('status 200', st.status === 200, st.text);
@@ -90,14 +92,9 @@ const post = (path, body) => api(path, { method: 'POST', headers: { 'content-typ
   const bad = await post('/api/agent/confirm', { taskId: doing.id, newStatus: '待启动', operator: 'Sera' });
   check('非法迁移被拒 409', bad.status === 409, bad);
 
-  console.log('== 7. /api/notify/test 诊断 ==');
+  console.log('== 7. /api/notify/test 已下线（Hobby 12 函数上限，由 wecom/test 取代）==');
   const nt = await post('/api/notify/test', { operator: 'Sera' });
-  check('notify/test 200', nt.status === 200, nt.text);
-  check('webhook ok', nt.json && nt.json.ok === true, nt.json);
-  check('含 HTTP 状态码', nt.json.httpStatus === 200, nt.json);
-  check('含响应耗时', typeof nt.json.durationMs === 'number', nt.json);
-  check('含请求时间', !!nt.json.requestedAt, nt.json);
-  check('含最近成功时间', !!nt.json.lastSuccessAt, nt.json);
+  check('notify/test 返回 404', nt.status === 404, nt.status);
 
   console.log('== 7b. /api/notifications/wecom/test 诊断 ==');
   const wt = await post('/api/notifications/wecom/test', { operator: 'Sera' });
@@ -147,15 +144,17 @@ const post = (path, body) => api(path, { method: 'POST', headers: { 'content-typ
   const bodies = log.map((l) => JSON.parse(l));
   const generic = bodies.filter((l) => l.body && l.body.event);
   const wecomMsgs = bodies.filter((l) => l.body && l.body.msgtype === 'markdown');
-  if (generic.length) {
-    const last = generic[generic.length - 1];
-    const p = last.body;
-    check('通用 payload 结构完整', ['event', 'title', 'message', 'taskId', 'taskName', 'operator', 'timestamp', 'dashboardUrl'].every((k) => k in p), p);
-    const evts = generic.map((l) => l.body.event);
-    check('含 task_status_changed', evts.includes('task_status_changed'), evts);
-    check('含 test_notification', evts.includes('test_notification'), evts);
-  } else {
-    check('通用 payload 存在', false, bodies.length);
+  // 旧版通用 JSON payload（notify.js sendWebhook）已随 /api/notify/test 下线，confirm 改走双通道 markdown
+  check('旧版通用 payload 已停用', generic.length === 0, generic.length);
+  const taskMsg = [...wecomMsgs].reverse().find((l) => {
+    const c = l.body && l.body.markdown && l.body.markdown.content;
+    return typeof c === 'string' && c.includes('【PIP 任务状态更新】');
+  });
+  check('收到任务状态更新企微消息', !!taskMsg, wecomMsgs.length);
+  if (taskMsg) {
+    const c = taskMsg.body.markdown.content;
+    check('任务消息含任务 ID', c.includes(doing.id), c.slice(0, 150));
+    check('任务消息含状态迁移', c.includes(`原状态：${doing.status}`) && c.includes('新状态：已完成'), c.slice(0, 200));
   }
   check('收到企微 msgtype markdown 推送', wecomMsgs.length >= 1, bodies.map((l) => l.body && l.body.msgtype));
   // 定位 wecom/test 的测试消息（不能取最后一条：test-all/summary 等也会推企微 markdown）

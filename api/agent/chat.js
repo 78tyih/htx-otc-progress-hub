@@ -11,7 +11,7 @@ const { sendJson, readBody, methodGuard, dashboardUrl } = require('../_lib/http'
 const { loadState, saveState } = require('../_lib/store');
 const { route } = require('../_lib/intent');
 const { llmReply, llmConfigured } = require('../_lib/llm');
-const { notifyDiscoveries } = require('../_lib/notify');
+const { notifyDiscoveries } = require('../_lib/dual');
 const { byClass, classifyAll } = require('../../agent/classify');
 
 module.exports = async (req, res) => {
