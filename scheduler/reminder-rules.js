@@ -10,12 +10,13 @@
 
 const REMINDABLE_STATUSES = ['待启动', '进行中'];
 
-/** 到期且未提醒的任务（remindAt <= now 且 remindedAt 为 null） */
+/** 到期且未提醒的任务（remindAt <= now 且 remindedAt 为 null；已归档任务不再提醒） */
 function findDueReminders(data, now = Date.now()) {
   const list = (data && Array.isArray(data.tasks)) ? data.tasks : [];
   return list.filter(
     (t) =>
       REMINDABLE_STATUSES.includes(t.status) &&
+      !t.archivedAt &&
       t.remindedAt === null &&
       Date.parse(t.remindAt) <= now
   );

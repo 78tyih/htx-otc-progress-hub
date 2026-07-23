@@ -3,7 +3,7 @@
  * HTX OTC 任务闭环 Agent CLI（零依赖）。
  *
  * 结构化用法：
- *   node agent/cli.js add "提交设计交付包" --due "2026-07-25 18:00" --remind "2026-07-24 09:00" --p0 --ws "设计交付包" --next "提交设计团队" --output "设计团队确认排期"
+ *   node agent/cli.js add "提交设计交付包" --due "2026-07-25 18:00" --remind "2026-07-24 09:00" --stars 4 --ws "设计交付包" --next "提交设计团队" --output "设计团队确认排期"
  *   node agent/cli.js done T-0001 --result "已提交" --follow "确认设计排期" --follow-due "2026-07-28 18:00"
  *   node agent/cli.js postpone T-0001 --to "2026-07-28 18:00" --reason "等待排期"
  *   node agent/cli.js delete T-0001            （二次确认：需再次输入任务 ID）
@@ -15,7 +15,7 @@
  *   node agent/cli.js list
  *
  * 自然语言用法（整串作为参数）：
- *   node agent/cli.js "新增任务 确认设计排期 截止 7月28日 P0 主线 设计交付包"
+ *   node agent/cli.js "新增任务 确认设计排期 截止 7月28日 4星 主线 设计交付包"
  *   node agent/cli.js "T-0002 进度 60" / "完成 T-0001 结果:已提交" / "T-0003 延期到 7月28日"
  *   node agent/cli.js "今日到期" / "本周待输出"
  */
@@ -28,17 +28,18 @@ const { run } = require('./action-router');
 const HELP = `
 HTX OTC 任务闭环 Agent CLI
 
-  新增   task add "标题" --due "2026-07-25 18:00" [--remind "..."] [--p0|--p1] [--ws "主线"] [--next "..."] [--output "..."]
+  新增   task add "标题" --due "2026-07-25 18:00" [--remind "..."] [--stars 1-4] [--ws "主线"] [--next "..."] [--output "..."]
   完成   task done T-0001 [--result "结果"] [--follow "后续任务" --follow-due "..."]
   延期   task postpone T-0001 --to "2026-07-28 18:00" [--reason "..."]
   删除   task delete T-0001   （二次确认；--yes 跳过但会记录警告）
+  归档   task archive T-0001 [--reason "未完成原因"]   （已完成可直接归档；未完成须已过期且必填原因）
   进度   task progress T-0001 60
   下一步 task next T-0001 "下一步动作"
   查询   task today | task pending-output | task list
   阻塞   task block "描述" 或 task block T-0005 "描述"
 
 也支持中文自然语言，例如：
-  task "新增任务 确认设计排期 截止 7月28日 P0"
+  task "新增任务 确认设计排期 截止 7月28日 4星"
   task "完成 T-0001 结果:已提交设计团队"
 `.trim();
 

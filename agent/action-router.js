@@ -37,7 +37,8 @@ function transition(task, to) {
 
 function fmtLine(t) {
   const due = t.dueAt.slice(0, 16).replace('T', ' ');
-  return `${t.id}  [${t.priority}] ${t.title} ｜ ${t.status} ｜ 进度 ${t.progress}% ｜ 截止 ${due} ｜ 下一步：${t.nextAction}`;
+  const n = Number.isInteger(t.priority) && t.priority >= 1 && t.priority <= 4 ? t.priority : 3;
+  return `${t.id}  [${'★'.repeat(n)}] ${t.title} ｜ ${t.status} ｜ 进度 ${t.progress}% ｜ 截止 ${due} ｜ 下一步：${t.nextAction}`;
 }
 
 /** 任务变更统一收尾：保存 → 审计 → 展示层投影 → FALLBACK 同步 */
@@ -53,7 +54,7 @@ function buildTask(fields, id, source) {
     id,
     title: fields.title,
     status: '待启动',
-    priority: fields.priority || 'P1',
+    priority: fields.priority || 3,
     workstream: fields.workstream || null,
     owner: fields.owner || 'Sera',
     createdAt: nowIso(),
@@ -70,6 +71,8 @@ function buildTask(fields, id, source) {
     dependencies: Array.isArray(fields.dependencies) ? fields.dependencies : [],
     updatedBy: source,
     completionEvidence: null,
+    archivedAt: null,
+    archiveReason: null,
   };
 }
 
@@ -152,6 +155,27 @@ async function run(intent, hooks = {}) {
       return `🗑️  已删除 ${task.id}「${task.title}」`;
     }
 
+    case 'archive': {
+      const data = loadTasks();
+      const task = findTask(data, intent.id);
+      if (task.archivedAt) throw new Error(`${task.id} 已于 ${task.archivedAt.slice(0, 16).replace('T', ' ')} 归档，请勿重复操作`);
+      const completed = task.status === '已完成';
+      const overdue = Date.parse(task.dueAt) < Date.now();
+      if (!completed && !overdue) {
+        throw new Error(`${task.id} 未完成且未过截止时间，不能归档（可先标记完成，或延期后再归档）`);
+      }
+      if (!completed && !(intent.reason && intent.reason.trim())) {
+        throw new Error(`${task.id} 未完成归档必须填写原因：task archive ${task.id} --reason "..."`);
+      }
+      task.archivedAt = nowIso();
+      task.archiveReason = completed ? (intent.reason || null) : intent.reason.trim();
+      task.updatedBy = 'cli';
+      task.updatedAt = nowIso();
+      finalize(data, 'cli', 'archive', task.id,
+        `归档任务「${task.title}」（${completed ? '已完成' : '未完成'}）${task.archiveReason ? `，原因：${task.archiveReason}` : ''}`);
+      return `📦 已归档 ${task.id}「${task.title}」（${completed ? '已完成' : '未完成'}）${task.archiveReason ? `，原因：${task.archiveReason}` : ''}`;
+    }
+
     case 'progress': {
       const data = loadTasks();
       const task = findTask(data, intent.id);
@@ -201,7 +225,7 @@ async function run(intent, hooks = {}) {
     case 'today': {
       const data = loadTasks();
       const today = todayStr();
-      const due = data.tasks.filter((t) => t.dueAt.slice(0, 10) === today && !TERMINAL.includes(t.status));
+      const due = data.tasks.filter((t) => t.dueAt.slice(0, 10) === today && !TERMINAL.includes(t.status) && !t.archivedAt);
       if (!due.length) return `📭 今日（${today}）无到期任务`;
       return `📌 今日（${today}）到期 ${due.length} 项：\n${due.map(fmtLine).join('\n')}`;
     }
@@ -216,10 +240,10 @@ async function run(intent, hooks = {}) {
         return new Date(Date.parse(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}T00:00:00+08:00`) - dow * dayMs);
       })();
       const sunday = monday.getTime() + 7 * dayMs;
-      const pending = data.tasks.filter((t) => t.status === '待输出');
+      const pending = data.tasks.filter((t) => t.status === '待输出' && !t.archivedAt);
       const dueThisWeek = data.tasks.filter((t) => {
         const due = Date.parse(t.dueAt);
-        return !TERMINAL.includes(t.status) && t.status !== '待输出' && due >= monday.getTime() && due < sunday;
+        return !TERMINAL.includes(t.status) && !t.archivedAt && t.status !== '待输出' && due >= monday.getTime() && due < sunday;
       });
       const lines = [];
       if (pending.length) lines.push(`🟡 待输出 ${pending.length} 项：\n${pending.map(fmtLine).join('\n')}`);

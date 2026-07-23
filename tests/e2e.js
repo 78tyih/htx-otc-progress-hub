@@ -64,19 +64,20 @@ function weeklyLog() {
 const baseAudit = auditCount();
 
 // 1. 结构化新增
-let r = run(['add', '输出 7 月 CRIB 复盘', '--due', '2026-07-31 18:00', '--remind', '2026-07-30 09:00', '--p1', '--ws', '周报 / CRIB 复盘', '--next', '汇总 pipeline 产出', '--output', 'CRIB 复盘归档 docs/']);
+let r = run(['add', '输出 7 月 CRIB 复盘', '--due', '2026-07-31 18:00', '--remind', '2026-07-30 09:00', '--stars', '3', '--ws', '周报 / CRIB 复盘', '--next', '汇总 pipeline 产出', '--output', 'CRIB 复盘归档 docs/']);
 check('add: 结构化新增成功', r.code === 0 && /T-\d{4}/.test(r.out), r.out);
 const added = tasks().find((t) => t.title === '输出 7 月 CRIB 复盘');
 check('add: 字段完整（dueAt/remindAt/nextAction/outputCondition）',
   !!added && added.dueAt.startsWith('2026-07-31T18:00') && added.remindAt.startsWith('2026-07-30T09:00') && added.nextAction === '汇总 pipeline 产出' && added.outputCondition === 'CRIB 复盘归档 docs/');
+check('add: 结构化解析 3 星优先级', added.priority === 3);
 check('sync: 新增后 todo.json 已投影（待启动→Next）', todo().some((t) => t.task === '输出 7 月 CRIB 复盘' && t.status === 'Next' && t.due === '2026-07-31'));
 check('sync: 新增后 pipeline.json 已生成镜像卡片', pipeline().some((p) => p.mirrorOf === added.id && p.module === '输出 7 月 CRIB 复盘' && p.status === 'Next'));
 
 // 2. 自然语言新增
-r = run(['新增任务 确认设计排期 截止 7月28日 P0 主线 设计交付包']);
+r = run(['新增任务 确认设计排期 截止 7月28日 4星 主线 设计交付包']);
 check('add: 自然语言新增成功', r.code === 0 && /T-\d{4}/.test(r.out), r.out);
 const nl = tasks().find((t) => t.title === '确认设计排期');
-check('add: 自然语言解析 P0 与截止时间', !!nl && nl.priority === 'P0' && nl.dueAt.startsWith('2026-07-28T18:00'));
+check('add: 自然语言解析 4 星与截止时间', !!nl && nl.priority === 4 && nl.dueAt.startsWith('2026-07-28T18:00'));
 
 // 3. 进度（待启动 → 进行中 自动迁移）
 r = run(['progress', 'T-0004', '10']);
@@ -134,6 +135,29 @@ check('delete: 审计含删除快照', JSON.parse(fs.readFileSync(path.join(tmp,
 const keep = task('T-0002');
 r = run(['delete', 'T-0002'], 'WRONG\n');
 check('delete: 错误确认取消删除', r.code === 0 && /已取消/.test(r.out) && !!task('T-0002'), r.out);
+
+// 12b. 归档：已完成任务可直接归档（reason 可选）
+r = run(['archive', 'T-0002']);
+check('archive: 已完成任务归档成功', r.code === 0 && !!task('T-0002').archivedAt, r.out);
+check('archive: 归档后退出 todo 投影', !todo().some((t) => t.task === '高价值客户筛选'));
+check('archive: 重复归档被拒绝', run(['archive', 'T-0002']).code !== 0);
+
+// 12c. 归档：未完成且未过截止时间不可归档（自建未逾期任务，不依赖种子数据 ID）
+r = run(['add', '未逾期归档测试', '--due', '2026-08-15 18:00']);
+const naId = (r.out.match(/T-\d{4}/) || [])[0];
+r = run(['archive', naId, '--reason', '测试']);
+check('archive: 未完成未逾期拒绝归档', r.code !== 0 && /不能归档/.test(r.out), r.out);
+
+// 12d. 归档：未完成逾期任务必须填原因
+r = run(['add', '逾期归档测试', '--due', '2026-07-20 18:00']);
+const odId = (r.out.match(/T-\d{4}/) || [])[0];
+r = run(['archive', odId]);
+check('archive: 未完成归档缺原因被拒绝', r.code !== 0 && /必须填写原因/.test(r.out), r.out);
+r = run(['archive', odId, '--reason', '依赖未到位，本周不再推进']);
+check('archive: 逾期任务带原因归档成功',
+  r.code === 0 && !!task(odId).archivedAt && task(odId).archiveReason === '依赖未到位，本周不再推进', r.out);
+check('archive: 归档写入审计', JSON.parse(fs.readFileSync(path.join(tmp, 'audit-log.json'), 'utf8'))
+  .entries.some((e) => e.action === 'archive' && e.taskId === odId));
 
 // 13. 非法迁移（已完成 → 更新进度，应拒绝）
 r = run(['progress', 'T-0001', '50']);

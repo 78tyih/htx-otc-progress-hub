@@ -384,7 +384,7 @@ const FALLBACK = {
       "output": "业务背景、页面结构、COBO/POBO流程、FAQ、禁用词、参考图",
       "next": "明天提交设计团队，确认排期",
       "owner": "Sera",
-      "priority": "P0",
+      "priority": 4,
       "status": "Done",
       "workstream": "设计交付包",
       "due": "2026-07-22"
@@ -396,7 +396,7 @@ const FALLBACK = {
       "output": "客户等级、UID、地区、方向、金额、KYC状态、当前阶段",
       "next": "筛选五星重点客户，推动注册/KYC/首单",
       "owner": "Sera",
-      "priority": "P0",
+      "priority": 4,
       "status": "Done",
       "workstream": "客户 Pipeline 建档",
       "due": "2026-07-21"
@@ -408,7 +408,7 @@ const FALLBACK = {
       "output": "五星客户、机构客户、Partner线索",
       "next": "按照客户优先级逐一推进注册、KYC 和首单，并记录每周转化结果",
       "owner": "Sera",
-      "priority": "P0",
+      "priority": 4,
       "status": "Done",
       "workstream": "注册 / KYC / 首单推进",
       "due": "2026-07-25"
@@ -420,7 +420,7 @@ const FALLBACK = {
       "output": "客户资料字段表、KYC状态表",
       "next": "逐个确认UID、注册状态、KYC状态",
       "owner": "Sera",
-      "priority": "P0",
+      "priority": 4,
       "status": "Next",
       "workstream": "注册 / KYC / 首单推进",
       "due": "2026-08-08"
@@ -432,7 +432,7 @@ const FALLBACK = {
       "output": "COBO/POBO流程说明",
       "next": "配合静格完成周四/周五首单测试",
       "owner": "Sera / 静格",
-      "priority": "P0",
+      "priority": 4,
       "status": "Next",
       "workstream": "注册 / KYC / 首单推进",
       "due": "2026-07-25"
@@ -444,7 +444,7 @@ const FALLBACK = {
       "output": "客户筛选条件草案",
       "next": "请 Simon 协助调取名单",
       "owner": "Sera / Simon",
-      "priority": "P1",
+      "priority": 3,
       "status": "Blocked",
       "workstream": "渠道拓展",
       "due": "2026-07-26"
@@ -456,7 +456,7 @@ const FALLBACK = {
       "output": "客户转介字段表",
       "next": "联系Oscar/销售团队获取高价值名单",
       "owner": "Sera / Oscar",
-      "priority": "P1",
+      "priority": 3,
       "status": "Next",
       "workstream": "渠道拓展",
       "due": "2026-08-01"
@@ -468,7 +468,7 @@ const FALLBACK = {
       "output": "Partner/商家线索表",
       "next": "制作合作介绍物料并开始触达",
       "owner": "Sera",
-      "priority": "P1",
+      "priority": 3,
       "status": "Next",
       "workstream": "渠道拓展",
       "due": "2026-08-05"
@@ -480,10 +480,23 @@ const FALLBACK = {
       "output": "Pipeline字段和周报结构",
       "next": "每周更新进度，月底输出CRIB复盘",
       "owner": "Sera",
-      "priority": "P1",
+      "priority": 3,
       "status": "Next",
       "workstream": "周报 / CRIB 复盘",
       "due": "2026-07-25"
+    },
+    {
+      "module": "Michael 张渠道商出金首单测试（待 Justin 审批）",
+      "pipGoal": "渠道拓展",
+      "progress": "待启动",
+      "output": "产出可交付结果并确认",
+      "next": "Justin 审批通过后联系 Siyuan.C 确认渠道商细节，启动首笔出金测试",
+      "owner": "Sera",
+      "priority": 4,
+      "status": "Next",
+      "workstream": "渠道拓展",
+      "due": "2026-07-25",
+      "mirrorOf": "T-0006"
     }
   ],
   "todo": [
@@ -491,29 +504,36 @@ const FALLBACK = {
       "task": "提交设计交付包",
       "owner": "Sera",
       "due": "2026-07-22",
-      "priority": "P0",
+      "priority": 4,
       "status": "Done"
     },
     {
       "task": "高价值客户筛选",
       "owner": "Sera",
       "due": "2026-07-23",
-      "priority": "P0",
+      "priority": 4,
       "status": "Done"
     },
     {
       "task": "配合首单测试",
       "owner": "Sera / 静格",
       "due": "2026-07-25",
-      "priority": "P0",
+      "priority": 4,
       "status": "Next"
     },
     {
       "task": "获取大数据名单",
       "owner": "Sera / Simon",
       "due": "2026-07-26",
-      "priority": "P1",
+      "priority": 3,
       "status": "Blocked"
+    },
+    {
+      "task": "Michael 张渠道商出金首单测试（待 Justin 审批）",
+      "owner": "Sera",
+      "due": "2026-07-25",
+      "priority": 4,
+      "status": "Next"
     }
   ],
   "milestones": [
@@ -617,13 +637,13 @@ const FALLBACK = {
   ],
   "tasks": {
     "version": 1,
-    "updatedAt": "2026-07-22T15:38:32.928Z",
+    "updatedAt": "2026-07-23T16:56:39+08:00",
     "tasks": [
       {
         "id": "T-0001",
         "title": "提交设计交付包",
         "status": "已完成",
-        "priority": "P0",
+        "priority": 4,
         "workstream": "设计交付包",
         "owner": "Sera",
         "createdAt": "2026-07-21T09:00:00+08:00",
@@ -640,13 +660,15 @@ const FALLBACK = {
         "dependencies": [],
         "updatedBy": "Sera",
         "completionEvidence": "OTC 设计交付包已完成交付",
-        "changeSource": "manual"
+        "changeSource": "manual",
+        "archivedAt": null,
+        "archiveReason": null
       },
       {
         "id": "T-0002",
         "title": "高价值客户筛选",
         "status": "已完成",
-        "priority": "P0",
+        "priority": 4,
         "workstream": "注册 / KYC / 首单推进",
         "owner": "Sera",
         "createdAt": "2026-07-21T09:00:00+08:00",
@@ -663,13 +685,15 @@ const FALLBACK = {
         "dependencies": [],
         "updatedBy": "Sera",
         "completionEvidence": "高价值客户名单及优先级已完成确认",
-        "changeSource": "manual"
+        "changeSource": "manual",
+        "archivedAt": null,
+        "archiveReason": null
       },
       {
         "id": "T-0004",
         "title": "配合首单测试",
         "status": "待启动",
-        "priority": "P0",
+        "priority": 4,
         "workstream": "注册 / KYC / 首单推进",
         "owner": "Sera / 静格",
         "createdAt": "2026-07-21T09:00:00+08:00",
@@ -687,13 +711,15 @@ const FALLBACK = {
           "T-0002"
         ],
         "updatedBy": "seed",
-        "completionEvidence": null
+        "completionEvidence": null,
+        "archivedAt": null,
+        "archiveReason": null
       },
       {
         "id": "T-0005",
         "title": "获取大数据名单",
         "status": "阻塞",
-        "priority": "P1",
+        "priority": 3,
         "workstream": "渠道拓展",
         "owner": "Sera / Simon",
         "createdAt": "2026-07-21T09:00:00+08:00",
@@ -709,7 +735,33 @@ const FALLBACK = {
         "source": "seed",
         "dependencies": [],
         "updatedBy": "seed",
-        "completionEvidence": null
+        "completionEvidence": null,
+        "archivedAt": null,
+        "archiveReason": null
+      },
+      {
+        "id": "T-0006",
+        "title": "Michael 张渠道商出金首单测试（待 Justin 审批）",
+        "status": "待启动",
+        "priority": 4,
+        "workstream": "渠道拓展",
+        "owner": "Sera",
+        "createdAt": "2026-07-23T16:56:39+08:00",
+        "updatedAt": "2026-07-23T16:56:39+08:00",
+        "dueAt": "2026-07-25T18:00:00+08:00",
+        "remindAt": "2026-07-24T09:00:00+08:00",
+        "remindedAt": null,
+        "completedAt": null,
+        "progress": 0,
+        "nextAction": "Justin 审批通过后联系 Siyuan.C 确认渠道商细节，启动首笔出金测试",
+        "outputCondition": "产出可交付结果并确认",
+        "result": null,
+        "source": "cli",
+        "dependencies": [],
+        "updatedBy": "cli",
+        "completionEvidence": null,
+        "archivedAt": null,
+        "archiveReason": null
       }
     ]
   },
@@ -751,34 +803,34 @@ const GANTT_WEEKS = [
 const TODAY = '2026-07-21';
 
 /* ------------------------------------------------------------
- * 依赖关系图配置（viewBox 1000x700，节点坐标为画布坐标）
- * 主链路（黄） / 支线 A 获客（浅色） / 支线 C 设计（浅灰）
+ * 任务关系树配置（viewBox 800x560，节点坐标为画布坐标）
+ * 主链路（蓝） / 支线 A 获客（浅色） / 支线 C 设计（浅灰）
  * （看板交付与访问属系统建设工作，不计入 PIP 业务成果，已从图中移除）
  * ---------------------------------------------------------- */
 const DEP_NODES = [
-  // 主链路
-  { id: 'm1', label: '绩效评估表目标', meta: 'PIP 已立项', x: 70,  y: 240, st: 'done' },
-  { id: 'm2', label: 'BD计划文档',     meta: '撰写中 60%', x: 208, y: 240, st: 'doing' },
-  { id: 'm3', label: '客户手册/FAQ',   meta: '完善中 70%', x: 346, y: 240, st: 'doing' },
-  { id: 'm4', label: '设计交付包',     meta: '已交付 100%', x: 484, y: 240, st: 'done' },
-  { id: 'm5', label: '客户 Pipeline',  meta: '初版已建', x: 622, y: 240, st: 'hub' },
-  { id: 'm6', label: '注册/KYC/首单',  meta: '待推进', x: 760, y: 240, st: 'next' },
-  { id: 'm7', label: '周报/CRIB复盘',  meta: '每周五更新', x: 898, y: 240, st: 'doing' },
+  // 主链路（彩虹弧形：两端低、中间高，相邻卡片一上一下错开，斜向箭头更长更清晰）
+  { id: 'm1', label: '绩效评估表目标', meta: 'PIP 已立项', x: 56,  y: 236, st: 'done' },
+  { id: 'm2', label: 'BD计划文档',     meta: '撰写中 60%', x: 166, y: 178, st: 'doing' },
+  { id: 'm3', label: '客户手册/FAQ',   meta: '完善中 70%', x: 277, y: 140, st: 'doing' },
+  { id: 'm4', label: '设计交付包',     meta: '已交付 100%', x: 387, y: 124, st: 'done' },
+  { id: 'm5', label: '客户 Pipeline',  meta: '初版已建', x: 498, y: 140, st: 'hub' },
+  { id: 'm6', label: '注册/KYC/首单',  meta: '待推进', x: 608, y: 178, st: 'next' },
+  { id: 'm7', label: '周报/CRIB复盘',  meta: '每周五更新', x: 718, y: 236, st: 'doing' },
   // 支线 C：设计物料制作（汇入 设计交付包）
-  { id: 'c1', label: '文字稿整理', meta: 'Done', x: 200, y: 70, st: 'done' },
-  { id: 'c2', label: '提交设计团队', meta: 'Done · 07-22', x: 340, y: 70, st: 'done' },
-  { id: 'c3', label: '品牌 Skill 包', meta: 'Done · 已传回', x: 480, y: 70, st: 'done' },
-  { id: 'c4', label: '反馈修改', meta: 'Next', x: 620, y: 70, st: 'next' },
+  { id: 'c1', label: '文字稿整理', meta: 'Done', x: 160, y: 56, st: 'done' },
+  { id: 'c2', label: '提交设计团队', meta: 'Done · 07-22', x: 272, y: 56, st: 'done' },
+  { id: 'c3', label: '品牌 Skill 包', meta: 'Done · 已传回', x: 384, y: 56, st: 'done' },
+  { id: 'c4', label: '反馈修改', meta: 'Next', x: 496, y: 56, st: 'next' },
   // 支线 A：获客线索（四源并行汇入 客户筛选 → 客户 Pipeline）
-  { id: 'a1', label: 'TG客户资料', meta: 'Done · CRM 初版', x: 484, y: 400, st: 'done' },
-  { id: 'a2', label: '销售转介', meta: 'Next · 对接 Oscar', x: 760, y: 400, st: 'next' },
-  { id: 'a3', label: '存量客户池', meta: 'Done · 已汇总分级', x: 484, y: 556, st: 'done' },
-  { id: 'a4', label: 'Partner / KOL', meta: 'Next · 待触达', x: 760, y: 556, st: 'next' },
-  { id: 'a5', label: '客户筛选', meta: 'Done · 优先级已确认', x: 622, y: 480, st: 'done' }
+  { id: 'a1', label: 'TG客户资料', meta: 'Done · CRM 初版', x: 387, y: 320, st: 'done' },
+  { id: 'a2', label: '销售转介', meta: 'Next · 对接 Oscar', x: 608, y: 320, st: 'next' },
+  { id: 'a3', label: '存量客户池', meta: 'Done · 已汇总分级', x: 387, y: 445, st: 'done' },
+  { id: 'a4', label: 'Partner / KOL', meta: 'Next · 待触达', x: 608, y: 445, st: 'next' },
+  { id: 'a5', label: '客户筛选', meta: 'Done · 优先级已确认', x: 498, y: 384, st: 'done' }
 ];
 
 const DEP_LINKS = [
-  // 主链路（黄色渐变）
+  // 主链路（蓝色渐变）
   ['m1', 'm2', 'main'], ['m2', 'm3', 'main'], ['m3', 'm4', 'main'],
   ['m4', 'm5', 'main'], ['m5', 'm6', 'main'], ['m6', 'm7', 'main'],
   // 支线 C（浅灰）→ 设计交付包
@@ -788,9 +840,9 @@ const DEP_LINKS = [
 ];
 
 const DEP_LABELS = [
-  { text: '支线 C · 设计物料制作', x: 200, y: 18 },
-  { text: '主链路 · 绩效交付', x: 70, y: 184 },
-  { text: '支线 A · 获客线索汇入', x: 484, y: 352 }
+  { text: '支线 C · 设计物料制作', x: 160, y: 14 },
+  { text: '主链路 · 绩效交付', x: 56, y: 200 },
+  { text: '支线 A · 获客线索汇入', x: 387, y: 282 }
 ];
 
 /* 全局状态：当前生效的数据 + 筛选条件 */
@@ -880,6 +932,25 @@ async function loadJson(url, fallback) {
   }
 }
 
+/* ---------- 星级优先级（四象限）：4 重要且紧急 / 3 重要但不紧急 / 2 紧急但不重要 / 1 不重要且不紧急 ---------- */
+const STAR_QUADRANT = { 4: '重要且紧急', 3: '重要但不紧急', 2: '紧急但不重要', 1: '不重要且不紧急' };
+function starLevel(priority) {
+  const n = Number(priority);
+  return n >= 1 && n <= 4 ? n : 3;
+}
+/* 卡片右下角星级标记：实心 ★ × n（有几星标几星，不补空心），数量即重要程度 */
+function buildStars(priority) {
+  const n = starLevel(priority);
+  const box = el('span', 'card-stars');
+  const label = '优先级 ' + n + ' 星 · ' + STAR_QUADRANT[n];
+  box.title = label;
+  box.setAttribute('aria-label', label);
+  for (let i = 1; i <= n; i += 1) {
+    box.appendChild(el('span', 'on', '★'));
+  }
+  return box;
+}
+
 /* ---------- 01 执行摘要（4 卡 · 主数据突出 · 每卡一行下一步） ---------- */
 function renderSummary() {
   const grid = document.getElementById('sumGrid');
@@ -897,7 +968,8 @@ function renderSummary() {
   const nextTodo = state.todo
     .filter((t) => t.status !== 'Done')
     .slice()
-    .sort((a, b) => ((a.priority + a.due) < (b.priority + b.due) ? -1 : 1))[0];
+    .sort((a, b) => (starLevel(b.priority) - starLevel(a.priority))
+      || (a.due < b.due ? -1 : a.due > b.due ? 1 : 0))[0];
 
   // 3) 当前阻塞 = blockers.json current 条数（说明取前 3 条短标签）
   const blockerItems = (state.blockers && state.blockers.current) || [];
@@ -1325,14 +1397,16 @@ function tickCountdown() {
 function renderCountdown(tasksData) {
   const grid = document.getElementById('cdGrid');
   grid.innerHTML = '';
-  const list = (tasksData && Array.isArray(tasksData.tasks)) ? tasksData.tasks.slice() : [];
+  // 已归档任务退出倒计时（移入周度对比与复盘）
+  const list = (tasksData && Array.isArray(tasksData.tasks)) ? tasksData.tasks.filter((t) => !t.archivedAt) : [];
   if (!list.length) {
     grid.appendChild(el('div', 'cd-empty', '暂无任务 · 可通过终端 npm run task 新增'));
     return;
   }
-  // 未完成按截止升序在前，已完成按完成时间降序在后
+  // 高星（重要且紧急）优先在前；同星内未完成按截止升序，已完成按完成时间降序殿后
   const rank = (t) => (t.status === '已完成' ? 1 : 0);
-  list.sort((a, b) => rank(a) - rank(b)
+  list.sort((a, b) => starLevel(b.priority) - starLevel(a.priority)
+    || rank(a) - rank(b)
     || (a.status === '已完成' ? Date.parse(b.completedAt || 0) - Date.parse(a.completedAt || 0)
       : Date.parse(a.dueAt) - Date.parse(b.dueAt)));
 
@@ -1348,8 +1422,8 @@ function renderCountdown(tasksData) {
 
     const head = el('div', 'cd-head');
     head.appendChild(el('span', 'cd-id', t.id));
-    head.appendChild(el('span', 'badge badge-' + (t.priority === 'P0' ? 'p0' : 'p1'), t.priority));
     head.appendChild(el('span', 'badge badge-' + (CD_STATUS_BADGE[t.status] || 'next'), t.status));
+    head.appendChild(el('span', 'cd-due-tr', '截止 ' + (t.dueAt || '').slice(0, 16).replace('T', ' ')));
     card.appendChild(head);
 
     card.appendChild(el('h3', 'cd-title', t.title));
@@ -1365,7 +1439,6 @@ function renderCountdown(tasksData) {
     card.appendChild(bar);
 
     const meta = el('div', 'cd-meta');
-    meta.appendChild(el('span', null, '截止 ' + (t.dueAt || '').slice(0, 16).replace('T', ' ')));
     meta.appendChild(el('span', null, '提醒 ' + (t.remindAt || '').slice(0, 16).replace('T', ' ')));
     if (t.workstream) meta.appendChild(el('span', null, t.workstream));
     meta.appendChild(el('span', null, t.owner));
@@ -1381,6 +1454,11 @@ function renderCountdown(tasksData) {
     if (t.status === '已完成' && t.result) {
       card.appendChild(el('div', 'cd-result', '结果：' + t.result));
     }
+
+    // 右下角星级优先级标记（数量 = 重要程度，悬浮可见四象限说明）
+    const foot = el('div', 'cd-stars');
+    foot.appendChild(buildStars(t.priority));
+    card.appendChild(foot);
 
     grid.appendChild(card);
   });
@@ -1533,18 +1611,18 @@ function renderGantt(list) {
   legend.appendChild(el('span', 'legend-hint', '点击左侧主线名可展开 / 折叠子任务'));
 }
 
-/* ---------- 06 依赖关系图（SVG 贝塞尔曲线 + 玻璃节点） ---------- */
+/* ---------- G 任务关系树（手绘风 SVG 曲线 + 箭头 + 便签节点） ---------- */
 function renderDepMap() {
   const canvas = document.getElementById('depCanvas');
   canvas.innerHTML = '';
   const NS = 'http://www.w3.org/2000/svg';
-  const VB_W = 1000;
-  const VB_H = 700;
+  const VB_W = 800;
+  const VB_H = 560;
 
   const byId = {};
   DEP_NODES.forEach((n) => { byId[n.id] = n; });
 
-  // SVG 曲线层（贝塞尔，节点下方）
+  // SVG 曲线层（手绘贝塞尔，节点下方）
   const svg = document.createElementNS(NS, 'svg');
   svg.setAttribute('class', 'dep-svg');
   svg.setAttribute('viewBox', '0 0 ' + VB_W + ' ' + VB_H);
@@ -1565,16 +1643,38 @@ function renderDepMap() {
     mainGrad.appendChild(stop);
   });
   defs.appendChild(mainGrad);
+  // 手绘抖动滤镜：feTurbulence 噪声 + feDisplacementMap 位移，线条呈铅笔弯曲感
+  // （不支持 SVG filter 的环境自动忽略，退化为普通平滑曲线）
+  const pencil = document.createElementNS(NS, 'filter');
+  pencil.setAttribute('id', 'depPencil');
+  pencil.setAttribute('x', '-8%'); pencil.setAttribute('y', '-8%');
+  pencil.setAttribute('width', '116%'); pencil.setAttribute('height', '116%');
+  const turb = document.createElementNS(NS, 'feTurbulence');
+  turb.setAttribute('type', 'fractalNoise');
+  turb.setAttribute('baseFrequency', '0.028');
+  turb.setAttribute('numOctaves', '4');
+  turb.setAttribute('seed', '8');
+  turb.setAttribute('result', 'n');
+  const disp = document.createElementNS(NS, 'feDisplacementMap');
+  disp.setAttribute('in', 'SourceGraphic');
+  disp.setAttribute('in2', 'n');
+  disp.setAttribute('scale', '4.5');
+  pencil.appendChild(turb);
+  pencil.appendChild(disp);
+  defs.appendChild(pencil);
   svg.appendChild(defs);
 
   // 贝塞尔曲线：方向射线与节点矩形求交，从节点边缘起止（避免线段被节点卡片遮住）
-  const HALF_W = 58; // 节点水平半径（viewBox 单位，略大于 11% 宽度的一半）
-  const HALF_H = 33; // 节点垂直半径
+  const HALF_W = 48; // 节点水平半径（viewBox 单位，略大于 12% 宽度的一半）
+  const HALF_H = 30; // 节点垂直半径
   function edgeOffset(ux, uy) {
     const tx = ux === 0 ? Infinity : HALF_W / Math.abs(ux);
     const ty = uy === 0 ? Infinity : HALF_H / Math.abs(uy);
     return Math.min(tx, ty) + 2;
   }
+  // 所有连线 + 箭头放进同一 <g>，统一套手绘抖动滤镜
+  const gInk = document.createElementNS(NS, 'g');
+  gInk.setAttribute('filter', 'url(#depPencil)');
   DEP_LINKS.forEach(([fromId, toId, cls]) => {
     const f = byId[fromId];
     const t = byId[toId];
@@ -1592,28 +1692,47 @@ function renderDepMap() {
     // 水平偏置控制点，形成平滑 S 曲线
     const c1x = sx + (ex - sx) * 0.5;
     const c2x = ex - (ex - sx) * 0.5;
+    const linkCls = 'dl-' + (cls === 'main' ? 'main2' : cls);
     const path = document.createElementNS(NS, 'path');
-    path.setAttribute('class', 'dl-' + (cls === 'main' ? 'main2' : cls));
+    path.setAttribute('class', linkCls);
     path.setAttribute('d',
       'M' + sx.toFixed(1) + ' ' + sy.toFixed(1) +
       ' C' + c1x.toFixed(1) + ' ' + sy.toFixed(1) +
       ' ' + c2x.toFixed(1) + ' ' + ey.toFixed(1) +
       ' ' + ex.toFixed(1) + ' ' + ey.toFixed(1));
-    svg.appendChild(path);
+    gInk.appendChild(path);
+    // 手绘箭头：沿链路方向的撇捺两笔（长短不一，更接近手画）
+    const px = -uy;
+    const py = ux;
+    const tipX = ex - ux * 1.5;
+    const tipY = ey - uy * 1.5;
+    const w1x = tipX - ux * 8 + px * 3.6;
+    const w1y = tipY - uy * 8 + py * 3.6;
+    const w2x = tipX - ux * 6 - px * 3.2;
+    const w2y = tipY - uy * 6 - py * 3.2;
+    const arrow = document.createElementNS(NS, 'path');
+    arrow.setAttribute('class', linkCls + ' dl-arrow');
+    arrow.setAttribute('d',
+      'M' + w1x.toFixed(1) + ' ' + w1y.toFixed(1) +
+      ' L' + tipX.toFixed(1) + ' ' + tipY.toFixed(1) +
+      ' L' + w2x.toFixed(1) + ' ' + w2y.toFixed(1));
+    gInk.appendChild(arrow);
   });
+  svg.appendChild(gInk);
   canvas.appendChild(svg);
 
   // 链路分区标签
-  DEP_LABELS.forEach((lb, i) => {
+  DEP_LABELS.forEach((lb) => {
     const node = el('div', 'dep-chain-label', lb.text);
     node.style.left = (lb.x / VB_W * 100) + '%';
     node.style.top = (lb.y / VB_H * 100) + '%';
     canvas.appendChild(node);
   });
 
-  // 玻璃节点层（轻 3D：偶数节点轻微浮起）
+  // 便签节点层（每张便签轻微旋转，模拟随手贴上白板）
+  const ROTS = ['dn-rot-a', 'dn-rot-b', 'dn-rot-c'];
   DEP_NODES.forEach((n, i) => {
-    const node = el('div', 'dep-node2 dn-' + n.st + (i % 2 ? ' dep-z' : ''));
+    const node = el('div', 'dep-node2 dn-' + n.st + ' ' + ROTS[i % 3]);
     node.style.left = (n.x / VB_W * 100) + '%';
     node.style.top = (n.y / VB_H * 100) + '%';
     node.appendChild(el('div', 'dn-title', n.label));
@@ -1628,7 +1747,7 @@ function renderWorkstreams(list) {
   grid.innerHTML = '';
   list.forEach((ws) => {
     const statusCls = STATUS_CLS[ws.status] || 'next';
-    const card = el('div', 'ws-card' + (ws.status === 'Blocked' ? ' ws-blocked' : ''));
+    const card = el('div', 'ws-card ws-' + statusCls);
 
     // 名称 + 状态 badge
     const head = el('div', 'ws-head');
@@ -1679,10 +1798,10 @@ function renderWorkstreams(list) {
 }
 
 /* ---------- 08 工作 Pipeline（折叠分组看板） ---------- */
-/* 分组定义：本周重点（P0 合集）+ 四状态分组，defaultOpen 控制默认展开 */
+/* 分组定义：本周重点（4 星合集）+ 四状态分组，defaultOpen 控制默认展开 */
 const PIPE_GROUPS = [
-  { key: 'focus',   name: '本周重点 · P0', dot: 'next',    defaultOpen: true,
-    pick: (list) => list.filter((p) => p.priority === 'P0') },
+  { key: 'focus',   name: '本周重点 · ★★★★', dot: 'next',    defaultOpen: true,
+    pick: (list) => list.filter((p) => p.priority === 4) },
   { key: 'Doing',   name: '进行中 Doing',  dot: 'doing',   defaultOpen: true,
     pick: (list) => list.filter((p) => p.status === 'Doing') },
   { key: 'Blocked', name: '阻塞 Blocked',  dot: 'blocked', defaultOpen: true,
@@ -1699,6 +1818,11 @@ function buildTaskCard(item) {
   card.dataset.search = [item.module, item.workstream, item.next, item.priority, item.status]
     .join(' ').toLowerCase();
 
+  // 右上角：截止日期（逾期标红）
+  const overdue = item.due && item.due < TODAY && item.status !== 'Done';
+  card.appendChild(el('span', 'task-due task-due-tr' + (overdue ? ' overdue' : ''),
+    '截止 ' + (item.due ? item.due.slice(5) : '—') + (overdue ? ' · 已过期' : '')));
+
   // 任务名
   card.appendChild(el('h3', 'task-title', item.module));
 
@@ -1714,12 +1838,10 @@ function buildTaskCard(item) {
     card.appendChild(row);
   });
 
-  // 底部：优先级 + 状态 + 截止日期
+  // 底部：状态 + 右下角星级优先级
   const footer = el('div', 'task-footer');
-  footer.appendChild(el('span', 'badge ' + (item.priority === 'P0' ? 'badge-p0' : 'badge-p1'), item.priority));
   footer.appendChild(el('span', 'badge badge-' + (STATUS_CLS[item.status] || 'next'), STATUS_TEXT[item.status] || item.status));
-  const overdue = item.due && item.due < TODAY && item.status !== 'Done';
-  footer.appendChild(el('span', 'task-due' + (overdue ? ' overdue' : ''), '截止 ' + (item.due ? item.due.slice(5) : '—') + (overdue ? ' · 已过期' : '')));
+  footer.appendChild(buildStars(item.priority));
   card.appendChild(footer);
   return card;
 }
@@ -1729,7 +1851,10 @@ function renderPipeline(pipeline) {
   wrap.innerHTML = '';
 
   PIPE_GROUPS.forEach((g) => {
-    const items = g.pick(pipeline);
+    // 组内高星优先，同星按截止日升序
+    const items = g.pick(pipeline).slice()
+      .sort((a, b) => (starLevel(b.priority) - starLevel(a.priority))
+        || (a.due < b.due ? -1 : a.due > b.due ? 1 : 0));
     const group = el('div', 'pipe-group' + (g.defaultOpen ? ' open' : ''));
     group.dataset.openState = g.defaultOpen ? '1' : '0';
 
@@ -2025,11 +2150,102 @@ function renderRvEdit(review) {
   return body;
 }
 
+/* ---------- 周度对比：上周 vs 本周（任务清单 + 完成事项 + 归档） ---------- */
+/* 上海墙钟自然周：周一 00:00 ~ 周日 23:59:59（+08:00） */
+function wcWeekRange(offsetWeeks) {
+  const now = new Date();
+  const sh = new Date(now.getTime() + (8 * 60 + now.getTimezoneOffset()) * 60000);
+  const dow = (sh.getDay() + 6) % 7; // 周一=0
+  const mon = new Date(sh.getFullYear(), sh.getMonth(), sh.getDate() - dow + offsetWeeks * 7);
+  const pad2 = (n) => String(n).padStart(2, '0');
+  const startStr = mon.getFullYear() + '-' + pad2(mon.getMonth() + 1) + '-' + pad2(mon.getDate());
+  const start = Date.parse(startStr + 'T00:00:00+08:00');
+  return { start, end: start + 7 * CD_DAY_MS - 1, startStr };
+}
+
+/* 周内任务分桶：完成事项（completedAt 落周内）/ 已归档（archivedAt 落周内）/ 推进中（dueAt 落周内且未归档） */
+function wcBucket(tasks, range) {
+  const inWeek = (ts) => {
+    const ms = Date.parse(ts);
+    return Number.isFinite(ms) && ms >= range.start && ms <= range.end;
+  };
+  const done = [];
+  const arch = [];
+  const active = [];
+  tasks.forEach((t) => {
+    if (t.completedAt && inWeek(t.completedAt)) { done.push(t); return; }
+    if (t.archivedAt && inWeek(t.archivedAt)) { arch.push(t); return; }
+    if (t.dueAt && inWeek(t.dueAt) && !t.archivedAt) active.push(t);
+  });
+  done.sort((a, b) => Date.parse(a.completedAt) - Date.parse(b.completedAt));
+  arch.sort((a, b) => Date.parse(a.archivedAt) - Date.parse(b.archivedAt));
+  active.sort((a, b) => Date.parse(a.dueAt) - Date.parse(b.dueAt));
+  return { done, arch, active };
+}
+
+function wcRow(task, badgeCls, badgeText, subText) {
+  const row = el('div', 'wc-row');
+  row.appendChild(el('span', 'badge ' + badgeCls, badgeText));
+  const main = el('div', 'wc-row-main');
+  main.appendChild(el('div', 'wc-row-title', task.id + ' ' + task.title));
+  if (subText) main.appendChild(el('div', 'wc-row-sub', subText));
+  row.appendChild(main);
+  return row;
+}
+
+function wcGroup(title, count) {
+  return el('div', 'wc-sec', title + '（' + count + '）');
+}
+
+function renderWeekCompare() {
+  const grid = document.getElementById('wcGrid');
+  if (!grid) return;
+  const tasks = (state.tasks && state.tasks.tasks) || [];
+  const nowMs = Date.now();
+  grid.innerHTML = '';
+
+  [
+    { label: '上周', range: wcWeekRange(-1) },
+    { label: '本周', range: wcWeekRange(0) },
+  ].forEach(({ label, range }) => {
+    const b = wcBucket(tasks, range);
+    const col = el('div', 'wc-col');
+
+    const head = el('div', 'wc-col-head');
+    head.appendChild(el('span', 'wc-col-title', label));
+    head.appendChild(el('span', 'wc-col-range', range.startStr.slice(5).replace('-', '/') + ' 起'));
+    col.appendChild(head);
+
+    if (!b.done.length && !b.arch.length && !b.active.length) {
+      col.appendChild(el('div', 'wc-empty', '该周无任务记录'));
+    } else {
+      if (b.done.length) {
+        col.appendChild(wcGroup('完成事项', b.done.length));
+        b.done.forEach((t) => col.appendChild(wcRow(t, 'badge-done', '已完成', t.result ? '结果：' + t.result : null)));
+      }
+      if (b.arch.length) {
+        col.appendChild(wcGroup('已归档', b.arch.length));
+        b.arch.forEach((t) => col.appendChild(wcRow(t, 'badge-arch', t.status === '已完成' ? '完成归档' : '未完成归档',
+          t.archiveReason ? '原因：' + t.archiveReason : (t.result ? '结果：' + t.result : null))));
+      }
+      if (b.active.length) {
+        col.appendChild(wcGroup('推进中 / 到期', b.active.length));
+        b.active.forEach((t) => {
+          const overdue = t.status !== '已完成' && Date.parse(t.dueAt) < nowMs;
+          col.appendChild(wcRow(t, 'badge-' + (CD_STATUS_BADGE[t.status] || 'next'), overdue ? '已逾期' : t.status,
+            '截止 ' + String(t.dueAt || '').slice(5, 16).replace('T', ' ') + (t.nextAction ? ' · ' + t.nextAction : '')));
+        });
+      }
+      col.appendChild(el('div', 'wc-sum', '完成 ' + b.done.length + ' · 归档 ' + b.arch.length + ' · 推进中 ' + b.active.length));
+    }
+    grid.appendChild(col);
+  });
+}
+
 function renderWeeklyReview() {
   const metabar = document.getElementById('reviewMetabar');
   const bodyBox = document.getElementById('reviewBody');
   if (!metabar || !bodyBox) return;
-
   // 历史周报下拉（保留选中）
   const sel = document.getElementById('rvHistory');
   const prevVal = sel.value;
@@ -2073,7 +2289,7 @@ function renderWeeklyReview() {
     rvState.working = null;
     const empty = el('div', 'rv-empty');
     empty.appendChild(el('p', null, '该周期暂无复盘。'));
-    empty.appendChild(el('p', 'rv-muted', '点击「PIP 助手生成复盘」基于真实任务数据生成草稿；缺数据的栏目会标注「' + RV_MISSING + '」'));
+    empty.appendChild(el('p', 'rv-muted', '点击「总结复盘」基于真实任务数据生成草稿；缺数据的栏目会标注「' + RV_MISSING + '」'));
     bodyBox.appendChild(empty);
   } else if (rvState.editing && review.status === 'draft') {
     if (!rvState.working) rvState.working = JSON.parse(JSON.stringify(review));
@@ -2090,7 +2306,7 @@ function renderWeeklyReview() {
   const btnConfirm = document.getElementById('btnReviewConfirm');
   const confirmed = review && review.status === 'confirmed';
   btnGen.disabled = rvState.busy || confirmed || rvState.editing;
-  btnGen.textContent = rvState.busy ? '生成中…' : (review && review.status === 'draft' ? '重新生成复盘' : 'PIP 助手生成复盘');
+  btnGen.textContent = rvState.busy ? '生成中…' : (review && review.status === 'draft' ? '重新生成复盘' : '总结复盘');
   if (rvState.editing) {
     btnEdit.textContent = '保存';
     btnEdit.disabled = rvState.busy;
@@ -2490,14 +2706,14 @@ function enStatusColor(items) {
 
 function computeSectionStatus() {
   const map = {};
-  const tasks = (state.tasks && state.tasks.tasks) || [];
+  const tasks = ((state.tasks && state.tasks.tasks) || []).filter((t) => !t.archivedAt); // 已归档不参与状态聚合
   const nowMs = Date.now();
   const blockedN = ((state.blockers && state.blockers.current) || []).length;
   const tBlocked = tasks.filter((t) => t.status === '阻塞').length;
   const tOverdue = tasks.filter((t) => t.status !== '已完成' && t.dueAt && Date.parse(t.dueAt) < nowMs).length;
   const tDoing = tasks.filter((t) => ['进行中', '已提醒', '待输出', '已延期'].indexOf(t.status) >= 0).length;
 
-  /* 01 目标总览 */
+  /* 目标总览 */
   map['sec-summary'] = (blockedN + tBlocked) > 0 ? 'red' : (tDoing > 0 ? 'yellow' : 'green');
   const kpis = state.kpi || [];
   map['sec-kpi'] = !kpis.length ? 'gray'
@@ -2507,7 +2723,7 @@ function computeSectionStatus() {
     : (tBlocked + tOverdue) > 0 ? 'red'
     : tDoing > 0 ? 'yellow' : 'green';
 
-  /* 02 任务推进 */
+  /* 任务推进 */
   map['sec-roadmap'] = enStatusColor(state.roadmap);
   map['sec-pipeline'] = (blockedN + tBlocked) > 0 ? 'red' : enStatusColor(state.pipeline);
   const ganttItems = [];
@@ -2516,14 +2732,14 @@ function computeSectionStatus() {
     ((m && m.children) || []).forEach((c) => ganttItems.push(c));
   });
   map['sec-gantt'] = enStatusColor(ganttItems);
-  map['sec-depmap'] = 'gray'; // 依赖图无独立状态数据
+  map['sec-depmap'] = 'gray'; // 关系树无独立状态数据
 
-  /* 03 总结复盘 */
+  /* 总结复盘 */
   const reviews = (state.weeklyReviews && state.weeklyReviews.reviews) || [];
   map['sec-review'] = !reviews.length ? 'gray'
     : reviews.some((r) => r.status === 'draft') ? 'yellow' : 'green';
 
-  /* 04 资料中心 */
+  /* 资料中心 */
   const res = state.resources || [];
   map['sec-resources'] = !res.length ? 'gray'
     : res.every((r) => (RES_STATUS_CLS[r.status] || 'next') === 'done') ? 'green' : 'yellow';
@@ -2552,11 +2768,11 @@ function openTaskModal(taskId) {
   const task = ((state.tasks && state.tasks.tasks) || []).find((t) => t.id === taskId);
   const modal = document.getElementById('taskModal');
   if (!task || !modal) return;
-  document.getElementById('taskModalTitle').textContent = task.id + '｜' + task.title;
+  document.getElementById('taskModalTitle').textContent = task.id + '｜' + task.title + (task.archivedAt ? '（已归档）' : '');
   const body = document.getElementById('taskModalBody');
   body.innerHTML = '';
   const rows = [
-    ['状态', task.status + '（' + (task.priority || '—') + '）'],
+    ['状态', task.status + '（' + '★'.repeat(starLevel(task.priority)) + ' ' + STAR_QUADRANT[starLevel(task.priority)] + '）'],
     ['负责人', task.owner || '—'],
     ['进度', (task.progress || 0) + '%'],
     ['截止时间', (task.dueAt || '—').replace('T', ' ').slice(0, 16)],
@@ -2570,6 +2786,10 @@ function openTaskModal(taskId) {
     if (task.result) rows.push(['完成结果', task.result]);
     if (task.completionEvidence) rows.push(['完成证据', task.completionEvidence]);
   }
+  if (task.archivedAt) {
+    rows.push(['归档时间', String(task.archivedAt).replace('T', ' ').slice(0, 16)]);
+    if (task.archiveReason) rows.push(['归档原因', task.archiveReason]);
+  }
   rows.push(['最近更新', (task.updatedAt || '—').replace('T', ' ').slice(0, 16) + (task.updatedBy ? ' · ' + task.updatedBy : '')]);
   rows.forEach((kv) => {
     const row = el('div', 'tm-row');
@@ -2577,8 +2797,72 @@ function openTaskModal(taskId) {
     row.appendChild(el('span', 'tm-v', kv[1]));
     body.appendChild(row);
   });
+  buildArchiveArea(body, task);
   modal.hidden = false;
   document.getElementById('taskModalClose').focus();
+}
+
+/* 归档操作区：已完成可直接归档；未完成须已逾期且必填原因；其余情况给出提示 */
+function buildArchiveArea(body, task) {
+  if (task.archivedAt) return;
+  const completed = task.status === '已完成';
+  const overdue = Date.parse(task.dueAt) < Date.now();
+  const area = el('div', 'tm-archive');
+
+  if (!completed && !overdue) {
+    area.appendChild(el('div', 'tm-arch-hint', '任务未完成且未到截止时间，暂不能归档'));
+    body.appendChild(area);
+    return;
+  }
+
+  let reasonInput = null;
+  if (!completed) {
+    reasonInput = el('textarea', 'tm-arch-reason');
+    reasonInput.rows = 2;
+    reasonInput.placeholder = '未完成原因（必填）：将随任务进入周度复盘';
+    area.appendChild(reasonInput);
+  } else {
+    reasonInput = el('textarea', 'tm-arch-reason');
+    reasonInput.rows = 2;
+    reasonInput.placeholder = '批注（可选）：归档备注将随任务进入周度复盘';
+    area.appendChild(reasonInput);
+  }
+
+  const row = el('div', 'tm-arch-actions');
+  const btn = el('button', 'btn btn-outline tm-arch-btn', '归档此任务');
+  btn.type = 'button';
+  const msg = el('span', 'tm-arch-msg');
+  row.appendChild(btn);
+  row.appendChild(msg);
+  area.appendChild(row);
+  body.appendChild(area);
+
+  btn.addEventListener('click', async () => {
+    const reason = reasonInput.value.trim();
+    if (!completed && !reason) {
+      msg.textContent = '请填写未完成原因';
+      reasonInput.focus();
+      return;
+    }
+    btn.disabled = true;
+    btn.textContent = '归档中…';
+    msg.textContent = '';
+    try {
+      await apiFetch('/api/agent/archive', {
+        method: 'POST',
+        body: JSON.stringify({ taskId: task.id, reason, operator: agentState.operator }),
+      });
+      closeTaskModal();
+      await refreshHubData();
+      renderWeekCompare();
+    } catch (e) {
+      btn.disabled = false;
+      btn.textContent = '归档此任务';
+      msg.textContent = agentState.apiOnline === false
+        ? '纯静态模式不可用，请部署到 Vercel 或用 npm run task archive'
+        : ('归档失败：' + e.message);
+    }
+  });
 }
 
 function closeTaskModal() {
@@ -2752,6 +3036,7 @@ async function init() {
   renderWorkstreams(state.roadmap);
   renderPipeline(state.pipeline);
   paintFooterUpdated();
+  renderWeekCompare();
   renderWeeklyReview();
   initReview();
   updateNavDots();
@@ -2819,6 +3104,7 @@ const AGENT_CLASS_BADGE = {
   overdue: 'late',
   pending: 'next',
   needs_confirmation: 'warn',
+  archived: 'arch',
 };
 
 function renderAgentTaskCards(tasks) {
@@ -3002,6 +3288,7 @@ async function refreshHubData() {
     renderCountdown(state.tasks);
     renderPipeline(state.pipeline);
     paintFooterUpdated();
+    renderWeekCompare();
     updateNavDots();
     applyFilters();
   } catch (e) {

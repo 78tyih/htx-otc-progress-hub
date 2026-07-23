@@ -11,8 +11,8 @@
 - **03 时间推进图**：W1 07/21 – W6 08/31 六周时间轴，6 条业务主线，点击主线展开子任务，悬浮查看详情
 - **04 依赖关系图**：主链路（绩效交付）+ 三支线（获客线索 / 看板交付与访问 / 设计物料），含「访问权限控制」节点
 - **05 主线任务进度**：5 条 Workstream 主线卡（进度 / 关键子任务 subDone/subTotal / 风险 / 下一步）
-- **06 工作 Pipeline**：5 分组折叠看板（本周重点·P0 / 进行中 / 阻塞默认展开；待开始 / 已完成默认折叠），卡片仅含任务名 / 所属主线 / 优先级 / 截止 / 下一步
-- **07 本周待办**：P0 高亮、过期标红、搜索联动
+- **06 工作 Pipeline**：5 分组折叠看板（本周重点·4星 / 进行中 / 阻塞默认展开；待开始 / 已完成默认折叠），卡片仅含任务名 / 所属主线 / 星级优先级（右下角）/ 截止（右上角）/ 下一步
+- **07 本周待办**：星级排序（高星优先）、过期标红、搜索联动
 - **08 阻塞事项**：自动汇总 Blocked 项 + 需要 Supervisor 协助的 5 件事
 - **09 周更记录**：每周更新一次（每周五），本周重点动作 + 历史时间线
 
@@ -38,7 +38,7 @@ htx-otc-progress-hub/
 │   ├── gantt.json              # 【加载】甘特 6 条主线（含 children 子任务 / owner / next）
 │   ├── roadmap.json            # 【加载】5 条 Workstream 主线（目标 / 进度 / subDone/subTotal / risk）
 │   ├── pipeline.json           # 【加载】Pipeline（PIP 目标 / 进度 / 产出 / 下一步）
-│   ├── todo.json               # 【加载】本周待办（P0 / 截止日 / 状态）
+│   ├── todo.json               # 【加载】本周待办（星级 / 截止日 / 状态）
 │   ├── milestones.json         # 【加载】里程碑与下一节点
 │   ├── weekly-log.json         # 【加载】周更记录（cadence / updatedAt / done）—— v0.6 轻量化
 │   ├── blockers.json           # 【加载】阻塞事项双栏（current / asks）—— v0.6 新增
@@ -147,9 +147,9 @@ python3 -m http.server 8080
 
 **3. `data/roadmap.json`**（数组，5 条主线 WS01–WS05）— `id`、`name`（主线名）、`goal`（目标）、`progress`（0–100）、`status`、`owner`、`subDone` / `subTotal`（关键子任务完成数 / 总数）、`next`（下一步）、`risk`（风险描述，无风险填 `"无"`）。
 
-**4. `data/pipeline.json`**（数组）— `module`（业务线）、`pipGoal`（PIP 目标）、`progress`（进度描述）、`output`（本周产出）、`next`（下一步）、`owner`、`priority`（P0/P1）、`status`（Done/Doing/Next/Blocked）、`workstream`（所属主线）、`due`（截止日）。卡片仅展示 任务名 / 所属主线 / 优先级 / 截止 / 下一步，其余字段供阻塞区与导出使用。
+**4. `data/pipeline.json`**（数组）— `module`（业务线）、`pipGoal`（PIP 目标）、`progress`（进度描述）、`output`（本周产出）、`next`（下一步）、`owner`、`priority`（1–4 星：4=重要且紧急 / 3=重要不紧急 / 2=紧急不重要 / 1=不重要不紧急）、`status`（Done/Doing/Next/Blocked）、`workstream`（所属主线）、`due`（截止日）。卡片仅展示 任务名 / 所属主线 / 优先级 / 截止 / 下一步，其余字段供阻塞区与导出使用。
 
-**5. `data/todo.json`**（数组）— `task`、`owner`、`due`（截止日，过期未完成自动标红）、`priority`（P0 高亮/P1）、`status`。
+**5. `data/todo.json`**（数组）— `task`、`owner`、`due`（截止日，过期未完成自动标红）、`priority`（1–4 星，高星优先排序）、`status`。
 
 **6. `data/milestones.json`**（数组）— `date`、`title`、`status`；执行摘要「下一里程碑」取日期最近且未完成的里程碑。
 

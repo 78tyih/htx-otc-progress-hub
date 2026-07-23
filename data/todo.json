@@ -3,28 +3,35 @@
     "task": "提交设计交付包",
     "owner": "Sera",
     "due": "2026-07-22",
-    "priority": "P0",
+    "priority": 4,
     "status": "Done"
   },
   {
     "task": "高价值客户筛选",
     "owner": "Sera",
     "due": "2026-07-23",
-    "priority": "P0",
+    "priority": 4,
     "status": "Done"
   },
   {
     "task": "配合首单测试",
     "owner": "Sera / 静格",
     "due": "2026-07-25",
-    "priority": "P0",
+    "priority": 4,
     "status": "Next"
   },
   {
     "task": "获取大数据名单",
     "owner": "Sera / Simon",
     "due": "2026-07-26",
-    "priority": "P1",
+    "priority": 3,
     "status": "Blocked"
+  },
+  {
+    "task": "Michael 张渠道商出金首单测试（待 Justin 审批）",
+    "owner": "Sera",
+    "due": "2026-07-25",
+    "priority": 4,
+    "status": "Next"
   }
 ]

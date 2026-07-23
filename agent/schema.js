@@ -16,7 +16,8 @@
 'use strict';
 
 const TASK_STATUSES = ['待启动', '进行中', '待输出', '已提醒', '已完成', '已延期', '阻塞'];
-const TASK_PRIORITIES = ['P0', 'P1'];
+// 星级优先级（四象限）：4 重要且紧急 / 3 重要不紧急 / 2 紧急不重要 / 1 不重要不紧急
+const TASK_PRIORITIES = [4, 3, 2, 1];
 const AUDIT_ACTORS = ['cli', 'scheduler', 'seed', 'web'];
 // 允许的状态迁移：key → 可迁移到的状态集合（终态 已完成 不可再迁出）
 const STATUS_TRANSITIONS = {
@@ -50,7 +51,7 @@ function validateTask(task, index) {
   if (typeof task.id !== 'string' || !TASK_ID_RE.test(task.id)) errors.push(`${where}.id: 须形如 T-0001`);
   if (typeof task.title !== 'string' || !task.title.trim() || task.title.length > 100) errors.push(`${where}.title: 必填且 ≤100 字`);
   if (!TASK_STATUSES.includes(task.status)) errors.push(`${where}.status: 非法状态 "${task.status}"，允许值：${TASK_STATUSES.join('/')}`);
-  if (!TASK_PRIORITIES.includes(task.priority)) errors.push(`${where}.priority: 须为 P0/P1`);
+  if (!TASK_PRIORITIES.includes(task.priority)) errors.push(`${where}.priority: 须为 1-4 整数星（4=重要且紧急 … 1=不重要不紧急）`);
   if (task.workstream !== null && typeof task.workstream !== 'string') errors.push(`${where}.workstream: 须为字符串或 null`);
   if (typeof task.owner !== 'string' || !task.owner.trim()) errors.push(`${where}.owner: 必填`);
   if (!isIso(task.createdAt)) errors.push(`${where}.createdAt: 须为 ISO 时间`);
@@ -59,6 +60,15 @@ function validateTask(task, index) {
   if (!isIso(task.remindAt)) errors.push(`${where}.remindAt: 必填且须为 ISO 时间`);
   if (!isIsoOrNull(task.remindedAt)) errors.push(`${where}.remindedAt: 须为 ISO 时间或 null`);
   if (!isIsoOrNull(task.completedAt)) errors.push(`${where}.completedAt: 须为 ISO 时间或 null`);
+  // archivedAt / archiveReason 为归档功能新增字段：存量任务允许缺省（视为 null）
+  if (task.archivedAt !== undefined && !isIsoOrNull(task.archivedAt)) errors.push(`${where}.archivedAt: 须为 ISO 时间或 null`);
+  if (task.archiveReason !== undefined && task.archiveReason !== null && typeof task.archiveReason !== 'string') {
+    errors.push(`${where}.archiveReason: 须为字符串或 null`);
+  }
+  // 归档规则：未完成归档必须填写原因
+  if (isIso(task.archivedAt) && task.status !== '已完成' && !(typeof task.archiveReason === 'string' && task.archiveReason.trim())) {
+    errors.push(`${where}: 未完成任务归档必须填写 archiveReason`);
+  }
   if (!Number.isInteger(task.progress) || task.progress < 0 || task.progress > 100) errors.push(`${where}.progress: 须为 0-100 整数`);
   if (typeof task.nextAction !== 'string' || !task.nextAction.trim()) errors.push(`${where}.nextAction: 必填`);
   if (typeof task.outputCondition !== 'string' || !task.outputCondition.trim()) errors.push(`${where}.outputCondition: 必填`);

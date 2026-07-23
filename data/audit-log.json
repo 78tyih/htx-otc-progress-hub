@@ -56,6 +56,13 @@
       "action": "weekly-generate",
       "taskId": null,
       "detail": "{\"operator\":\"Sera\",\"weekStart\":\"2026-07-13\",\"weekEnd\":\"2026-07-19\",\"reviewId\":\"WR-2026-07-13\",\"replaced\":false}"
+    },
+    {
+      "ts": "2026-07-23T16:56:39+08:00",
+      "actor": "cli",
+      "action": "create",
+      "taskId": "T-0006",
+      "detail": "新增任务「Michael 张渠道商出金首单测试（待 Justin 审批）」，截止 2026-07-25T18:00:00+08:00，提醒 2026-07-24T09:00:00+08:00"
     }
   ]
 }

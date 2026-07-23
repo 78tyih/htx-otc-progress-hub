@@ -90,7 +90,7 @@ function parseUpdate(msg, tasks) {
   };
 }
 
-/** 本周优先级：逾期 > 阻塞 > 待确认 > 7 天内到期 > 进行中，P0 优先 */
+/** 本周优先级：逾期 > 阻塞 > 待确认 > 7 天内到期 > 进行中，高星优先 */
 function weeklyPriority(classified, now) {
   const dayMs = 24 * 3600 * 1000;
   const scored = classified
@@ -103,7 +103,7 @@ function weeklyPriority(classified, now) {
       if (c.class === 'needs_confirmation') score += 60;
       if (daysLeft >= 0 && daysLeft <= 7) score += 40 - daysLeft * 2;
       if (c.class === 'in_progress') score += 15;
-      score += c.task.priority === 'P0' ? 20 : 10;
+      score += (Number(c.task.priority) || 3) * 5;
       return { c, score };
     })
     .sort((a, b) => b.score - a.score)

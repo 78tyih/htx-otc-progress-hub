@@ -54,6 +54,26 @@ function defaultRemind(dueIso) {
 
 const TASK_ID_IN_TEXT = /T-\d{4}/i;
 
+/** 结构化 --stars 解析：合法返回 1-4 整数；未提供返回 undefined；非法返回 null */
+function parseStars(raw) {
+  if (raw === undefined || raw === null || raw === '') return undefined;
+  const n = Number(raw);
+  return Number.isInteger(n) && n >= 1 && n <= 4 ? n : null;
+}
+
+const CN_STARS = { 一: 1, 二: 2, 两: 2, 三: 3, 四: 4 };
+
+/** 自然语言星级：四象限短语 > N星（阿拉伯/中文数字），默认 3 星（重要不紧急） */
+function parseNaturalStars(s) {
+  if (/重要且紧急|重要紧急/.test(s)) return 4;
+  if (/重要但不紧急|重要不紧急/.test(s)) return 3;
+  if (/紧急但不重要|紧急不重要/.test(s)) return 2;
+  if (/不重要且不紧急|不重要不紧急/.test(s)) return 1;
+  const hit = s.match(/([1-4一二三四两])\s*星/);
+  if (hit) return CN_STARS[hit[1]] || Number(hit[1]);
+  return 3;
+}
+
 /** 结构化子命令解析（argv 已为 process.argv.slice(2)） */
 function parseStructured(argv) {
   const [cmd, ...rest] = argv;
@@ -62,7 +82,7 @@ function parseStructured(argv) {
   for (let i = 0; i < rest.length; i += 1) {
     if (rest[i].startsWith('--')) {
       const key = rest[i].slice(2);
-      if (key === 'yes' || key === 'p0' || key === 'p1') {
+      if (key === 'yes') {
         flags[key] = true;
       } else {
         flags[key] = rest[i + 1];
@@ -79,12 +99,14 @@ function parseStructured(argv) {
       if (!title) return { action: 'error', message: '缺少任务标题：task add "标题" --due "2026-07-25 18:00"' };
       const dueAt = parseTime(flags.due);
       if (!dueAt) return { action: 'error', message: '缺少或无法解析 --due（支持 2026-07-25 18:00 / 7月25日 / 明天）' };
+      const stars = parseStars(flags.stars);
+      if (stars === null) return { action: 'error', message: '--stars 须为 1-4 整数（4=重要且紧急 … 1=不重要不紧急）' };
       return {
         action: 'add',
         title,
         dueAt,
         remindAt: parseTime(flags.remind) || defaultRemind(dueAt),
-        priority: flags.p0 ? 'P0' : flags.p1 ? 'P1' : flags.priority || 'P1',
+        priority: stars || 3,
         workstream: flags.ws || null,
         owner: flags.owner || 'Sera',
         nextAction: flags.next || '待明确下一步',
@@ -107,6 +129,8 @@ function parseStructured(argv) {
     }
     case 'delete':
       return { action: 'delete', id: positional[0], yes: !!flags.yes };
+    case 'archive':
+      return { action: 'archive', id: positional[0], reason: flags.reason || null };
     case 'progress': {
       const value = parseInt(positional[1], 10);
       if (!Number.isInteger(value) || value < 0 || value > 100) return { action: 'error', message: '进度须为 0-100 整数' };
@@ -142,7 +166,7 @@ function parseNatural(text) {
 
   if (/新增|添加|创建/.test(s) && /任务/.test(s)) {
     const titlePart = s.replace(/.*?(?:新增|添加|创建)任务\s*/, '')
-      .split(/\s+(?:截止|提醒|主线|P0|P1)/)[0].trim();
+      .split(/\s+(?:截止|提醒|主线|[1-4一二三四两]\s*星|重要且紧急|重要不紧急|紧急不重要|不重要不紧急)/)[0].trim();
     const dueHit = s.match(/截止\s*([^，,。\s]+(?:\s+\d{1,2}[:：]\d{2})?)/);
     const remindHit = s.match(/提醒\s*([^，,。\s]+(?:\s+\d{1,2}[:：]\d{2})?)/);
     const wsHit = s.match(/主线\s*([^\s，,。]+)/);
@@ -156,7 +180,7 @@ function parseNatural(text) {
       title: titlePart,
       dueAt,
       remindAt: remindHit ? parseTime(remindHit[1]) : defaultRemind(dueAt),
-      priority: /P0/.test(s) ? 'P0' : 'P1',
+      priority: parseNaturalStars(s),
       workstream: wsHit ? wsHit[1] : null,
       owner: 'Sera',
       nextAction: nextHit ? nextHit[1].trim() : '待明确下一步',
@@ -171,6 +195,10 @@ function parseNatural(text) {
     return { action: 'postpone', id, to, remindAt: null, reason: '' };
   }
   if (id && /删除/.test(s)) return { action: 'delete', id, yes: false };
+  if (id && /归档/.test(s)) {
+    const reasonHit = s.match(/原因[:：]?\s*(.+)$/);
+    return { action: 'archive', id, reason: reasonHit ? reasonHit[1].trim() : null };
+  }
   if (id && /完成/.test(s)) {
     const resultHit = s.match(/结果[:：=]?\s*(.+)$/);
     return { action: 'done', id, result: resultHit ? resultHit[1].trim() : null, follow: null, followDueAt: null, followRemindAt: null };
@@ -195,7 +223,7 @@ function parseNatural(text) {
 
 /** 总入口：首个参数为已知子命令 → 结构化；否则按自然语言处理 */
 function parse(argv) {
-  const SUBCOMMANDS = ['add', 'done', 'postpone', 'delete', 'progress', 'next', 'today', 'pending-output', 'list', 'block', 'help'];
+  const SUBCOMMANDS = ['add', 'done', 'postpone', 'delete', 'archive', 'progress', 'next', 'today', 'pending-output', 'list', 'block', 'help'];
   if (!argv.length || argv[0] === 'help' || argv[0] === '--help' || argv[0] === '-h') return { action: 'help' };
   if (SUBCOMMANDS.includes(argv[0])) return parseStructured(argv);
   return parseNatural(argv.join(' '));

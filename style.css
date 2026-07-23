@@ -530,6 +530,34 @@ button { font-family: inherit; cursor: pointer; }
 .tm-k { flex: 0 0 76px; color: var(--text-muted); font-weight: 600; }
 .tm-v { flex: 1; min-width: 0; color: var(--text-main); word-break: break-word; }
 
+/* 任务弹窗 · 归档操作区 */
+.tm-archive {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tm-arch-hint { font-size: 12px; color: var(--text-muted); }
+.tm-arch-reason {
+  width: 100%;
+  resize: vertical;
+  min-height: 44px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-main);
+  font-size: 12.5px;
+  font-family: inherit;
+  line-height: 1.5;
+}
+.tm-arch-reason:focus { outline: none; border-color: var(--navy-text); }
+.tm-arch-actions { display: flex; align-items: center; gap: 10px; }
+.tm-arch-btn { height: 30px; padding: 0 14px; font-size: 12.5px; }
+.tm-arch-msg { font-size: 12px; color: var(--danger); }
+
 /* 深链定位任务卡片：淡黄色呼吸高亮 */
 .cd-card { cursor: pointer; }
 .cd-flash { animation: cdFlash 1.2s ease-in-out 2; }
@@ -685,18 +713,14 @@ button { font-family: inherit; cursor: pointer; }
 
 .section { display: flex; flex-direction: column; gap: 10px; scroll-margin-top: calc(var(--topbar-h, 64px) + 12px); }
 
-.section-head { display: flex; align-items: flex-start; gap: 12px; }
+.section-head { display: flex; align-items: baseline; gap: 10px; }
 
+/* 区块字母：无框无底色，纯文字（A. B. C. …），字号略大于标题并与标题基线对齐 */
 .sec-no {
-  font-size: 11.5px;
+  font-size: clamp(19px, 2.1vw, 22px);
   font-weight: 700;
   color: var(--navy-text);
-  border: 1px solid var(--navy-border);
-  background: var(--navy-dim);
-  border-radius: var(--radius-sm);
-  padding: 2px 8px;
-  margin-top: 3px;
-  font-variant-numeric: tabular-nums;
+  line-height: 1.3;
   flex: 0 0 auto;
 }
 
@@ -740,10 +764,13 @@ button { font-family: inherit; cursor: pointer; }
 .badge-doing   { color: var(--blue-text); background: var(--blue-dim); border-color: rgba(24,167,227,.45); }
 .badge-next    { color: var(--text-muted); background: var(--gray-dim); border-color: var(--border); }
 .badge-blocked { color: var(--danger); background: var(--danger-dim); border-color: rgba(255,77,109,.4); }
-.badge-p0      { color: #FFFFFF; background: var(--accent-navy); border-color: var(--accent-navy); }
-.badge-p1      { color: var(--text-muted); background: var(--gray-dim); border-color: var(--border); }
 .badge-warn    { color: var(--navy-text); background: var(--navy-dim); border-color: var(--navy-border); }
 .badge-late    { color: var(--warning); background: var(--note-bg); border-color: var(--note-border); }
+
+/* 星级优先级标记（固定卡片右下角；只显示实心星，颗数 = 重要程度） */
+.card-stars { display: inline-flex; align-items: center; gap: 1px; font-size: 13px; line-height: 1; white-space: nowrap; cursor: default; }
+.card-stars .on  { color: var(--navy-text); }
+.badge-arch    { color: var(--navy-text); background: var(--gray-dim); border-color: var(--navy-border); }
 
 /* 状态点：呼吸动画（克制） */
 .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; flex: 0 0 auto; }
@@ -1128,7 +1155,7 @@ button { font-family: inherit; cursor: pointer; }
   background: var(--bg-card);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   border-radius: var(--radius);
   box-shadow: var(--card-shadow);
   padding: 12px 14px 12px;
@@ -1178,6 +1205,8 @@ a.res-card { text-decoration: none; color: inherit; cursor: pointer; }
 
 .cd-head { display: flex; align-items: center; gap: 6px; }
 .cd-id { font-size: 11px; font-weight: 800; color: var(--text-muted); letter-spacing: .4px; margin-right: auto; }
+.cd-due-tr { font-size: 10.5px; color: var(--text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cd-stars { margin-top: auto; display: flex; justify-content: flex-end; }
 .cd-title { font-size: 13.5px; font-weight: 700; line-height: 1.35; }
 
 .cd-timer {
@@ -1459,16 +1488,15 @@ a.res-card { text-decoration: none; color: inherit; cursor: pointer; }
 .gantt-tip .gt-v { flex: 1; word-break: break-word; }
 
 /* ============================================================
-   05 依赖关系图（SVG 贝塞尔曲线 + 玻璃节点 · 轻 3D 层次）
+   G 任务关系树（SVG 贝塞尔曲线 + 玻璃节点 · 轻 3D 层次）
    ============================================================ */
 .dep-panel { padding: 14px 16px 12px; }
 .dep-scroll { overflow-x: auto; }
 
 .dep-canvas {
   position: relative;
-  min-width: 900px;
-  aspect-ratio: 1000 / 700;
-  perspective: 900px;
+  min-width: 720px;
+  aspect-ratio: 800 / 560;
 }
 
 .dep-svg {
@@ -1495,19 +1523,18 @@ a.res-card { text-decoration: none; color: inherit; cursor: pointer; }
   stroke-linecap: round;
   vector-effect: non-scaling-stroke;
 }
-.dl-b {
-  fill: none;
-  stroke: url(#depBoardGrad2);
-  stroke-width: 2.2;
-  stroke-linecap: round;
-  vector-effect: non-scaling-stroke;
-}
 .dl-c {
   fill: none;
   stroke: rgba(155, 155, 155, 0.5);
   stroke-width: 1.6;
   stroke-linecap: round;
   vector-effect: non-scaling-stroke;
+}
+/* 手绘箭头：复用链路颜色，强制实线、略细于主线 */
+.dl-arrow {
+  stroke-width: 2.1;
+  stroke-dasharray: none;
+  stroke-linejoin: round;
 }
 
 .dep-node2 {
@@ -1518,7 +1545,7 @@ a.res-card { text-decoration: none; color: inherit; cursor: pointer; }
   background: var(--bg-card);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   border-left: 3px solid var(--gray-next);
   border-radius: var(--radius-sm);
   box-shadow: var(--card-shadow);
@@ -1530,7 +1557,7 @@ a.res-card { text-decoration: none; color: inherit; cursor: pointer; }
 .dep-node2.dep-z { transform: translate(-50%, -50%) translateZ(12px) translateY(-2px); }
 .dep-node2:hover {
   transform: translate(-50%, -50%) translateZ(24px) translateY(-4px);
-  box-shadow: var(--card-shadow-hover);
+  box-shadow: 0 0 0 1px var(--navy-border), var(--card-shadow-hover);
   border-color: var(--navy-border);
   z-index: 5;
 }
@@ -1596,9 +1623,14 @@ a.res-card { text-decoration: none; color: inherit; cursor: pointer; }
   display: flex;
   flex-direction: column;
   gap: 8px;
-  transition: transform .2s ease, box-shadow .2s ease;
+  transition: transform .2s ease, box-shadow .2s ease, border-color .15s ease;
 }
 .ws-card:hover { transform: translateY(-3px); box-shadow: var(--card-shadow-hover); }
+
+/* 主线卡静态语义细边框：卡片自身色系一条细线（hover 时随下方语义规则加粗点亮） */
+.ws-card.ws-done  { border-color: rgba(0, 102, 255, 0.40); }
+.ws-card.ws-doing { border-color: rgba(24, 167, 227, 0.50); }
+.ws-card.ws-next  { border-color: var(--border-strong); }
 
 /* Blocked 主线红色风险强调 */
 .ws-card.ws-blocked {
@@ -1774,6 +1806,7 @@ a.res-card { text-decoration: none; color: inherit; cursor: pointer; }
 
 /* Pipeline 任务卡片（收敛字段 · 内容≤两行 · 卡高一致） */
 .task-card {
+  position: relative; /* 右上角截止日期的定位上下文 */
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -1786,6 +1819,12 @@ a.res-card { text-decoration: none; color: inherit; cursor: pointer; }
   transition: border-color .15s, transform .2s ease, box-shadow .2s ease;
 }
 .task-card:hover { border-color: var(--hover-border); transform: translateY(-2px); box-shadow: var(--card-shadow-hover); }
+
+/* Pipeline 任务卡静态状态细边框：待启动灰 / 进行中深蓝 / 已完成蓝 / 阻塞红（hover 加粗点亮） */
+.task-card[data-status="Next"]    { border-color: var(--border-strong); }
+.task-card[data-status="Doing"]   { border-color: var(--navy-border); }
+.task-card[data-status="Done"]    { border-color: rgba(0, 102, 255, 0.40); }
+.task-card[data-status="Blocked"] { border-color: rgba(255, 77, 109, 0.45); }
 
 .task-title {
   font-size: 13px;
@@ -1826,6 +1865,11 @@ a.res-card { text-decoration: none; color: inherit; cursor: pointer; }
 }
 .task-due { margin-left: auto; font-size: 10.5px; color: var(--text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .task-due.overdue { color: var(--danger); font-weight: 700; }
+/* 截止统一固定卡片右上角；标题右侧留白避让 */
+.task-due-tr { position: absolute; top: 10px; right: 12px; margin-left: 0; }
+.task-title { padding-right: 104px; }
+/* 底部行右侧的星级标记 */
+.task-footer .card-stars { margin-left: auto; }
 
 .task-card.is-hidden { display: none; }
 
@@ -2248,6 +2292,54 @@ a.res-card { text-decoration: none; color: inherit; cursor: pointer; }
 /* ============================================================
    12 每周总结与复盘（sec-review · weekly-reviews.json 驱动）
    ============================================================ */
+/* 周度任务对比（上周 vs 本周） */
+.wc-panel { padding: 14px 16px 16px; margin-bottom: 16px; }
+.wc-head { margin-bottom: 12px; }
+.wc-head h3 { font-size: 14px; font-weight: 700; color: var(--text-main); }
+.wc-head p { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.wc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.wc-col {
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  padding: 10px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.wc-col-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: 6px;
+  border-bottom: 1px dashed var(--border);
+}
+.wc-col-title { font-size: 13px; font-weight: 700; color: var(--navy-text); }
+.wc-col-range { font-size: 11.5px; color: var(--text-muted); }
+.wc-sec { font-size: 11.5px; font-weight: 700; color: var(--text-muted); margin-top: 4px; }
+.wc-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-solid);
+}
+.wc-row .badge { flex: 0 0 auto; margin-top: 1px; }
+.wc-row-main { flex: 1; min-width: 0; }
+.wc-row-title { font-size: 12.5px; font-weight: 600; color: var(--text-main); line-height: 1.45; word-break: break-word; }
+.wc-row-sub { font-size: 11.5px; color: var(--text-muted); line-height: 1.5; margin-top: 1px; word-break: break-word; }
+.wc-empty { font-size: 12px; color: var(--text-muted); padding: 14px 0; text-align: center; }
+.wc-sum { font-size: 11.5px; color: var(--text-muted); border-top: 1px dashed var(--border); padding-top: 6px; margin-top: auto; }
+@media (max-width: 720px) {
+  .wc-grid { grid-template-columns: 1fr; }
+}
+
 .review-panel { padding: 0; overflow: hidden; }
 
 /* 顶部工具栏：周期选择 + 操作按钮 */
@@ -2487,12 +2579,32 @@ a.res-card { text-decoration: none; color: inherit; cursor: pointer; }
 .cd-card.cd-soon:hover,    .cd-card.cd-soon:active    { border-color: var(--navy-text); box-shadow: 0 0 0 1px var(--navy-text), 0 10px 26px var(--navy-dim); }
 .cd-card.cd-overdue:hover, .cd-card.cd-overdue:active { border-color: var(--danger);    box-shadow: 0 0 0 1px var(--danger),    0 10px 26px var(--danger-dim); }
 .cd-card.cd-done:hover,    .cd-card.cd-done:active    { border-color: var(--success);   box-shadow: 0 0 0 1px var(--success),   0 10px 26px var(--success-dim); }
+/* 主线卡：完成蓝 / 进行天蓝 / 待开始灰（hover/active 加粗点亮，同左色条语义） */
+.ws-card.ws-done:hover,   .ws-card.ws-done:active   { border-color: var(--success);     box-shadow: 0 0 0 1px var(--success),     0 10px 26px var(--success-dim); }
+.ws-card.ws-doing:hover,  .ws-card.ws-doing:active  { border-color: var(--accent-blue); box-shadow: 0 0 0 1px var(--accent-blue), 0 10px 26px var(--blue-dim); }
+.ws-card.ws-next:hover,   .ws-card.ws-next:active   { border-color: var(--gray-next);   box-shadow: 0 0 0 1px var(--gray-next),   0 10px 26px var(--gray-dim); }
 /* 红色卡片修正：hover/active 必须保持红色，不被默认克莱因蓝覆盖 */
 .ws-card.ws-blocked:hover,
 .ws-card.ws-blocked:active {
   animation: none; /* 停掉脉冲动画，否则 border-color keyframes 会盖掉高亮色 */
   border-color: var(--danger);
   box-shadow: 0 0 0 1px var(--danger), 0 10px 26px var(--danger-dim);
+}
+/* 任务卡：待启动灰 / 进行中深蓝 / 已完成蓝 / 阻塞红（hover/active 加粗点亮） */
+.task-card[data-status="Next"]:hover,
+.task-card[data-status="Next"]:active {
+  border-color: var(--gray-next);
+  box-shadow: 0 0 0 1px var(--gray-next), 0 10px 26px var(--gray-dim);
+}
+.task-card[data-status="Doing"]:hover,
+.task-card[data-status="Doing"]:active {
+  border-color: var(--navy-text);
+  box-shadow: 0 0 0 1px var(--navy-text), 0 10px 26px var(--navy-dim);
+}
+.task-card[data-status="Done"]:hover,
+.task-card[data-status="Done"]:active {
+  border-color: var(--success);
+  box-shadow: 0 0 0 1px var(--success), 0 10px 26px var(--success-dim);
 }
 /* 任务卡 / 倒计时卡：阻塞状态的红色语义（data-status 属性驱动，零 JS 改动） */
 .task-card[data-status="Blocked"]:hover,

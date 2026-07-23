@@ -1,7 +1,8 @@
 /**
- * 任务六态判定（纯函数，零依赖，供 Web Agent / API / 测试共用）
+ * 任务七态判定（纯函数，零依赖，供 Web Agent / API / 测试共用）
  *
  * 判定规则（优先级从高到低，命中即返回）：
+ *   0. Archived：已归档（completedAt/archivedAt 置位即退出活跃判定）
  *   1. Needs Confirmation：状态与完成证据冲突（已完成缺完成时间/证据；或未完成却有完成证据）
  *   2. Done：状态为已完成，且存在完成时间或交付证据
  *   3. Blocked：状态被明确标记为阻塞，或存在未完成的前置依赖
@@ -13,7 +14,7 @@
  */
 'use strict';
 
-const CLASSES = ['done', 'in_progress', 'blocked', 'overdue', 'pending', 'needs_confirmation'];
+const CLASSES = ['done', 'in_progress', 'blocked', 'overdue', 'pending', 'needs_confirmation', 'archived'];
 
 const CLASS_LABELS = {
   done: '已完成',
@@ -22,6 +23,7 @@ const CLASS_LABELS = {
   overdue: '已逾期',
   pending: '待启动',
   needs_confirmation: '待人工确认',
+  archived: '已归档',
 };
 
 /** 执行层七态 → Webhook 英文状态码 */
@@ -46,6 +48,14 @@ function result(cls, basis, suggestion, blockers = []) {
 /** 判定单个任务（now 为毫秒时间戳，便于测试注入） */
 function classifyTask(task, allTasks = [], now = Date.now()) {
   const due = Date.parse(task.dueAt);
+
+  // 0. 已归档：退出活跃判定（已完成归档 / 未完成归档均视为尘埃落定）
+  if (task.archivedAt) {
+    const basis = [`归档时间 ${fmtTs(task.archivedAt)}`];
+    if (task.archiveReason) basis.push(`归档原因：${task.archiveReason}`);
+    if (task.status === '已完成') basis.unshift('任务完成后归档');
+    return result('archived', basis, '无需操作');
+  }
 
   // 1. 状态与完成证据冲突 → 待人工确认
   if (task.status === '已完成' && !task.completedAt && !task.completionEvidence) {

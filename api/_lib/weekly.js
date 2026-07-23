@@ -90,7 +90,7 @@ function leavesBlocked(e) {
   } catch { return false; }
 }
 
-const WRITE_ACTIONS = new Set(['add', 'done', 'postpone', 'block', 'progress', 'next', 'agent-update', 'manual-update']);
+const WRITE_ACTIONS = new Set(['add', 'done', 'postpone', 'block', 'progress', 'next', 'archive', 'agent-update', 'manual-update']);
 
 /**
  * 生成周复盘草稿。
@@ -142,6 +142,19 @@ function generateReview(state, weekStart) {
       });
     }
   }
+  // 本周内「未完成而归档」的任务：携带归档原因进入复盘（不再顺延）
+  for (const t of tasks) {
+    if (!t.archivedAt || !inWeek(t.archivedAt) || t.status === '已完成') continue;
+    deferredTasks.push({
+      taskId: t.id,
+      title: t.title,
+      reason: t.archiveReason || null,
+      progress: t.progress,
+      carriedOver: false,
+      archived: true,
+      newDueAt: null,
+    });
+  }
 
   /* ---- 4. 遇到的问题（当前阻塞任务 + 本周新增阻塞记录） ---- */
   const problems = [];
@@ -168,14 +181,14 @@ function generateReview(state, weekStart) {
   /* ---- 5. 改进空间：数据无法推导，留空待人工补充 ---- */
   const improvements = [];
 
-  /* ---- 6. 下周重点（下周到期或 P0 未完成任务，最多 5 项） ---- */
+  /* ---- 6. 下周重点（下周到期或 4 星未完成任务，最多 5 项；已归档不再参与） ---- */
   const nwStart = endMs + 1;
   const nwEnd = nwStart + 7 * DAY_MS - 1;
   const nextWeekPriorities = tasks
-    .filter((t) => t.status !== '已完成')
+    .filter((t) => t.status !== '已完成' && !t.archivedAt)
     .map((t) => ({ t, due: Date.parse(t.dueAt) }))
-    .filter(({ t, due }) => (due >= nwStart && due <= nwEnd) || t.priority === 'P0')
-    .sort((a, b) => (a.t.priority < b.t.priority ? -1 : a.t.priority > b.t.priority ? 1 : a.due - b.due))
+    .filter(({ t, due }) => (due >= nwStart && due <= nwEnd) || t.priority === 4)
+    .sort((a, b) => (b.t.priority - a.t.priority) || (a.due - b.due))
     .slice(0, 5)
     .map(({ t }) => ({
       taskId: t.id,
@@ -194,7 +207,8 @@ function generateReview(state, weekStart) {
     touched.filter((t) => re.test([t.title, t.workstream, t.nextAction, t.result].filter(Boolean).join(' '))).length;
   const metricSnapshot = {
     completedThisWeek: completed.length,
-    uncompleted: tasks.filter((t) => t.status !== '已完成').length,
+    uncompleted: tasks.filter((t) => t.status !== '已完成' && !t.archivedAt).length,
+    archived: tasks.filter((t) => t.archivedAt && inWeek(t.archivedAt)).length,
     newBlocked: entries.filter((e) => inWeek(e.ts) && entersBlocked(e)).length,
     unblocked: entries.filter((e) => inWeek(e.ts) && leavesBlocked(e)).length,
     highValueCustomer: countTouch(/高价值|客户/),
@@ -214,8 +228,8 @@ function generateReview(state, weekStart) {
   } else {
     parts.push(`上一周（${rangeText}）无任务完成记录。${MISSING}`);
   }
-  const blockedN = tasks.filter((t) => t.status === '阻塞').length;
-  const doingN = tasks.filter((t) => !['已完成', '阻塞'].includes(t.status)).length;
+  const blockedN = tasks.filter((t) => t.status === '阻塞' && !t.archivedAt).length;
+  const doingN = tasks.filter((t) => !['已完成', '阻塞'].includes(t.status) && !t.archivedAt).length;
   parts.push(
     `当前整体进展：${tasks.length} 项任务中已完成 ${tasks.filter((t) => t.status === '已完成').length} 项（${donePct}%），` +
     `未完成 ${doingN} 项，阻塞 ${blockedN} 项。`

@@ -40,9 +40,9 @@ function progressText(t) {
   }
 }
 
-/** todo.json：全量投影（纯函数，字段序与原文件一致：task/owner/due/priority/status） */
+/** todo.json：全量投影（纯函数，字段序与原文件一致：task/owner/due/priority/status）；已归档任务退出活跃视图 */
 function projectTodoRows(tasks) {
-  return tasks.map((t) => ({
+  return tasks.filter((t) => !t.archivedAt).map((t) => ({
     task: t.title,
     owner: t.owner,
     due: t.dueAt.slice(0, 10),
@@ -51,11 +51,12 @@ function projectTodoRows(tasks) {
   }));
 }
 
-/** pipeline.json：仅镜像 CLI/Agent 来源任务（纯函数）；删除任务时移除对应镜像；策展条目不动 */
+/** pipeline.json：仅镜像 CLI/Agent 来源任务（纯函数）；删除/归档任务时移除对应镜像；策展条目不动 */
 function mirrorPipelineEntries(tasks, pipe) {
-  const ids = new Set(tasks.map((t) => t.id));
+  const ids = new Set(tasks.filter((t) => !t.archivedAt).map((t) => t.id));
   const next = (Array.isArray(pipe) ? pipe : []).filter((p) => !p.mirrorOf || ids.has(p.mirrorOf));
   for (const t of tasks) {
+    if (t.archivedAt) continue;
     if (t.source !== 'cli' && t.source !== 'web') continue;
     const fields = {
       module: t.title,

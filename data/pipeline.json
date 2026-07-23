@@ -6,7 +6,7 @@
     "output": "业务背景、页面结构、COBO/POBO流程、FAQ、禁用词、参考图",
     "next": "明天提交设计团队，确认排期",
     "owner": "Sera",
-    "priority": "P0",
+    "priority": 4,
     "status": "Done",
     "workstream": "设计交付包",
     "due": "2026-07-22"
@@ -18,7 +18,7 @@
     "output": "客户等级、UID、地区、方向、金额、KYC状态、当前阶段",
     "next": "筛选五星重点客户，推动注册/KYC/首单",
     "owner": "Sera",
-    "priority": "P0",
+    "priority": 4,
     "status": "Done",
     "workstream": "客户 Pipeline 建档",
     "due": "2026-07-21"
@@ -30,7 +30,7 @@
     "output": "五星客户、机构客户、Partner线索",
     "next": "按照客户优先级逐一推进注册、KYC 和首单，并记录每周转化结果",
     "owner": "Sera",
-    "priority": "P0",
+    "priority": 4,
     "status": "Done",
     "workstream": "注册 / KYC / 首单推进",
     "due": "2026-07-25"
@@ -42,7 +42,7 @@
     "output": "客户资料字段表、KYC状态表",
     "next": "逐个确认UID、注册状态、KYC状态",
     "owner": "Sera",
-    "priority": "P0",
+    "priority": 4,
     "status": "Next",
     "workstream": "注册 / KYC / 首单推进",
     "due": "2026-08-08"
@@ -54,7 +54,7 @@
     "output": "COBO/POBO流程说明",
     "next": "配合静格完成周四/周五首单测试",
     "owner": "Sera / 静格",
-    "priority": "P0",
+    "priority": 4,
     "status": "Next",
     "workstream": "注册 / KYC / 首单推进",
     "due": "2026-07-25"
@@ -66,7 +66,7 @@
     "output": "客户筛选条件草案",
     "next": "请 Simon 协助调取名单",
     "owner": "Sera / Simon",
-    "priority": "P1",
+    "priority": 3,
     "status": "Blocked",
     "workstream": "渠道拓展",
     "due": "2026-07-26"
@@ -78,7 +78,7 @@
     "output": "客户转介字段表",
     "next": "联系Oscar/销售团队获取高价值名单",
     "owner": "Sera / Oscar",
-    "priority": "P1",
+    "priority": 3,
     "status": "Next",
     "workstream": "渠道拓展",
     "due": "2026-08-01"
@@ -90,7 +90,7 @@
     "output": "Partner/商家线索表",
     "next": "制作合作介绍物料并开始触达",
     "owner": "Sera",
-    "priority": "P1",
+    "priority": 3,
     "status": "Next",
     "workstream": "渠道拓展",
     "due": "2026-08-05"
@@ -102,9 +102,22 @@
     "output": "Pipeline字段和周报结构",
     "next": "每周更新进度，月底输出CRIB复盘",
     "owner": "Sera",
-    "priority": "P1",
+    "priority": 3,
     "status": "Next",
     "workstream": "周报 / CRIB 复盘",
     "due": "2026-07-25"
+  },
+  {
+    "module": "Michael 张渠道商出金首单测试（待 Justin 审批）",
+    "pipGoal": "渠道拓展",
+    "progress": "待启动",
+    "output": "产出可交付结果并确认",
+    "next": "Justin 审批通过后联系 Siyuan.C 确认渠道商细节，启动首笔出金测试",
+    "owner": "Sera",
+    "priority": 4,
+    "status": "Next",
+    "workstream": "渠道拓展",
+    "due": "2026-07-25",
+    "mirrorOf": "T-0006"
   }
 ]

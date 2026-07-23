@@ -1,12 +1,12 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-22T15:38:32.928Z",
+  "updatedAt": "2026-07-23T16:56:39+08:00",
   "tasks": [
     {
       "id": "T-0001",
       "title": "提交设计交付包",
       "status": "已完成",
-      "priority": "P0",
+      "priority": 4,
       "workstream": "设计交付包",
       "owner": "Sera",
       "createdAt": "2026-07-21T09:00:00+08:00",
@@ -23,13 +23,15 @@
       "dependencies": [],
       "updatedBy": "Sera",
       "completionEvidence": "OTC 设计交付包已完成交付",
-      "changeSource": "manual"
+      "changeSource": "manual",
+      "archivedAt": null,
+      "archiveReason": null
     },
     {
       "id": "T-0002",
       "title": "高价值客户筛选",
       "status": "已完成",
-      "priority": "P0",
+      "priority": 4,
       "workstream": "注册 / KYC / 首单推进",
       "owner": "Sera",
       "createdAt": "2026-07-21T09:00:00+08:00",
@@ -46,13 +48,15 @@
       "dependencies": [],
       "updatedBy": "Sera",
       "completionEvidence": "高价值客户名单及优先级已完成确认",
-      "changeSource": "manual"
+      "changeSource": "manual",
+      "archivedAt": null,
+      "archiveReason": null
     },
     {
       "id": "T-0004",
       "title": "配合首单测试",
       "status": "待启动",
-      "priority": "P0",
+      "priority": 4,
       "workstream": "注册 / KYC / 首单推进",
       "owner": "Sera / 静格",
       "createdAt": "2026-07-21T09:00:00+08:00",
@@ -70,13 +74,15 @@
         "T-0002"
       ],
       "updatedBy": "seed",
-      "completionEvidence": null
+      "completionEvidence": null,
+      "archivedAt": null,
+      "archiveReason": null
     },
     {
       "id": "T-0005",
       "title": "获取大数据名单",
       "status": "阻塞",
-      "priority": "P1",
+      "priority": 3,
       "workstream": "渠道拓展",
       "owner": "Sera / Simon",
       "createdAt": "2026-07-21T09:00:00+08:00",
@@ -92,7 +98,33 @@
       "source": "seed",
       "dependencies": [],
       "updatedBy": "seed",
-      "completionEvidence": null
+      "completionEvidence": null,
+      "archivedAt": null,
+      "archiveReason": null
+    },
+    {
+      "id": "T-0006",
+      "title": "Michael 张渠道商出金首单测试（待 Justin 审批）",
+      "status": "待启动",
+      "priority": 4,
+      "workstream": "渠道拓展",
+      "owner": "Sera",
+      "createdAt": "2026-07-23T16:56:39+08:00",
+      "updatedAt": "2026-07-23T16:56:39+08:00",
+      "dueAt": "2026-07-25T18:00:00+08:00",
+      "remindAt": "2026-07-24T09:00:00+08:00",
+      "remindedAt": null,
+      "completedAt": null,
+      "progress": 0,
+      "nextAction": "Justin 审批通过后联系 Siyuan.C 确认渠道商细节，启动首笔出金测试",
+      "outputCondition": "产出可交付结果并确认",
+      "result": null,
+      "source": "cli",
+      "dependencies": [],
+      "updatedBy": "cli",
+      "completionEvidence": null,
+      "archivedAt": null,
+      "archiveReason": null
     }
   ]
 }
