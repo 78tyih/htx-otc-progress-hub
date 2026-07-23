@@ -1241,7 +1241,13 @@ function renderResources(list) {
   grid.innerHTML = '';
 
   list.forEach((item) => {
-    const card = el('article', 'res-card');
+    // 有 url 时整卡作为外链跳转（SharePoint 等，后续补充）；无 url 时为纯展示卡
+    const card = el(item.url ? 'a' : 'article', 'res-card');
+    if (item.url) {
+      card.href = item.url;
+      card.target = '_blank';
+      card.rel = 'noopener noreferrer';
+    }
 
     const head = el('div', 'res-head');
     head.appendChild(el('h3', 'res-title', item.title));
@@ -1783,101 +1789,11 @@ function applyFilters() {
       group.classList.toggle('open', group.dataset.openState === '1');
     }
   });
-
-  // 待办行同步按搜索词过滤
-  const todoBody = document.getElementById('todoTableBody');
-  if (todoBody) {
-    let todoVisible = 0;
-    todoBody.querySelectorAll('.todo-row').forEach((row) => {
-      const show = !q || row.dataset.search.indexOf(q) !== -1;
-      row.classList.toggle('is-hidden', !show);
-      if (show) todoVisible++;
-    });
-    let emptyRow = todoBody.querySelector('.todo-empty-row');
-    if (todoVisible === 0) {
-      if (!emptyRow) {
-        emptyRow = document.createElement('tr');
-        emptyRow.className = 'todo-empty-row';
-        const td = el('td', 'todo-empty', '暂无匹配的待办项');
-        td.colSpan = 5;
-        emptyRow.appendChild(td);
-        todoBody.appendChild(emptyRow);
-      }
-    } else if (emptyRow) {
-      emptyRow.remove();
-    }
-  }
 }
 
-/* ---------- 09 本周待办（P0 高亮 / 过期标红 / 搜索过滤） ---------- */
-function renderTodo(list) {
-  const tbody = document.getElementById('todoTableBody');
-  tbody.innerHTML = '';
-  const sorted = list.slice().sort((a, b) => (a.priority < b.priority ? -1 : a.priority > b.priority ? 1 : 0));
-  sorted.forEach((t) => {
-    const tr = document.createElement('tr');
-    tr.className = 'todo-row' + (t.priority === 'P0' ? ' todo-p0' : '');
-    tr.dataset.search = [t.task, t.owner, t.priority, t.status].join(' ').toLowerCase();
-
-    const tdPrio = el('td', null);
-    tdPrio.appendChild(el('span', 'badge ' + (t.priority === 'P0' ? 'badge-p0' : 'badge-p1'), t.priority));
-    tr.appendChild(tdPrio);
-
-    tr.appendChild(el('td', null, t.task));
-    tr.appendChild(el('td', 'tp-owner', t.owner));
-
-    const tdDue = el('td', 'todo-due', t.due);
-    if (t.due < TODAY && t.status !== 'Done') {
-      tdDue.appendChild(el('span', 'todo-overdue', '已过期'));
-    }
-    tr.appendChild(tdDue);
-
-    const tdStatus = el('td', null);
-    tdStatus.appendChild(el('span', 'badge badge-' + (STATUS_CLS[t.status] || 'next'), STATUS_TEXT[t.status] || t.status));
-    tr.appendChild(tdStatus);
-
-    tbody.appendChild(tr);
-  });
-}
-
-/* ---------- 10 阻塞事项与需要协助（blockers.json 双栏驱动） ---------- */
-function renderBlocked() {
-  const current = (state.blockers && state.blockers.current) || [];
-  const asks = (state.blockers && state.blockers.asks) || [];
-
-  // 左栏：当前阻塞（红色调列表）
-  const curList = document.getElementById('currentBlockers');
-  curList.innerHTML = '';
-  if (!current.length) {
-    curList.appendChild(el('li', 'blk-empty', '✓ 当前无阻塞事项，继续保持'));
-  }
-  current.forEach((b) => {
-    const li = el('li', null);
-    li.appendChild(el('span', 'blk-dot', '⛔'));
-    li.appendChild(el('span', 'blk-text', b));
-    curList.appendChild(li);
-  });
-
-  // 右栏：需要 Simon 协助（黄色调列表）
-  const askList = document.getElementById('simonAsks');
-  askList.innerHTML = '';
-  asks.forEach((a) => {
-    const li = el('li', null);
-    li.appendChild(el('span', 'blk-text', a));
-    askList.appendChild(li);
-  });
-}
-
-/* ---------- 11 周更记录（轻量版：done bullets + cadence / 最近更新） ---------- */
-function renderWeekly(log) {
-  const list = document.getElementById('weeklyDone');
-  list.innerHTML = '';
-  ((log && log.done) || []).forEach((d) => list.appendChild(el('li', null, d)));
-
-  document.getElementById('weeklyCadence').textContent = (log && log.cadence) || '每周更新一次';
-  document.getElementById('weeklyUpdated').textContent = (log && log.updatedAt) || TODAY;
-
-  // 页脚更新时间与周更数据保持一致
+/* ---------- 页脚更新时间：与周更数据（weekly-log.json）保持一致 ---------- */
+function paintFooterUpdated() {
+  const log = state.weeklyLog;
   if (log && log.updatedAt) {
     document.getElementById('footerUpdated').textContent = log.updatedAt;
   }
@@ -2340,8 +2256,7 @@ function exportPipeline() {
 const NAV_GROUPS = [
   { key: 'overview', sections: ['sec-summary', 'sec-kpi', 'sec-countdown'] },
   { key: 'progress', sections: ['sec-roadmap', 'sec-pipeline', 'sec-gantt', 'sec-depmap'] },
-  { key: 'action',   sections: ['sec-todo', 'sec-blocked'] },
-  { key: 'review',   sections: ['sec-review', 'sec-weekly'] },
+  { key: 'review',   sections: ['sec-review'] },
   { key: 'resources', sections: ['sec-resources'] },
 ];
 const SECTION_GROUP = {};
@@ -2351,8 +2266,7 @@ NAV_GROUPS.forEach((g) => g.sections.forEach((id) => { SECTION_GROUP[id] = g.key
 const SECTION_SLUGS = {
   summary: 'sec-summary', kpi: 'sec-kpi', countdown: 'sec-countdown',
   roadmap: 'sec-roadmap', pipeline: 'sec-pipeline', gantt: 'sec-gantt', depmap: 'sec-depmap',
-  todo: 'sec-todo', blockers: 'sec-blocked',
-  'weekly-review': 'sec-review', 'weekly-log': 'sec-weekly',
+  'weekly-review': 'sec-review',
   resources: 'sec-resources',
 };
 
@@ -2583,7 +2497,7 @@ function computeSectionStatus() {
   const tOverdue = tasks.filter((t) => t.status !== '已完成' && t.dueAt && Date.parse(t.dueAt) < nowMs).length;
   const tDoing = tasks.filter((t) => ['进行中', '已提醒', '待输出', '已延期'].indexOf(t.status) >= 0).length;
 
-  /* 01 经营总览 */
+  /* 01 目标总览 */
   map['sec-summary'] = (blockedN + tBlocked) > 0 ? 'red' : (tDoing > 0 ? 'yellow' : 'green');
   const kpis = state.kpi || [];
   map['sec-kpi'] = !kpis.length ? 'gray'
@@ -2595,7 +2509,7 @@ function computeSectionStatus() {
 
   /* 02 任务推进 */
   map['sec-roadmap'] = enStatusColor(state.roadmap);
-  map['sec-pipeline'] = enStatusColor(state.pipeline);
+  map['sec-pipeline'] = (blockedN + tBlocked) > 0 ? 'red' : enStatusColor(state.pipeline);
   const ganttItems = [];
   (state.gantt || []).forEach((m) => {
     ganttItems.push(m);
@@ -2604,17 +2518,12 @@ function computeSectionStatus() {
   map['sec-gantt'] = enStatusColor(ganttItems);
   map['sec-depmap'] = 'gray'; // 依赖图无独立状态数据
 
-  /* 03 本周行动 */
-  map['sec-todo'] = enStatusColor(state.todo);
-  map['sec-blocked'] = blockedN > 0 ? 'red' : 'green';
-
-  /* 04 总结复盘 */
+  /* 03 总结复盘 */
   const reviews = (state.weeklyReviews && state.weeklyReviews.reviews) || [];
   map['sec-review'] = !reviews.length ? 'gray'
     : reviews.some((r) => r.status === 'draft') ? 'yellow' : 'green';
-  map['sec-weekly'] = ((state.weeklyLog && state.weeklyLog.done) || []).length ? 'green' : 'gray';
 
-  /* 05 资料中心 */
+  /* 04 资料中心 */
   const res = state.resources || [];
   map['sec-resources'] = !res.length ? 'gray'
     : res.every((r) => (RES_STATUS_CLS[r.status] || 'next') === 'done') ? 'green' : 'yellow';
@@ -2842,9 +2751,7 @@ async function init() {
   renderDepMap();
   renderWorkstreams(state.roadmap);
   renderPipeline(state.pipeline);
-  renderTodo(state.todo);
-  renderBlocked();
-  renderWeekly(state.weeklyLog);
+  paintFooterUpdated();
   renderWeeklyReview();
   initReview();
   updateNavDots();
@@ -3094,8 +3001,7 @@ async function refreshHubData() {
     renderSummary();
     renderCountdown(state.tasks);
     renderPipeline(state.pipeline);
-    renderTodo(state.todo);
-    renderWeekly(state.weeklyLog);
+    paintFooterUpdated();
     updateNavDots();
     applyFilters();
   } catch (e) {

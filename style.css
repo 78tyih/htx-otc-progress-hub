@@ -1138,6 +1138,8 @@ button { font-family: inherit; cursor: pointer; }
   transition: transform .2s ease, box-shadow .2s ease, border-color .15s;
 }
 .res-card:hover { transform: translateY(-3px); box-shadow: var(--card-shadow-hover); border-color: var(--hover-border); }
+/* 有 SharePoint 链接时整卡为 <a>：去掉链接默认样式，保持卡片观感 */
+a.res-card { text-decoration: none; color: inherit; cursor: pointer; }
 
 .res-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
 .res-title {
@@ -1887,164 +1889,6 @@ button { font-family: inherit; cursor: pointer; }
 .data-table tbody tr:last-child td { border-bottom: none; }
 .data-table tbody tr:hover { background: var(--row-hover); }
 
-/* ---------- 08 本周待办 ---------- */
-.todo-table { min-width: 640px; }
-.todo-table .todo-due { white-space: nowrap; font-variant-numeric: tabular-nums; }
-
-/* P0 行高亮（黄系低透明度底） */
-.todo-table tbody tr.todo-p0 td { background: var(--navy-dim); }
-.todo-table tbody tr.todo-p0:hover td { background: var(--navy-dim); }
-
-.todo-overdue {
-  color: var(--danger);
-  font-weight: 700;
-  font-size: 11.5px;
-  margin-left: 6px;
-  white-space: nowrap;
-}
-
-.todo-row.is-hidden { display: none; }
-
-.todo-empty {
-  font-size: 12px;
-  color: var(--text-muted);
-  text-align: center;
-  padding: 20px 8px;
-}
-
-.tp-owner { white-space: nowrap; }
-
-/* ---------- 09 阻塞事项与需要协助（双栏 · blockers.json 驱动） ---------- */
-.blocked-layout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  align-items: stretch;
-}
-
-.blk-panel { display: flex; flex-direction: column; gap: 10px; }
-.blk-panel-current { border-left: 4px solid var(--danger); }
-.blk-panel-asks { border-left: 4px solid var(--accent-navy); }
-
-.blk-title { font-size: 14.5px; font-weight: 700; }
-.blk-panel-current .blk-title { color: var(--danger); }
-.blk-panel-asks .blk-title { color: var(--navy-text); }
-
-/* 左栏：当前阻塞（红色调列表） */
-.blk-list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.blk-list li {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: var(--danger-dim);
-  border: 1px solid rgba(255, 77, 109, 0.35);
-  border-radius: var(--radius-sm);
-  padding: 9px 12px;
-  font-size: 13px;
-  color: var(--text-main);
-}
-.blk-dot { flex: 0 0 auto; font-size: 12px; }
-.blk-text { flex: 1; word-break: break-word; line-height: 1.45; }
-.blk-empty {
-  justify-content: center;
-  color: var(--success) !important;
-  background: var(--bg-card) !important;
-  border: 1px dashed var(--border) !important;
-}
-
-/* 右栏：需要 Simon 协助（黄色调列表） */
-.ask-list {
-  list-style: none;
-  counter-reset: ask;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.ask-list li {
-  counter-increment: ask;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: var(--navy-dim);
-  border: 1px solid var(--navy-border);
-  border-radius: var(--radius-sm);
-  padding: 9px 12px;
-  font-size: 13px;
-  color: var(--text-main);
-}
-.ask-list li::before {
-  content: counter(ask);
-  flex: 0 0 auto;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--accent-navy);
-  color: #FFFFFF;
-  font-size: 12px;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-variant-numeric: tabular-nums;
-}
-
-/* ============================================================
-   10 周更记录（轻量版：本周更新 bullets + cadence / 最近更新）
-   ============================================================ */
-.weekly-panel { display: flex; flex-direction: column; gap: 12px; }
-
-.weekly-title { font-size: 13px; font-weight: 700; color: var(--text-muted); }
-
-.weekly-list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-.weekly-list li {
-  display: flex;
-  align-items: flex-start;
-  gap: 9px;
-  font-size: 13px;
-  line-height: 1.55;
-  color: var(--text-main);
-  word-break: break-word;
-}
-.weekly-list li::before {
-  content: "✓";
-  flex: 0 0 auto;
-  font-weight: 800;
-  color: var(--success);
-}
-
-.weekly-foot {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  padding-top: 10px;
-  border-top: 1px solid var(--border);
-}
-.weekly-cadence {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11.5px;
-  font-weight: 700;
-  color: var(--navy-text);
-  background: var(--navy-dim);
-  border: 1px solid var(--navy-border);
-  border-radius: 999px;
-  padding: 3px 11px;
-}
-.weekly-updated { font-size: 11.5px; color: var(--text-muted); }
-.weekly-updated b { color: var(--text-main); font-weight: 700; }
-
 /* ---------- 页脚 ---------- */
 .footer {
   border-top: 1px solid var(--border);
@@ -2107,7 +1951,6 @@ button { font-family: inherit; cursor: pointer; }
   .icon-btn { display: block; }
   .side-collapse { display: none; } /* 移动端用抽屉，不显示整体折叠按钮 */
   .gantt-head, .gantt-row { grid-template-columns: 190px 1fr; }
-  .blocked-layout { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 768px) {

@@ -22,7 +22,7 @@ const MAX_ITEMS = 10;
 
 const SECTION_SLUGS = new Set([
   'summary', 'kpi', 'countdown', 'roadmap', 'pipeline', 'gantt', 'depmap',
-  'todo', 'blockers', 'weekly-review', 'weekly-log', 'resources', 'system',
+  'weekly-review', 'resources',
 ]);
 
 const DEFAULT_SCOPE = '一级、二级菜单收敛';
