@@ -1314,7 +1314,8 @@ function renderResources(list) {
 
   list.forEach((item) => {
     // 有 url 时整卡作为外链跳转（SharePoint 等，后续补充）；无 url 时为纯展示卡
-    const card = el(item.url ? 'a' : 'article', 'res-card');
+    // rs-<状态> 类：静态状态细边框 + hover 加粗点亮，动效与 Pipeline 任务卡一致
+    const card = el(item.url ? 'a' : 'article', 'res-card rs-' + (RES_STATUS_CLS[item.status] || 'next'));
     if (item.url) {
       card.href = item.url;
       card.target = '_blank';
@@ -1787,8 +1788,8 @@ function renderWorkstreams(list) {
     risk.appendChild(el('span', null, hasRisk ? ws.risk : '无'));
     card.appendChild(risk);
 
-    // 下一步动作
-    const next = el('div', 'ws-next');
+    // 下一步动作（类名 ws-step：避免与卡片状态类 ws-next 冲突）
+    const next = el('div', 'ws-step');
     next.appendChild(el('span', 'sn-k', '下一步'));
     next.appendChild(el('span', null, ws.next));
     card.appendChild(next);
@@ -1802,9 +1803,9 @@ function renderWorkstreams(list) {
 const PIPE_GROUPS = [
   { key: 'focus',   name: '本周重点 · ★★★★', dot: 'next',    defaultOpen: true,
     pick: (list) => list.filter((p) => p.priority === 4) },
-  { key: 'Doing',   name: '进行中 Doing',  dot: 'doing',   defaultOpen: true,
+  { key: 'Doing',   name: '进行中 Doing',  dot: 'doing',   defaultOpen: false,
     pick: (list) => list.filter((p) => p.status === 'Doing') },
-  { key: 'Blocked', name: '阻塞 Blocked',  dot: 'blocked', defaultOpen: true,
+  { key: 'Blocked', name: '阻塞 Blocked',  dot: 'blocked', defaultOpen: false,
     pick: (list) => list.filter((p) => p.status === 'Blocked') },
   { key: 'Next',    name: '待开始 Next',   dot: 'next',    defaultOpen: false,
     pick: (list) => list.filter((p) => p.status === 'Next') },
@@ -2972,19 +2973,23 @@ function initDrawer() {
   });
 }
 
-/* ---------- 主题切换（日间 / 夜间 · 当前主题高亮 · localStorage 持久化） ---------- */
+/* ---------- 主题切换（滑块开关：点击在日间 / 夜间间切换 · localStorage 持久化） ---------- */
 function initTheme() {
   const root = document.documentElement;
-  const btns = Array.from(document.querySelectorAll('.theme-btn'));
+  const toggle = document.getElementById('themeToggle');
+  if (!toggle) return;
   const apply = (theme) => {
     root.dataset.theme = theme;
-    btns.forEach((b) => b.classList.toggle('active', b.dataset.setTheme === theme));
+    const dark = theme === 'dark';
+    toggle.classList.toggle('is-dark', dark); // 滑块滑动：右=夜间，左=日间
+    toggle.setAttribute('aria-checked', dark ? 'true' : 'false');
+    toggle.title = dark ? '切换到日间模式' : '切换到夜间模式';
   };
-  btns.forEach((b) => b.addEventListener('click', () => {
-    const theme = b.dataset.setTheme;
+  toggle.addEventListener('click', () => {
+    const theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
     try { localStorage.setItem('theme', theme); } catch (err) { /* 隐私模式下静默降级 */ }
     apply(theme);
-  }));
+  });
   apply(root.dataset.theme === 'dark' ? 'dark' : 'light');
 }
 

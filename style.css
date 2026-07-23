@@ -109,7 +109,8 @@
 :root {
   --radius: 16px;
   --radius-sm: 10px;
-  --sidebar-w: 240px;
+  /* 桌面展开目录宽 204px：菜单文字到右侧状态点的间距较原 240px 收窄约一半（移动端抽屉仍 240px） */
+  --sidebar-w: 204px;
 }
 
 /* ---------- 基础 ---------- */
@@ -407,13 +408,13 @@ button { font-family: inherit; cursor: pointer; }
   padding-top: 2px;
 }
 
-/* 二级菜单：相对一级缩进 26px · 字号略小字重略轻 */
+/* 二级菜单：相对一级缩进 22px · 字号略小字重略轻 */
 .nav-sub .nav-link {
   font-size: 12.5px;
   font-weight: 600;
-  padding: 7px 10px 7px 26px;
+  padding: 7px 10px 7px 22px;
 }
-.nav-sub .nav-no { flex: 0 0 30px; }
+.nav-sub .nav-no { flex: 0 0 28px; }
 
 /* ---------- 侧边目录整体折叠按钮（固定槽位：展开/折叠高度与位置一致） ---------- */
 .side-collapse {
@@ -667,37 +668,44 @@ button { font-family: inherit; cursor: pointer; }
 }
 .btn-outline:hover { border-color: var(--navy-text); color: var(--navy-text); }
 
-/* ---------- 日间 / 夜间主题切换按钮组 ---------- */
+/* ---------- 日间 / 夜间主题切换（滑块开关：滑块左右滑动点亮太阳/月亮） ---------- */
 .theme-toggle {
+  position: relative;
   display: flex;
   align-items: center;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 999px;
   padding: 2px;
-  gap: 2px;
 }
-.theme-btn {
-  height: 28px;
-  min-width: 36px;
-  padding: 0 10px;
+.tt-slot {
+  position: relative;
+  z-index: 1; /* 图标压在滑块之上，激活侧反白 */
+  width: 34px;
+  height: 26px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  color: var(--text-muted);
+  transition: color .25s ease;
+}
+.tt-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  z-index: 0;
+  width: 34px;
+  height: 26px;
   border: none;
   border-radius: 999px;
-  background: transparent;
-  color: var(--text-muted);
-  font-size: 12px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-.theme-btn:hover { color: var(--text-main); }
-.theme-btn.active {
   background: var(--accent-navy);
-  color: #FFFFFF;
   box-shadow: 0 1px 4px rgba(17, 24, 39, 0.18);
+  transition: transform .28s cubic-bezier(.4, 0, .2, 1);
 }
+.theme-toggle.is-dark .tt-knob { transform: translateX(34px); }
+/* 激活侧图标反白（落在藏青/品牌蓝滑块上），未激活侧保持弱化 */
+.theme-toggle:not(.is-dark) .tt-sun,
+.theme-toggle.is-dark .tt-moon { color: #FFFFFF; }
 
 /* ---------- 布局容器（紧凑节奏） ---------- */
 .container {
@@ -1155,16 +1163,20 @@ button { font-family: inherit; cursor: pointer; }
   background: var(--bg-card);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--card-shadow);
   padding: 12px 14px 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  transition: transform .2s ease, box-shadow .2s ease, border-color .15s;
+  transition: border-color .15s, transform .2s ease, box-shadow .2s ease;
 }
-.res-card:hover { transform: translateY(-3px); box-shadow: var(--card-shadow-hover); border-color: var(--hover-border); }
+.res-card:hover { transform: translateY(-2px); box-shadow: var(--card-shadow-hover); border-color: var(--hover-border); }
+/* 资料卡静态状态细边框：已整理/已交付蓝 · 待提交深蓝 · 待同步/待完善灰（hover 加粗点亮，同 Pipeline 任务卡动效） */
+.res-card.rs-done  { border-color: rgba(0, 102, 255, 0.40); }
+.res-card.rs-doing { border-color: var(--navy-border); }
+.res-card.rs-next  { border-color: var(--border-strong); }
 /* 有 SharePoint 链接时整卡为 <a>：去掉链接默认样式，保持卡片观感 */
 a.res-card { text-decoration: none; color: inherit; cursor: pointer; }
 
@@ -1732,7 +1744,8 @@ a.res-card { text-decoration: none; color: inherit; cursor: pointer; }
 .ws-risk.risk-hot { color: var(--danger); }
 .ws-risk.risk-hot .rk-k { color: var(--danger); }
 
-.ws-next {
+/* 卡内「下一步」行：类名 ws-step，避开卡片状态类 ws-next（曾致 Next 主线卡被 margin-top:auto 压到行底、高度不对齐） */
+.ws-step {
   margin-top: auto;
   padding-top: 7px;
   border-top: 1px dashed var(--border);
@@ -1742,7 +1755,7 @@ a.res-card { text-decoration: none; color: inherit; cursor: pointer; }
   gap: 6px;
   word-break: break-word;
 }
-.ws-next .sn-k { flex: 0 0 auto; color: var(--navy-text); font-weight: 700; }
+.ws-step .sn-k { flex: 0 0 auto; color: var(--navy-text); font-weight: 700; }
 
 /* ============================================================
    07 工作 Pipeline（折叠分组看板）
@@ -1784,7 +1797,7 @@ a.res-card { text-decoration: none; color: inherit; cursor: pointer; }
 .pg-name { font-size: 13.5px; font-weight: 700; }
 
 .pg-count {
-  margin-left: auto;
+  /* 数量徽标紧跟状态名称左侧排列（不再 margin-left:auto 推到最右），看到数字即知有可展开内容 */
   font-size: 11px;
   font-weight: 700;
   color: var(--text-muted);
@@ -1967,6 +1980,7 @@ a.res-card { text-decoration: none; color: inherit; cursor: pointer; }
     position: fixed;
     left: 12px;
     top: 12px;
+    width: 240px; /* 移动端抽屉保持原宽，不随桌面收窄 */
     height: calc(100vh - 24px);
     max-height: none;
     margin: 0;
@@ -2559,9 +2573,9 @@ a.res-card { text-decoration: none; color: inherit; cursor: pointer; }
   -webkit-tap-highlight-color: transparent; /* 去掉 iOS 点按灰色闪烁，露出下方边框高亮 */
 }
 .sum-card:hover, .kpi-card:hover, .cd-card:hover,
-.ws-card:hover, .task-card:hover, .res-card:hover,
+.ws-card:hover, .task-card:hover,
 .sum-card:active, .kpi-card:active, .cd-card:active,
-.ws-card:active, .task-card:active, .res-card:active {
+.ws-card:active, .task-card:active {
   border-color: var(--klein);
   box-shadow: 0 0 0 1px var(--klein), 0 10px 26px var(--klein-glow);
 }
@@ -2614,3 +2628,7 @@ a.res-card { text-decoration: none; color: inherit; cursor: pointer; }
   border-color: var(--danger);
   box-shadow: 0 0 0 1px var(--danger), 0 10px 26px var(--danger-dim);
 }
+/* 资料卡：与 Pipeline 任务卡同一动效（hover/active 边框加粗点亮为自身状态色） */
+.res-card.rs-done:hover,  .res-card.rs-done:active  { border-color: var(--success);   box-shadow: 0 0 0 1px var(--success),   0 10px 26px var(--success-dim); }
+.res-card.rs-doing:hover, .res-card.rs-doing:active { border-color: var(--navy-text); box-shadow: 0 0 0 1px var(--navy-text), 0 10px 26px var(--navy-dim); }
+.res-card.rs-next:hover,  .res-card.rs-next:active  { border-color: var(--gray-next); box-shadow: 0 0 0 1px var(--gray-next), 0 10px 26px var(--gray-dim); }
