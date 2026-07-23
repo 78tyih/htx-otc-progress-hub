@@ -440,7 +440,8 @@ button { font-family: inherit; cursor: pointer; }
    侧边目录整体折叠态（桌面端 · 60px 图标态 + Tooltip + 记忆）
    ============================================================ */
 @media (min-width: 901px) {
-  body.nav-collapsed .sidebar { width: 60px; padding: 10px 8px; }
+  /* 收起态：图标在「视口左缘 ↔ 目录右缘」之间精确居中（左右各 22px），高度几何不变 */
+  body.nav-collapsed .sidebar { width: 60px; padding: 10px 14px 10px 2px; }
   body.nav-collapsed .side-collapse-text,
   body.nav-collapsed .nav-l1-no,
   body.nav-collapsed .nav-l1-name,
@@ -483,9 +484,10 @@ button { font-family: inherit; cursor: pointer; }
   body.nav-collapsed .nav-l1:hover::after,
   body.nav-collapsed .nav-l1:focus-visible::after { opacity: 1; }
 
-  /* 悬浮目录为 fixed 定位：主区按目录宽度留出左侧空间，随折叠齿轮联动 */
-  .main { margin-left: calc(var(--sidebar-w) + 24px); transition: margin-left .22s ease; }
-  body.nav-collapsed .main { margin-left: 84px; }
+  /* 悬浮目录为 fixed 定位：主区按目录宽度留出左侧空间，随折叠齿轮联动；
+     目录与卡片间隙 +24→+36（同步右缘加宽约 1/2，视觉一致） */
+  .main { margin-left: calc(var(--sidebar-w) + 36px); transition: margin-left .22s ease; }
+  body.nav-collapsed .main { margin-left: 96px; }
 }
 
 /* ---------- 任务详情弹窗 ---------- */
@@ -581,7 +583,7 @@ button { font-family: inherit; cursor: pointer; }
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 10px 16px;
-  padding: 11px 22px;
+  padding: 11px 33px 11px 22px; /* 右缘间隙加宽约 1/2（22→33），与下方卡片区右缘对齐 */
   /* 悬浮式：无背景无描边，仅保留模糊让滚动经过的内容不干扰阅读；
      fixed 全宽定位：目录收起/展开只影响主内容区，顶栏左右位置保持不动 */
   background: transparent;
@@ -713,7 +715,7 @@ button { font-family: inherit; cursor: pointer; }
   width: 100%;
   max-width: 1460px;
   margin: 0 auto;
-  padding: 16px 22px 32px;
+  padding: 16px 33px 32px 22px; /* 右缘间隙 22→33（加宽约 1/2），左缘保持 22 与目录间距协调 */
   display: flex;
   flex-direction: column;
   gap: 18px;
