@@ -315,7 +315,7 @@ button { font-family: inherit; cursor: pointer; }
 /* ============================================================
    一二级菜单（Accordion 手风琴 · 一级序号+图标+名称+聚合点+箭头）
    ============================================================ */
-.sidebar { transition: width .22s ease; }
+.sidebar { transition: width .22s ease, left .22s ease; }
 
 .nav-group { position: relative; margin-bottom: 0; }
 
@@ -440,8 +440,9 @@ button { font-family: inherit; cursor: pointer; }
    侧边目录整体折叠态（桌面端 · 60px 图标态 + Tooltip + 记忆）
    ============================================================ */
 @media (min-width: 901px) {
-  /* 收起态：图标在「视口左缘 ↔ 目录右缘」之间精确居中（左右各 22px），高度几何不变 */
-  body.nav-collapsed .sidebar { width: 60px; padding: 10px 14px 10px 2px; }
+  /* 收起态：目录条右移 23px（left 12→35），图标在「视口左缘 ↔ 卡片左缘（96+22=118px）」
+     通道内精确居中（图标 28px，左右间隙各 45px），高度几何不变 */
+  body.nav-collapsed .sidebar { width: 60px; left: 35px; padding: 10px 14px 10px 2px; }
   body.nav-collapsed .side-collapse-text,
   body.nav-collapsed .nav-l1-no,
   body.nav-collapsed .nav-l1-name,
