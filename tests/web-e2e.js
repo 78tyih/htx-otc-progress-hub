@@ -96,8 +96,8 @@ const post = (path, body) => api(path, { method: 'POST', headers: { 'content-typ
   const nt = await post('/api/notify/test', { operator: 'Sera' });
   check('notify/test 返回 404', nt.status === 404, nt.status);
 
-  console.log('== 7b. /api/notifications/wecom/test 诊断 ==');
-  const wt = await post('/api/notifications/wecom/test', { operator: 'Sera' });
+  console.log('== 7b. /api/notifications/test?channel=wecom 诊断（单通道合并接口）==');
+  const wt = await post('/api/notifications/test', { operator: 'Sera', channel: 'wecom' });
   check('wecom/test 200', wt.status === 200, wt.text);
   check('wecom 发送成功', wt.json && wt.json.ok === true, wt.json);
   check('wecom HTTP 状态码 200', wt.json.httpStatus === 200, wt.json);
@@ -105,11 +105,11 @@ const post = (path, body) => api(path, { method: 'POST', headers: { 'content-typ
   check('wecom errmsg=ok', wt.json.errmsg === 'ok', wt.json);
   check('wecom 含响应耗时', typeof wt.json.durationMs === 'number', wt.json);
   check('wecom 含最近成功时间', !!wt.json.lastSuccessAt, wt.json);
-  const wtGet = await api('/api/notifications/wecom/test');
+  const wtGet = await api('/api/notifications/test?channel=wecom');
   check('wecom/test GET 被拒 405', wtGet.status === 405, wtGet);
 
-  console.log('== 7c. /api/notifications/feishu/test 诊断 ==');
-  const ft = await post('/api/notifications/feishu/test', { operator: 'Sera' });
+  console.log('== 7c. /api/notifications/test?channel=feishu 诊断（单通道合并接口）==');
+  const ft = await post('/api/notifications/test', { operator: 'Sera', channel: 'feishu' });
   check('feishu/test 200', ft.status === 200, ft.text);
   check('feishu 发送成功', ft.json && ft.json.ok === true, ft.json);
   check('feishu HTTP 状态码 200', ft.json.httpStatus === 200, ft.json);
@@ -117,7 +117,7 @@ const post = (path, body) => api(path, { method: 'POST', headers: { 'content-typ
   check('feishu message=success', ft.json.message === 'success', ft.json);
   check('feishu 含响应耗时', typeof ft.json.durationMs === 'number', ft.json);
   check('feishu 含最近成功时间', !!ft.json.lastSuccessAt, ft.json);
-  const ftGet = await api('/api/notifications/feishu/test');
+  const ftGet = await api('/api/notifications/test?channel=feishu');
   check('feishu/test GET 被拒 405', ftGet.status === 405, ftGet);
 
   console.log('== 7d. /api/notifications/test-all 双通道诊断 ==');
