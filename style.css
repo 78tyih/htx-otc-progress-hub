@@ -2763,3 +2763,15 @@ button { font-family: inherit; cursor: pointer; }
 .cd-card.cd-soon:hover    { border-color: var(--navy-text); box-shadow: 0 0 0 1px var(--navy-text), 0 10px 26px var(--navy-dim); }
 .cd-card.cd-overdue:hover { border-color: var(--danger);    box-shadow: 0 0 0 1px var(--danger),    0 10px 26px var(--danger-dim); }
 .cd-card.cd-done:hover    { border-color: var(--success);   box-shadow: 0 0 0 1px var(--success),   0 10px 26px var(--success-dim); }
+/* 红色卡片修正：hover 必须保持红色，不被默认克莱因蓝覆盖 */
+.ws-card.ws-blocked:hover {
+  animation: none; /* 停掉脉冲动画，否则 border-color keyframes 会盖掉 hover 色 */
+  border-color: var(--danger);
+  box-shadow: 0 0 0 1px var(--danger), 0 10px 26px var(--danger-dim);
+}
+/* 任务卡 / 倒计时卡：阻塞状态的红色语义（data-status 属性驱动，零 JS 改动） */
+.task-card[data-status="Blocked"]:hover,
+.cd-card[data-status="阻塞"]:hover {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 1px var(--danger), 0 10px 26px var(--danger-dim);
+}
