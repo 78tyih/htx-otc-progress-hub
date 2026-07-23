@@ -37,12 +37,12 @@
         <span class="side-brand-m-name">HTX OTC PIP 执行看板</span>
       </div>
       <nav class="side-nav" id="sideNav" aria-label="板块目录">
-        <!-- 01 经营总览 -->
+        <!-- 01 目标总览 -->
         <div class="nav-group" data-group="overview">
-          <button class="nav-l1" type="button" aria-expanded="true" aria-controls="navSub-overview" data-tip="经营总览">
+          <button class="nav-l1" type="button" aria-expanded="true" aria-controls="navSub-overview" data-tip="目标总览">
             <svg class="nav-l1-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 14v3M12 10v7M16 6v11"/></svg>
             <span class="nav-l1-no">01</span>
-            <span class="nav-l1-name">经营总览</span>
+            <span class="nav-l1-name">目标总览</span>
             <span class="nav-dot dot-gray nav-l1-dot" aria-hidden="true"></span>
             <svg class="nav-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
           </button>
@@ -104,19 +104,18 @@
             </div>
           </div>
         </div>
-        <!-- 05 资料与系统 -->
-        <div class="nav-group" data-group="system">
-          <button class="nav-l1" type="button" aria-expanded="false" aria-controls="navSub-system" data-tip="资料与系统">
+        <!-- 05 资料中心 -->
+        <div class="nav-group" data-group="resources">
+          <button class="nav-l1" type="button" aria-expanded="false" aria-controls="navSub-resources" data-tip="资料中心">
             <svg class="nav-l1-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h10M18 8h2M4 16h2M10 16h10"/><circle cx="16" cy="8" r="2"/><circle cx="8" cy="16" r="2"/></svg>
             <span class="nav-l1-no">05</span>
-            <span class="nav-l1-name">资料与系统</span>
+            <span class="nav-l1-name">资料中心</span>
             <span class="nav-dot dot-gray nav-l1-dot" aria-hidden="true"></span>
             <svg class="nav-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
           </button>
-          <div class="nav-sub" id="navSub-system">
+          <div class="nav-sub" id="navSub-resources">
             <div class="nav-sub-inner">
               <a class="nav-link" href="#sec-resources"><span class="nav-no">05.1</span>资料访问中心<span class="nav-dot dot-gray" aria-hidden="true"></span></a>
-              <a class="nav-link" href="#sec-system"><span class="nav-no">05.2</span>系统状态<span class="nav-dot dot-gray" aria-hidden="true"></span></a>
             </div>
           </div>
         </div>
@@ -170,7 +169,7 @@
             <span class="sec-no">01</span>
             <div>
               <h2>执行摘要</h2>
-              <p class="section-sub">PIP 整体健康度 · 由 roadmap / todo / blockers / milestones 自动计算</p>
+              <p class="section-sub">PIP 整体健康度一览</p>
             </div>
           </div>
           <div class="sum-grid" id="sumGrid"></div>
@@ -182,7 +181,7 @@
             <span class="sec-no">02</span>
             <div>
               <h2>KPI 概览</h2>
-              <p class="section-sub">PIP 六大绩效目标动态进度 · 组件随 data/kpi.json 的 component 字段渲染</p>
+              <p class="section-sub">六大绩效目标实时进度</p>
             </div>
           </div>
           <div class="kpi-grid" id="kpiGrid"></div>
@@ -194,7 +193,7 @@
             <span class="sec-no">03</span>
             <div>
               <h2>任务倒计时</h2>
-              <p class="section-sub">任务闭环执行层 · 由 data/tasks.json 驱动 · 24 小时内到期蓝色 · 逾期红色 · 完成蓝色 · 秒级实时刷新</p>
+              <p class="section-sub">任务截止倒计时，秒级实时刷新</p>
             </div>
           </div>
           <div class="cd-grid" id="cdGrid"></div>
@@ -206,7 +205,7 @@
             <span class="sec-no">04</span>
             <div>
               <h2>主线任务进度</h2>
-              <p class="section-sub">Workstream Progress · 5 条绩效主线实时进度与风险</p>
+              <p class="section-sub">5 条绩效主线的进度与风险</p>
             </div>
           </div>
           <div class="ws-grid" id="wsGrid"></div>
@@ -218,7 +217,7 @@
             <span class="sec-no">05</span>
             <div>
               <h2>工作 Pipeline</h2>
-              <p class="section-sub">按状态分组 · 点击组标题折叠 / 展开 · 顶栏搜索实时过滤</p>
+              <p class="section-sub">全部工作项按状态分组展示</p>
             </div>
           </div>
           <div class="pipe-groups" id="pipeGroups"></div>
@@ -230,7 +229,7 @@
             <span class="sec-no">06</span>
             <div>
               <h2>主线任务时间推进图</h2>
-              <p class="section-sub">2026-07-21 ～ 2026-08-31 · W1-W6 周视图 · 点击主线展开子任务 · 悬浮查看详情</p>
+              <p class="section-sub">2026-07-21 ～ 2026-08-31 · 点击主线展开子任务</p>
             </div>
           </div>
           <div class="panel gantt-panel">
@@ -248,7 +247,7 @@
             <span class="sec-no">07</span>
             <div>
               <h2>任务依赖关系图</h2>
-              <p class="section-sub">主链路（品牌蓝渐变） · 支线 A 获客线索（浅色） · 支线 C 设计物料（浅灰）</p>
+              <p class="section-sub">各主线任务之间的依赖关系</p>
             </div>
           </div>
           <div class="panel dep-panel">
@@ -269,7 +268,7 @@
             <span class="sec-no">08</span>
             <div>
               <h2>本周待办</h2>
-              <p class="section-sub">Weekly To Do · 按优先级排序（P0 高亮） · 搜索联动 · 过期任务标红</p>
+              <p class="section-sub">本周待办事项，按优先级排序</p>
             </div>
           </div>
           <div class="panel table-panel">
@@ -294,7 +293,7 @@
             <span class="sec-no">09</span>
             <div>
               <h2>阻塞事项与需要协助</h2>
-              <p class="section-sub">当前阻塞与需要 Simon 协助事项 · 由 data/blockers.json 驱动</p>
+              <p class="section-sub">当前阻塞与需要协助的事项</p>
             </div>
           </div>
           <div class="blocked-layout">
@@ -315,7 +314,7 @@
             <span class="sec-no">10</span>
             <div>
               <h2>每周总结与复盘</h2>
-              <p class="section-sub">基于真实任务数据 · PIP 助手生成草稿 · 编辑确认后归档</p>
+              <p class="section-sub">基于真实任务数据生成，确认后归档</p>
             </div>
           </div>
           <div class="panel review-panel">
@@ -344,7 +343,7 @@
             <span class="sec-no">11</span>
             <div>
               <h2>周更记录</h2>
-              <p class="section-sub">Weekly Log · 每周更新一次 · 本周更新内容</p>
+              <p class="section-sub">每周更新一次</p>
             </div>
           </div>
           <div class="panel weekly-panel">
@@ -363,70 +362,10 @@
             <span class="sec-no">12</span>
             <div>
               <h2>资料访问中心</h2>
-              <p class="section-sub">CRM / 设计交付 / 渠道计划等关键资料直达 · 由 data/resources.json 驱动 · 文件缺失自动标记</p>
+              <p class="section-sub">CRM / 设计交付 / 渠道计划等关键资料入口</p>
             </div>
           </div>
           <div class="res-grid" id="resGrid"></div>
-        </section>
-
-        <!-- ========== 13 系统状态与最近更新（PIP 助手 / 双通道通知 / 通知联调） ========== -->
-        <section class="section" id="sec-system">
-          <div class="section-head">
-            <span class="sec-no">13</span>
-            <div>
-              <h2>系统状态与最近更新</h2>
-              <p class="section-sub">PIP 助手 / 企业微信 + 飞书双通道通知状态 · PIP 助手修改记录 · 手机通知联调</p>
-            </div>
-          </div>
-          <div class="sys-layout">
-            <div class="panel sys-panel">
-              <h3 class="blk-title">服务状态</h3>
-              <ul class="sys-list">
-                <li><span class="sys-k">PIP 助手</span><span class="st-chip" id="sysAgent">检测中…</span></li>
-              </ul>
-              <div class="chan-list">
-                <div class="chan-card">
-                  <div class="chan-head">
-                    <span class="chan-name">企业微信通知</span>
-                    <span class="chan-for">供 Sera 查看</span>
-                    <span class="st-chip" id="sysChanWecom">检测中…</span>
-                  </div>
-                  <ul class="chan-meta">
-                    <li><span>最近发送</span><b id="wecomLastSent">—</b></li>
-                    <li><span>最近成功</span><b id="wecomLastSuccess">—</b></li>
-                    <li><span>状态码</span><b id="wecomLastHttp">—</b></li>
-                    <li><span>响应耗时</span><b id="wecomLastDuration">—</b></li>
-                  </ul>
-                  <div class="chan-error" id="wecomLastError" hidden></div>
-                </div>
-                <div class="chan-card">
-                  <div class="chan-head">
-                    <span class="chan-name">飞书通知</span>
-                    <span class="chan-for">供 Simon 查看</span>
-                    <span class="st-chip" id="sysChanFeishu">检测中…</span>
-                  </div>
-                  <ul class="chan-meta">
-                    <li><span>最近发送</span><b id="feishuLastSent">—</b></li>
-                    <li><span>最近成功</span><b id="feishuLastSuccess">—</b></li>
-                    <li><span>状态码</span><b id="feishuLastHttp">—</b></li>
-                    <li><span>响应耗时</span><b id="feishuLastDuration">—</b></li>
-                  </ul>
-                  <div class="chan-error" id="feishuLastError" hidden></div>
-                </div>
-              </div>
-              <div class="sys-actions">
-                <input type="text" id="operatorInput" placeholder="操作人（默认 Sera）" autocomplete="off">
-                <button class="btn btn-outline" id="btnTestWecom" type="button">测试企业微信</button>
-                <button class="btn btn-outline" id="btnTestFeishu" type="button">测试飞书</button>
-                <button class="btn btn-outline" id="btnTestAll" type="button">测试全部</button>
-              </div>
-              <div class="notify-result" id="notifyResult" hidden></div>
-            </div>
-            <div class="panel sys-panel">
-              <h3 class="blk-title">最近更新（PIP 助手）</h3>
-              <ul class="upd-list" id="recentUpdates"></ul>
-            </div>
-          </div>
         </section>
 
       </main>

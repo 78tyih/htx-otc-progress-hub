@@ -576,8 +576,7 @@ const FALLBACK = {
       "module": "客户 Pipeline",
       "status": "已整理",
       "updatedAt": "2026-07-21",
-      "description": "TG 存量客户汇总与分级结果，公网版本仅放脱敏摘要。",
-      "url": "assets/files/customer-crm-summary.xlsx"
+      "description": "TG 存量客户汇总与分级结果，公网版本仅放脱敏摘要。"
     },
     {
       "id": "R002",
@@ -587,7 +586,6 @@ const FALLBACK = {
       "status": "已交付",
       "updatedAt": "2026-07-22",
       "description": "业务背景、页面结构、COBO/POBO、FAQ、禁用词与视觉参考。",
-      "url": "assets/files/design-brief/",
       "progress": 100,
       "completionEvidence": "OTC 设计交付包已完成交付",
       "updatedBy": "Sera",
@@ -601,7 +599,6 @@ const FALLBACK = {
       "status": "已传回",
       "updatedAt": "2026-07-22",
       "description": "由设计团队提供或待设计团队确认的交互资料。",
-      "url": "assets/files/design-interaction-package/",
       "result": "设计团队品牌 Skill 包",
       "progress": 100,
       "completionEvidence": "已传回设计团队品牌 Skill 包",
@@ -615,8 +612,7 @@ const FALLBACK = {
       "module": "渠道拓展",
       "status": "待完善",
       "updatedAt": "2026-07-21",
-      "description": "集团销售、大数据名单、Partner/KOL 的触达计划与节奏。",
-      "url": "assets/files/channel-expansion-plan.md"
+      "description": "集团销售、大数据名单、Partner/KOL 的触达计划与节奏。"
     }
   ],
   "tasks": {
@@ -1239,17 +1235,10 @@ function renderKpi(list) {
 /* 资料卡状态 → badge 样式映射 */
 const RES_STATUS_CLS = { '已整理': 'done', '已交付': 'done', '已传回': 'done', '待提交': 'doing', '待同步': 'next', '待完善': 'next' };
 
-/* 目录型 url（以 / 结尾）默认打开其 README.md */
-function resTargetUrl(item) {
-  const url = item.url || '';
-  return url.endsWith('/') ? url + 'README.md' : url;
-}
-
+/* 资料卡：公开站点不展示任何文件链接（等 SharePoint 链接到位后再恢复入口） */
 function renderResources(list) {
   const grid = document.getElementById('resGrid');
   grid.innerHTML = '';
-  // file:// 协议下跳过存在性检测直接打开；http(s) 下渲染时发 HEAD 检测
-  const canProbe = window.location.protocol === 'http:' || window.location.protocol === 'https:';
 
   list.forEach((item) => {
     const card = el('article', 'res-card');
@@ -1269,29 +1258,8 @@ function renderResources(list) {
     const foot = el('div', 'res-foot');
     const statusBadge = el('span', 'badge badge-' + (RES_STATUS_CLS[item.status] || 'next'), item.status || '—');
     foot.appendChild(statusBadge);
-    const btn = el('button', 'res-open', '打开');
-    btn.type = 'button';
-    btn.addEventListener('click', () => {
-      window.open(resTargetUrl(item), '_blank', 'noopener');
-    });
-    foot.appendChild(btn);
     card.appendChild(foot);
     grid.appendChild(card);
-
-    if (canProbe) {
-      // 用 GET 而非 HEAD 探测：HEAD 响应无 Content-Length 时 Chromium 会在控制台报 net::ERR_ABORTED 噪音
-      fetch(resTargetUrl(item), { cache: 'no-store' })
-        .then(async (res) => {
-          await res.arrayBuffer(); // 消费响应体，避免连接悬挂
-          if (!res.ok) throw new Error('HTTP ' + res.status);
-        })
-        .catch(() => {
-          card.classList.add('res-missing');
-          statusBadge.className = 'badge badge-blocked';
-          statusBadge.textContent = '文件待上传';
-          btn.disabled = true;
-        });
-    }
   });
 }
 
@@ -2374,7 +2342,7 @@ const NAV_GROUPS = [
   { key: 'progress', sections: ['sec-roadmap', 'sec-pipeline', 'sec-gantt', 'sec-depmap'] },
   { key: 'action',   sections: ['sec-todo', 'sec-blocked'] },
   { key: 'review',   sections: ['sec-review', 'sec-weekly'] },
-  { key: 'system',   sections: ['sec-resources', 'sec-system'] },
+  { key: 'resources', sections: ['sec-resources'] },
 ];
 const SECTION_GROUP = {};
 NAV_GROUPS.forEach((g) => g.sections.forEach((id) => { SECTION_GROUP[id] = g.key; }));
@@ -2385,7 +2353,7 @@ const SECTION_SLUGS = {
   roadmap: 'sec-roadmap', pipeline: 'sec-pipeline', gantt: 'sec-gantt', depmap: 'sec-depmap',
   todo: 'sec-todo', blockers: 'sec-blocked',
   'weekly-review': 'sec-review', 'weekly-log': 'sec-weekly',
-  resources: 'sec-resources', system: 'sec-system',
+  resources: 'sec-resources',
 };
 
 const LS_NAV_GROUP = 'navGroup';
@@ -2646,11 +2614,10 @@ function computeSectionStatus() {
     : reviews.some((r) => r.status === 'draft') ? 'yellow' : 'green';
   map['sec-weekly'] = ((state.weeklyLog && state.weeklyLog.done) || []).length ? 'green' : 'gray';
 
-  /* 05 资料与系统 */
+  /* 05 资料中心 */
   const res = state.resources || [];
   map['sec-resources'] = !res.length ? 'gray'
     : res.every((r) => (RES_STATUS_CLS[r.status] || 'next') === 'done') ? 'green' : 'yellow';
-  map['sec-system'] = agentState.apiOnline === true ? 'green' : agentState.apiOnline === false ? 'red' : 'gray';
 
   return map;
 }
@@ -2914,10 +2881,6 @@ function fmtDueLocal(iso) {
   return String(iso || '').slice(5, 16).replace('T', ' ');
 }
 
-function fmtUpdTs(iso) {
-  return String(iso || '').slice(5, 16).replace('T', ' ');
-}
-
 async function apiFetch(path, options) {
   const opts = Object.assign({}, options || {});
   opts.headers = Object.assign({ 'content-type': 'application/json' }, opts.headers || {});
@@ -3060,7 +3023,7 @@ async function agentSend(text) {
     if (r.reply) agentBubble('agent', mdLite(r.reply));
     if (r.tasks && r.tasks.length) renderAgentTaskCards(r.tasks);
     if (r.confirm) renderConfirmCard(r.confirm);
-    if (r.notifyTest) await runNotifyTestAll(true);
+    if (r.notifyTest) await runNotifyTestAll();
   } catch (e) {
     thinking.remove();
     if (agentState.apiOnline === false) {
@@ -3101,81 +3064,26 @@ function channelDiag(c, codeLabel) {
   return { text: parts.join(' '), ok: c.success === true, error: c.error || null };
 }
 
-function nrRow(k, v, cls) {
-  return '<div class="nr-row"><span>' + k + '</span><b' + (cls ? ' class="' + cls + '"' : '') + '>' + escapeHtml(v) + '</b></div>';
-}
-
-function setBtnBusy(btn, busy, busyText, idleText) {
-  if (!btn) return;
-  btn.disabled = busy;
-  btn.textContent = busy ? busyText : idleText;
-}
-
-/* 单通道测试（企业微信 / 飞书）：渲染发送状态/HTTP/业务返回码/耗时/失败真实原因 */
-async function runChannelTest(channel, btn) {
-  const box = document.getElementById('notifyResult');
-  const label = channel === 'wecom' ? '企业微信' : '飞书';
-  setBtnBusy(btn, true, '发送中…', '');
-  box.hidden = false;
-  box.innerHTML = '<span class="ag-muted">' + label + '通知发送中…</span>';
-  let r;
-  try {
-    r = await apiFetch('/api/notifications/' + channel + '/test', { method: 'POST', body: JSON.stringify({ operator: agentState.operator }) });
-  } catch (e) {
-    box.innerHTML = '<span class="ag-warn">' + label + '通知发送失败：' + escapeHtml(e.message) + '</span>';
-    setBtnBusy(btn, false, '', '测试' + label);
-    return;
-  }
-  setBtnBusy(btn, false, '', '测试' + label);
-  const bizRows = channel === 'wecom'
-    ? [nrRow('企业微信 errcode', r.errcode != null ? String(r.errcode) : '—'), nrRow('企业微信 errmsg', r.errmsg || '—')]
-    : [nrRow('飞书 code', r.code != null ? String(r.code) : '—'), nrRow('飞书 message', r.message || '—')];
-  box.innerHTML =
-    nrRow('发送状态', r.ok ? '发送成功' : '发送失败', r.ok ? 'nr-ok' : 'nr-bad') +
-    (!r.ok && r.error ? nrRow('失败原因', r.error, 'nr-bad') : '') +
-    nrRow('HTTP 状态码', r.httpStatus != null ? String(r.httpStatus) : '—') +
-    bizRows.join('') +
-    nrRow('响应耗时', r.durationMs != null ? r.durationMs + ' ms' : '—') +
-    nrRow('请求时间', r.requestedAt || '—') +
-    nrRow('最近一次成功', r.lastSuccessAt || '—');
-  loadHubStatus();
-}
-
-/* 双通道测试：企业微信 + 飞书同时推送，按 message 显示总体结果并分行展示各渠道诊断 */
-async function runNotifyTestAll(inDrawer, btn) {
-  const box = document.getElementById('notifyResult');
-  setBtnBusy(btn, true, '发送中…', '');
-  box.hidden = false;
-  box.innerHTML = '<span class="ag-muted">双通道通知发送中…</span>';
-  if (inDrawer) agentBubble('agent', '<span class="ag-muted">双通道通知发送中…</span>');
+/* 双通道测试：企业微信 + 飞书同时推送，结果只显示在 PIP 助手抽屉 */
+async function runNotifyTestAll() {
+  agentBubble('agent', '<span class="ag-muted">双通道通知发送中…</span>');
   let r;
   try {
     r = await apiFetch('/api/notifications/test-all', { method: 'POST', body: JSON.stringify({ operator: agentState.operator }) });
   } catch (e) {
-    box.innerHTML = '<span class="ag-warn">发送失败：' + escapeHtml(e.message) + '</span>';
-    if (inDrawer) agentBubble('sys', '⚠️ 发送失败：' + escapeHtml(e.message));
-    setBtnBusy(btn, false, '', '测试全部');
+    agentBubble('sys', '⚠️ 发送失败：' + escapeHtml(e.message));
     return;
   }
-  setBtnBusy(btn, false, '', '测试全部');
   const w = channelDiag(r.wecom, 'errcode');
   const f = channelDiag(r.feishu, 'code');
-  const summaryCls = r.ok ? 'nr-ok' : (r.partial ? '' : 'nr-bad');
-  box.innerHTML =
-    nrRow('推送结果', r.message || (r.ok ? '双通道推送成功' : '发送失败'), summaryCls) +
-    nrRow('企业微信', w.text + (w.error ? '（' + w.error + '）' : ''), w.ok ? 'nr-ok' : 'nr-bad') +
-    nrRow('飞书', f.text + (f.error ? '（' + f.error + '）' : ''), f.ok ? 'nr-ok' : 'nr-bad') +
-    nrRow('请求时间', r.requestedAt || '—');
-  if (inDrawer) {
-    agentBubble('agent',
-      '双通道测试通知：<b>' + escapeHtml(r.message || '—') + '</b>' +
-      '<br>' + (w.ok ? '✅' : '❌') + ' 企业微信 ' + escapeHtml(w.text) + (w.error ? '<br>失败原因：' + escapeHtml(w.error) : '') +
-      '<br>' + (f.ok ? '✅' : '❌') + ' 飞书 ' + escapeHtml(f.text) + (f.error ? '<br>失败原因：' + escapeHtml(f.error) : ''));
-  }
+  agentBubble('agent',
+    '双通道测试通知：<b>' + escapeHtml(r.message || '—') + '</b>' +
+    '<br>' + (w.ok ? '✅' : '❌') + ' 企业微信 ' + escapeHtml(w.text) + (w.error ? '<br>失败原因：' + escapeHtml(w.error) : '') +
+    '<br>' + (f.ok ? '✅' : '❌') + ' 飞书 ' + escapeHtml(f.text) + (f.error ? '<br>失败原因：' + escapeHtml(f.error) : ''));
   loadHubStatus();
 }
 
-/* Agent 修改后全量刷新：统计 / 倒计时 / Pipeline / 待办 / 周更 / 最近更新 */
+/* Agent 修改后全量刷新：统计 / 倒计时 / Pipeline / 待办 / 周更 */
 async function refreshHubData() {
   try {
     const d = await apiFetch('/api/tasks');
@@ -3189,29 +3097,10 @@ async function refreshHubData() {
     renderTodo(state.todo);
     renderWeekly(state.weeklyLog);
     updateNavDots();
-    renderRecentUpdates(d.recentUpdates || []);
     applyFilters();
   } catch (e) {
     console.warn('[绩效看板] 刷新任务数据失败', e);
   }
-}
-
-function renderRecentUpdates(list) {
-  const ul = document.getElementById('recentUpdates');
-  if (!ul) return;
-  ul.innerHTML = '';
-  if (!list || !list.length) {
-    ul.appendChild(el('li', 'upd-empty', '暂无 PIP 助手修改记录'));
-    return;
-  }
-  list.forEach((u) => {
-    const li = el('li', 'upd-item');
-    li.innerHTML =
-      '<span class="upd-time">' + fmtUpdTs(u.ts) + '</span>' +
-      '<span class="upd-body"><b>' + escapeHtml(u.taskId || '—') + '</b> 「' + escapeHtml(u.previousStatus || '—') + ' → ' + escapeHtml(u.newStatus || '—') + '」</span>' +
-      '<span class="upd-op">' + escapeHtml(u.operator || 'agent') + '</span>';
-    ul.appendChild(li);
-  });
 }
 
 function setChip(id, cls, text) {
@@ -3221,72 +3110,30 @@ function setChip(id, cls, text) {
   chip.textContent = text;
 }
 
-/* 双渠道状态渲染（数据来自 /api/status 的 channels 字段，不再使用旧 webhook 字段） */
+/* 双渠道状态渲染（只画 PIP 助手抽屉里的状态 chip，数据来自 /api/status 的 channels 字段） */
 const CHANNEL_DOM = {
-  wecom: { chip: 'sysChanWecom', drawerChip: 'stChanWecom', sent: 'wecomLastSent', success: 'wecomLastSuccess', http: 'wecomLastHttp', duration: 'wecomLastDuration', error: 'wecomLastError', drawerLabel: '企业微信' },
-  feishu: { chip: 'sysChanFeishu', drawerChip: 'stChanFeishu', sent: 'feishuLastSent', success: 'feishuLastSuccess', http: 'feishuLastHttp', duration: 'feishuLastDuration', error: 'feishuLastError', drawerLabel: '飞书' },
+  wecom: { drawerChip: 'stChanWecom', drawerLabel: '企业微信' },
+  feishu: { drawerChip: 'stChanFeishu', drawerLabel: '飞书' },
 };
-
-/* 取 lastTest / lastSummary 中时间较新的一条；都无时间时优先 lastTest */
-function newerChanRecord(ch) {
-  const a = ch.lastTest || null;
-  const b = ch.lastSummary || null;
-  if (a && b) {
-    const ta = Date.parse(a.at || '') || 0;
-    const tb = Date.parse(b.at || '') || 0;
-    return tb > ta ? b : a;
-  }
-  return a || b || null;
-}
-
-/* 渠道时间显示：ISO(UTC) → 本地 MM-DD HH:mm:ss（与最近更新列表的本地时间一致） */
-function fmtChanTs(iso) {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  if (isNaN(d.getTime())) return String(iso);
-  const p = (n) => String(n).padStart(2, '0');
-  return p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
-}
 
 function paintChannel(channel, ch, offline) {
   const ids = CHANNEL_DOM[channel];
-  const setText = (id, v) => { const n = document.getElementById(id); if (n) n.textContent = v; };
-  const errBox = document.getElementById(ids.error);
   if (offline || !ch) {
-    setChip(ids.chip, 'st-off', '未连接');
     setChip(ids.drawerChip, 'st-off', ids.drawerLabel + ' 未连接');
-    setText(ids.sent, '—');
-    setText(ids.success, '—');
-    setText(ids.http, '—');
-    setText(ids.duration, '—');
-    if (errBox) { errBox.hidden = true; errBox.textContent = ''; }
     return;
   }
-  setChip(ids.chip, ch.configured ? 'st-on' : '', ch.configured ? '已配置' : '未配置');
   setChip(ids.drawerChip, ch.configured ? 'st-on' : '', ids.drawerLabel + (ch.configured ? ' 已配置' : ' 未配置'));
-  const last = newerChanRecord(ch);
-  setText(ids.sent, fmtChanTs(last && last.at));
-  setText(ids.success, fmtChanTs(ch.lastSuccessAt));
-  setText(ids.http, last && last.httpStatus != null ? String(last.httpStatus) : '—');
-  setText(ids.duration, last && last.durationMs != null ? last.durationMs + 'ms' : '—');
-  if (errBox) {
-    const err = last && last.error;
-    if (err) { errBox.hidden = false; errBox.textContent = '失败原因：' + err; }
-    else { errBox.hidden = true; errBox.textContent = ''; }
-  }
 }
 
 function paintHubStatus(s) {
   if (!s) {
     setChip('stAgent', 'st-off', 'PIP 助手未连接');
-    setChip('sysAgent', 'st-off', 'PIP 助手未连接（静态模式）');
     paintChannel('wecom', null, true);
     paintChannel('feishu', null, true);
     return;
   }
   const agentText = s.agent.llmConfigured ? 'PIP 助手在线（规则+LLM）' : 'PIP 助手在线（规则模式）';
   setChip('stAgent', 'st-on', agentText);
-  setChip('sysAgent', 'st-on', agentText);
   const channels = s.channels || {};
   paintChannel('wecom', channels.wecom, false);
   paintChannel('feishu', channels.feishu, false);
@@ -3297,11 +3144,9 @@ async function loadHubStatus() {
     const s = await apiFetch('/api/status');
     agentState.apiOnline = true;
     paintHubStatus(s);
-    renderRecentUpdates(s.recentUpdates || []);
   } catch (e) {
     agentState.apiOnline = false;
     paintHubStatus(null);
-    renderRecentUpdates([]);
   }
   updateNavDots();
 }
@@ -3338,15 +3183,7 @@ function initAgent() {
     b.addEventListener('click', () => agentSend(b.dataset.q));
   });
 
-  document.getElementById('btnTestWecom').addEventListener('click', (e) => runChannelTest('wecom', e.currentTarget));
-  document.getElementById('btnTestFeishu').addEventListener('click', (e) => runChannelTest('feishu', e.currentTarget));
-  document.getElementById('btnTestAll').addEventListener('click', (e) => runNotifyTestAll(false, e.currentTarget));
-  document.getElementById('btnAgentTestAll').addEventListener('click', () => runNotifyTestAll(true));
-
-  const opInput = document.getElementById('operatorInput');
-  opInput.addEventListener('input', () => {
-    agentState.operator = opInput.value.trim() || 'Sera';
-  });
+  document.getElementById('btnAgentTestAll').addEventListener('click', () => runNotifyTestAll());
 
   agentBubble('agent',
     '我是 PIP 助手，可以帮你核对已完成、未完成、逾期和阻塞任务，也可以更新任务状态并发送手机通知。');

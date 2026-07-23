@@ -5,6 +5,14 @@
    状态色：Done 蓝（进度条为天蓝→克莱因蓝渐变）/ Doing 亮蓝 / Next 藏青（甘特为灰）/ Blocked 红；延期警告保留琥珀语义色
    ============================================================ */
 
+/* ---------- 全局字体：与 htx.com 官网完全一致（HarmonyOS Sans 西文 + HarmonyOS Sans SC 中文，自托管 woff2） ---------- */
+@font-face { font-family: 'harmonyos-sans'; font-style: normal; font-weight: 400; font-display: swap; src: url('assets/fonts/harmonyos-sans-regular.woff2') format('woff2'); }
+@font-face { font-family: 'harmonyos-sans'; font-style: normal; font-weight: 500; font-display: swap; src: url('assets/fonts/harmonyos-sans-medium.woff2') format('woff2'); }
+@font-face { font-family: 'harmonyos-sans'; font-style: normal; font-weight: 700; font-display: swap; src: url('assets/fonts/harmonyos-sans-bold.woff2') format('woff2'); }
+@font-face { font-family: 'harmonyos-sans-sc'; font-style: normal; font-weight: 400; font-display: swap; src: url('assets/fonts/harmonyos-sans-sc-regular.woff2') format('woff2'); }
+@font-face { font-family: 'harmonyos-sans-sc'; font-style: normal; font-weight: 500; font-display: swap; src: url('assets/fonts/harmonyos-sans-sc-medium.woff2') format('woff2'); }
+@font-face { font-family: 'harmonyos-sans-sc'; font-style: normal; font-weight: 700; font-display: swap; src: url('assets/fonts/harmonyos-sans-sc-bold.woff2') format('woff2'); }
+
 /* ---------- 主题变量：日间（白 / 浅灰 / 黄色玻璃风 · 卡片轻阴影） ---------- */
 :root, [data-theme="light"] {
   --bg-main: #f5f6f8;
@@ -189,7 +197,7 @@ html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
 body {
   background: transparent; /* 底色由 #aurora-bg 极光层承担（主题切换随变量平滑过渡） */
   color: var(--text-main);
-  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-family: harmonyos-sans, harmonyos-sans-sc, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
   font-size: 14px;
   line-height: 1.55;
   min-height: 100vh;
@@ -1130,7 +1138,6 @@ button { font-family: inherit; cursor: pointer; }
   transition: transform .2s ease, box-shadow .2s ease, border-color .15s;
 }
 .res-card:hover { transform: translateY(-3px); box-shadow: var(--card-shadow-hover); border-color: var(--hover-border); }
-.res-card.res-missing { border-style: dashed; }
 
 .res-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
 .res-title {
@@ -1253,37 +1260,6 @@ button { font-family: inherit; cursor: pointer; }
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-}
-
-/* 打开按钮：圆角 pill · 黄色主按钮 · hover 上移 1px · active scale(.98) */
-.res-open {
-  flex: 0 0 auto;
-  height: 30px;
-  padding: 0 16px;
-  border: none;
-  border-radius: 999px;
-  background: var(--accent-navy);
-  color: #FFFFFF;
-  font-size: 12px;
-  font-weight: 800;
-  box-shadow: 0 1px 4px rgba(17, 24, 39, 0.15);
-  transition: transform .15s ease, box-shadow .15s ease, background-color .3s, color .3s, border-color .3s;
-}
-.res-open:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(17, 24, 39, 0.2); }
-.res-open:active { transform: scale(.98); }
-.res-open:disabled {
-  cursor: not-allowed;
-  background: var(--gray-dim);
-  color: var(--text-muted);
-  border: 1px solid var(--border);
-  box-shadow: none;
-}
-.res-open:disabled:hover { transform: none; }
-
-.res-status-missing {
-  font-size: 10.5px;
-  font-weight: 700;
-  color: var(--danger);
 }
 
 /* ============================================================
@@ -2210,148 +2186,6 @@ button { font-family: inherit; cursor: pointer; }
 .st-chip.st-warn { color: var(--navy-text); background: var(--navy-dim); border-color: var(--navy-border); }
 .st-chip.st-warn::before { background: var(--accent-navy); }
 
-/* ---------- 12 系统状态区 ---------- */
-.sys-layout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-.sys-list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 9px;
-  margin-bottom: 12px;
-}
-.sys-list li {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  font-size: 12.5px;
-}
-.sys-list b { font-weight: 600; font-size: 12px; }
-.sys-k { color: var(--text-muted); flex: 0 0 auto; }
-.sys-actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.sys-actions input {
-  flex: 1 1 140px;
-  min-width: 0;
-  height: 34px;
-  padding: 0 12px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text-main);
-  font-size: 13px;
-  outline: none;
-}
-.sys-actions input:focus { border-color: var(--navy-text); }
-.notify-result {
-  margin-top: 10px;
-  border-top: 1px dashed var(--border);
-  padding-top: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-.nr-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  font-size: 12px;
-}
-.nr-row span { color: var(--text-muted); }
-.nr-row b { font-weight: 600; text-align: right; word-break: break-all; }
-.nr-row b.nr-ok { color: var(--success); }
-.nr-row b.nr-bad { color: var(--danger); }
-
-/* 双通道通知状态卡（企业微信 / 飞书） */
-.chan-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-.chan-card {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--row-hover);
-  padding: 10px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-.chan-head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.chan-name { font-size: 12.5px; font-weight: 700; }
-.chan-for {
-  flex: 1;
-  min-width: 0;
-  font-size: 10.5px;
-  color: var(--text-muted);
-}
-.chan-meta {
-  list-style: none;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px 14px;
-}
-.chan-meta li {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
-  font-size: 12px;
-  min-width: 0;
-}
-.chan-meta span { color: var(--text-muted); flex: 0 0 auto; }
-.chan-meta b { font-weight: 600; font-size: 12px; text-align: right; word-break: break-all; }
-.chan-error {
-  font-size: 12px;
-  color: var(--danger);
-  word-break: break-all;
-}
-@media (max-width: 560px) {
-  .chan-meta { grid-template-columns: 1fr; }
-}
-
-.upd-list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-.upd-item {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  font-size: 12px;
-  padding: 7px 10px;
-  background: var(--row-hover);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-}
-.upd-time { color: var(--text-muted); flex: 0 0 auto; font-variant-numeric: tabular-nums; }
-.upd-body { flex: 1; min-width: 0; }
-.upd-op {
-  flex: 0 0 auto;
-  font-size: 10.5px;
-  font-weight: 700;
-  color: var(--blue-text);
-  background: var(--blue-dim);
-  border-radius: 999px;
-  padding: 1px 8px;
-}
-.upd-empty { font-size: 12px; color: var(--text-muted); }
-
 /* ---------- Agent 抽屉 ---------- */
 .agent-overlay {
   position: fixed;
@@ -2547,9 +2381,6 @@ button { font-family: inherit; cursor: pointer; }
 }
 .agent-inputbar input:focus { border-color: var(--navy-text); }
 
-@media (max-width: 900px) {
-  .sys-layout { grid-template-columns: 1fr; }
-}
 @media (max-width: 560px) {
   /* PIP 助手：底部紧凑弹窗（非全屏抽屉），从屏幕下缘滑入 */
   .agent-drawer {
@@ -2784,37 +2615,47 @@ button { font-family: inherit; cursor: pointer; }
 }
 
 /* ============================================================
-   卡片悬浮点亮（边框 = 卡片自身语义色/左侧色条色 · 视觉统一对齐）
+   卡片悬浮/点按点亮（边框 = 卡片自身语义色/左侧色条色 · 视觉统一对齐）
+   :hover 桌面悬浮 · :active 手机点按/鼠标按下（触屏无 hover，靠 :active 反馈）
    默认：克莱因蓝；各语义变体覆盖为自身色条颜色
    ============================================================ */
+.sum-card, .kpi-card, .cd-card,
+.ws-card, .task-card, .res-card {
+  -webkit-tap-highlight-color: transparent; /* 去掉 iOS 点按灰色闪烁，露出下方边框高亮 */
+}
 .sum-card:hover, .kpi-card:hover, .cd-card:hover,
-.ws-card:hover, .task-card:hover, .res-card:hover {
+.ws-card:hover, .task-card:hover, .res-card:hover,
+.sum-card:active, .kpi-card:active, .cd-card:active,
+.ws-card:active, .task-card:active, .res-card:active {
   border-color: var(--klein);
   box-shadow: 0 0 0 1px var(--klein), 0 10px 26px var(--klein-glow);
 }
 /* 执行摘要卡：天蓝（总体进度）/ 克莱因蓝（本周完成）/ 红（阻塞）/ 海军蓝（下一里程碑） */
-.sum-card.ac-blue:hover   { border-color: var(--accent-blue); box-shadow: 0 0 0 1px var(--accent-blue), 0 10px 26px var(--blue-dim); }
-.sum-card.ac-green:hover  { border-color: var(--success);     box-shadow: 0 0 0 1px var(--success),     0 10px 26px var(--success-dim); }
-.sum-card.ac-red:hover    { border-color: var(--danger);      box-shadow: 0 0 0 1px var(--danger),      0 10px 26px var(--danger-dim); }
-.sum-card.ac-yellow:hover { border-color: var(--accent-navy); box-shadow: 0 0 0 1px var(--accent-navy), 0 10px 26px var(--navy-dim); }
+.sum-card.ac-blue:hover,   .sum-card.ac-blue:active   { border-color: var(--accent-blue); box-shadow: 0 0 0 1px var(--accent-blue), 0 10px 26px var(--blue-dim); }
+.sum-card.ac-green:hover,  .sum-card.ac-green:active  { border-color: var(--success);     box-shadow: 0 0 0 1px var(--success),     0 10px 26px var(--success-dim); }
+.sum-card.ac-red:hover,    .sum-card.ac-red:active    { border-color: var(--danger);      box-shadow: 0 0 0 1px var(--danger),      0 10px 26px var(--danger-dim); }
+.sum-card.ac-yellow:hover, .sum-card.ac-yellow:active { border-color: var(--accent-navy); box-shadow: 0 0 0 1px var(--accent-navy), 0 10px 26px var(--navy-dim); }
 /* KPI 卡：完成蓝 / 进行天蓝 / 待开始灰 / 阻塞红 */
-.kpi-card.st-done:hover    { border-color: var(--success);     box-shadow: 0 0 0 1px var(--success),     0 10px 26px var(--success-dim); }
-.kpi-card.st-doing:hover   { border-color: var(--accent-blue); box-shadow: 0 0 0 1px var(--accent-blue), 0 10px 26px var(--blue-dim); }
-.kpi-card.st-next:hover    { border-color: var(--gray-next);   box-shadow: 0 0 0 1px var(--gray-next),   0 10px 26px var(--gray-dim); }
-.kpi-card.st-blocked:hover { border-color: var(--danger);      box-shadow: 0 0 0 1px var(--danger),      0 10px 26px var(--danger-dim); }
+.kpi-card.st-done:hover,    .kpi-card.st-done:active    { border-color: var(--success);     box-shadow: 0 0 0 1px var(--success),     0 10px 26px var(--success-dim); }
+.kpi-card.st-doing:hover,   .kpi-card.st-doing:active   { border-color: var(--accent-blue); box-shadow: 0 0 0 1px var(--accent-blue), 0 10px 26px var(--blue-dim); }
+.kpi-card.st-next:hover,    .kpi-card.st-next:active    { border-color: var(--gray-next);   box-shadow: 0 0 0 1px var(--gray-next),   0 10px 26px var(--gray-dim); }
+.kpi-card.st-blocked:hover, .kpi-card.st-blocked:active { border-color: var(--danger);      box-shadow: 0 0 0 1px var(--danger),      0 10px 26px var(--danger-dim); }
 /* 倒计时卡：临近海军蓝 / 逾期红 / 完成蓝 */
-.cd-card.cd-soon:hover    { border-color: var(--navy-text); box-shadow: 0 0 0 1px var(--navy-text), 0 10px 26px var(--navy-dim); }
-.cd-card.cd-overdue:hover { border-color: var(--danger);    box-shadow: 0 0 0 1px var(--danger),    0 10px 26px var(--danger-dim); }
-.cd-card.cd-done:hover    { border-color: var(--success);   box-shadow: 0 0 0 1px var(--success),   0 10px 26px var(--success-dim); }
-/* 红色卡片修正：hover 必须保持红色，不被默认克莱因蓝覆盖 */
-.ws-card.ws-blocked:hover {
-  animation: none; /* 停掉脉冲动画，否则 border-color keyframes 会盖掉 hover 色 */
+.cd-card.cd-soon:hover,    .cd-card.cd-soon:active    { border-color: var(--navy-text); box-shadow: 0 0 0 1px var(--navy-text), 0 10px 26px var(--navy-dim); }
+.cd-card.cd-overdue:hover, .cd-card.cd-overdue:active { border-color: var(--danger);    box-shadow: 0 0 0 1px var(--danger),    0 10px 26px var(--danger-dim); }
+.cd-card.cd-done:hover,    .cd-card.cd-done:active    { border-color: var(--success);   box-shadow: 0 0 0 1px var(--success),   0 10px 26px var(--success-dim); }
+/* 红色卡片修正：hover/active 必须保持红色，不被默认克莱因蓝覆盖 */
+.ws-card.ws-blocked:hover,
+.ws-card.ws-blocked:active {
+  animation: none; /* 停掉脉冲动画，否则 border-color keyframes 会盖掉高亮色 */
   border-color: var(--danger);
   box-shadow: 0 0 0 1px var(--danger), 0 10px 26px var(--danger-dim);
 }
 /* 任务卡 / 倒计时卡：阻塞状态的红色语义（data-status 属性驱动，零 JS 改动） */
 .task-card[data-status="Blocked"]:hover,
-.cd-card[data-status="阻塞"]:hover {
+.task-card[data-status="Blocked"]:active,
+.cd-card[data-status="阻塞"]:hover,
+.cd-card[data-status="阻塞"]:active {
   border-color: var(--danger);
   box-shadow: 0 0 0 1px var(--danger), 0 10px 26px var(--danger-dim);
 }
