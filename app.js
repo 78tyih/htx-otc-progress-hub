@@ -486,16 +486,16 @@ const FALLBACK = {
       "due": "2026-07-25"
     },
     {
-      "module": "Michael 张渠道商出金首单测试（待 Justin 审批）",
+      "module": "Michael 张渠道商出金首单测试",
       "pipGoal": "渠道拓展",
-      "progress": "待启动",
+      "progress": "进行中 10%",
       "output": "产出可交付结果并确认",
-      "next": "Justin 审批通过后联系 Siyuan.C 确认渠道商细节，启动首笔出金测试",
+      "next": "Justin 审批已通过：联系 Siyuan.C 确认渠道商细节，7-27（周一）完成首笔出金测试",
       "owner": "Sera",
       "priority": 4,
-      "status": "Next",
+      "status": "Doing",
       "workstream": "渠道拓展",
-      "due": "2026-07-25",
+      "due": "2026-07-27",
       "mirrorOf": "T-0006"
     }
   ],
@@ -529,11 +529,11 @@ const FALLBACK = {
       "status": "Blocked"
     },
     {
-      "task": "Michael 张渠道商出金首单测试（待 Justin 审批）",
+      "task": "Michael 张渠道商出金首单测试",
       "owner": "Sera",
-      "due": "2026-07-25",
+      "due": "2026-07-27",
       "priority": 4,
-      "status": "Next"
+      "status": "Doing"
     }
   ],
   "milestones": [
@@ -637,7 +637,7 @@ const FALLBACK = {
   ],
   "tasks": {
     "version": 1,
-    "updatedAt": "2026-07-23T16:56:39+08:00",
+    "updatedAt": "2026-07-25T03:42:33+08:00",
     "tasks": [
       {
         "id": "T-0001",
@@ -741,24 +741,24 @@ const FALLBACK = {
       },
       {
         "id": "T-0006",
-        "title": "Michael 张渠道商出金首单测试（待 Justin 审批）",
-        "status": "待启动",
+        "title": "Michael 张渠道商出金首单测试",
+        "status": "进行中",
         "priority": 4,
         "workstream": "渠道拓展",
         "owner": "Sera",
         "createdAt": "2026-07-23T16:56:39+08:00",
-        "updatedAt": "2026-07-23T16:56:39+08:00",
-        "dueAt": "2026-07-25T18:00:00+08:00",
-        "remindAt": "2026-07-24T09:00:00+08:00",
+        "updatedAt": "2026-07-25T03:42:33+08:00",
+        "dueAt": "2026-07-27T18:00:00+08:00",
+        "remindAt": "2026-07-27T09:00:00+08:00",
         "remindedAt": null,
         "completedAt": null,
-        "progress": 0,
-        "nextAction": "Justin 审批通过后联系 Siyuan.C 确认渠道商细节，启动首笔出金测试",
+        "progress": 10,
+        "nextAction": "Justin 审批已通过：联系 Siyuan.C 确认渠道商细节，7-27（周一）完成首笔出金测试",
         "outputCondition": "产出可交付结果并确认",
         "result": null,
         "source": "cli",
         "dependencies": [],
-        "updatedBy": "cli",
+        "updatedBy": "Sera",
         "completionEvidence": null,
         "archivedAt": null,
         "archiveReason": null

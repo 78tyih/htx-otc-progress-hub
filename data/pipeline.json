@@ -108,16 +108,16 @@
     "due": "2026-07-25"
   },
   {
-    "module": "Michael 张渠道商出金首单测试（待 Justin 审批）",
+    "module": "Michael 张渠道商出金首单测试",
     "pipGoal": "渠道拓展",
-    "progress": "待启动",
+    "progress": "进行中 10%",
     "output": "产出可交付结果并确认",
-    "next": "Justin 审批通过后联系 Siyuan.C 确认渠道商细节，启动首笔出金测试",
+    "next": "Justin 审批已通过：联系 Siyuan.C 确认渠道商细节，7-27（周一）完成首笔出金测试",
     "owner": "Sera",
     "priority": 4,
-    "status": "Next",
+    "status": "Doing",
     "workstream": "渠道拓展",
-    "due": "2026-07-25",
+    "due": "2026-07-27",
     "mirrorOf": "T-0006"
   }
 ]
