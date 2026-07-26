@@ -65,6 +65,23 @@ function validateTask(task, index) {
   if (task.archiveReason !== undefined && task.archiveReason !== null && typeof task.archiveReason !== 'string') {
     errors.push(`${where}.archiveReason: 须为字符串或 null`);
   }
+  // 结构化 Agent（v2）新增可选字段：存量任务缺省视为 null/false，不参与旧逻辑
+  if (task.parentTaskId !== undefined && task.parentTaskId !== null) {
+    if (typeof task.parentTaskId !== 'string' || !TASK_ID_RE.test(task.parentTaskId)) {
+      errors.push(`${where}.parentTaskId: 须为任务 ID（形如 T-0002）或 null`);
+    } else if (task.parentTaskId === task.id) {
+      errors.push(`${where}.parentTaskId: 不允许指向自身`);
+    }
+  }
+  if (task.createdFromConversation !== undefined && typeof task.createdFromConversation !== 'boolean') {
+    errors.push(`${where}.createdFromConversation: 须为布尔值`);
+  }
+  if (task.proposalId !== undefined && task.proposalId !== null && typeof task.proposalId !== 'string') {
+    errors.push(`${where}.proposalId: 须为字符串或 null`);
+  }
+  if (task.blockedReason !== undefined && task.blockedReason !== null && typeof task.blockedReason !== 'string') {
+    errors.push(`${where}.blockedReason: 须为字符串或 null`);
+  }
   // 归档规则：未完成归档必须填写原因
   if (isIso(task.archivedAt) && task.status !== '已完成' && !(typeof task.archiveReason === 'string' && task.archiveReason.trim())) {
     errors.push(`${where}: 未完成任务归档必须填写 archiveReason`);
@@ -110,6 +127,13 @@ function validateTasksFile(data) {
     if (!t || !Array.isArray(t.dependencies)) return;
     for (const dep of t.dependencies) {
       if (!seen.has(dep)) errors.push(`tasks[${i}](${t.id}).dependencies: 引用了不存在的任务 ${dep}`);
+    }
+  });
+  // parentTaskId 引用必须指向已存在的任务
+  data.tasks.forEach((t, i) => {
+    if (!t || t.parentTaskId === undefined || t.parentTaskId === null) return;
+    if (TASK_ID_RE.test(t.parentTaskId) && !seen.has(t.parentTaskId)) {
+      errors.push(`tasks[${i}](${t.id}).parentTaskId: 引用了不存在的任务 ${t.parentTaskId}`);
     }
   });
   return errors;

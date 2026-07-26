@@ -3063,7 +3063,47 @@ async function init() {
  * PIP 助手（服务端 /api/* 驱动；纯静态托管时自动降级提示）
  * 安全约定：前端不含任何密钥；状态变更必须经确认卡二次确认。
  * ============================================================ */
-const agentState = { open: false, busy: false, apiOnline: null, operator: 'Sera', contextTaskId: null };
+const agentState = {
+  open: false,
+  busy: false,
+  apiOnline: null,
+  operator: 'Sera',
+  contextTaskId: null,      // 旧版单任务上下文（兼容）
+  contextTaskIds: [],       // v2 结构化协议上下文
+  sessionId: null,          // 服务端会话上下文 ID（localStorage 持久化）
+  revision: null,           // 任务数据版本号（乐观锁）
+  writeEnabled: true,       // 线上未配置 KV 时为 false，禁用一切写入按钮
+};
+
+/* 会话 ID：仅在本地生成与保存，不携带任何身份信息（格式须匹配服务端 /^[A-Za-z0-9_-]{8,64}$/） */
+function agentSessionId() {
+  if (agentState.sessionId) return agentState.sessionId;
+  let id = '';
+  try { id = localStorage.getItem('pip-agent-session-id') || ''; } catch (e) { /* 隐私模式 */ }
+  if (!/^[A-Za-z0-9_-]{8,64}$/.test(id)) {
+    id = 's-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+    try { localStorage.setItem('pip-agent-session-id', id); } catch (e) { /* 忽略 */ }
+  }
+  agentState.sessionId = id;
+  return id;
+}
+
+/* 当前关联任务条 */
+function paintAgentContext(ids) {
+  const bar = document.getElementById('agentContext');
+  if (!bar) return;
+  const list = Array.isArray(ids) ? ids.filter(Boolean) : [];
+  if (!list.length) { bar.hidden = true; bar.innerHTML = ''; return; }
+  bar.hidden = false;
+  bar.innerHTML = '<span>当前关联：</span>';
+  list.slice(0, 5).forEach((id) => {
+    const chip = el('button', 'ctx-chip', id);
+    chip.type = 'button';
+    chip.title = '聚焦 ' + id;
+    chip.addEventListener('click', () => agentSend('打开 ' + id));
+    bar.appendChild(chip);
+  });
+}
 
 function escapeHtml(s) {
   return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -3084,11 +3124,15 @@ async function apiFetch(path, options) {
   const res = await fetch(path, opts);
   if (!res.ok) {
     let msg = 'HTTP ' + res.status;
+    let body = null;
     try {
-      const j = await res.json();
-      if (j && j.error) msg = j.error;
+      body = await res.json();
+      if (body && body.error) msg = body.error;
     } catch (err) { /* 非 JSON 响应 */ }
-    throw new Error(msg);
+    const err = new Error(msg);
+    err.status = res.status;
+    err.body = body;
+    throw err;
   }
   return res.json();
 }
@@ -3157,11 +3201,18 @@ function renderConfirmCard(confirm) {
   const row = el('div', 'ac-actions');
   const okBtn = el('button', 'btn btn-confirm', '确认更新');
   okBtn.type = 'button';
+  if (agentState.writeEnabled === false) {
+    okBtn.disabled = true;
+    okBtn.title = '线上持久化存储尚未配置（KV），当前为只读模式';
+  }
   const cancelBtn = el('button', 'btn btn-outline', '取消');
   cancelBtn.type = 'button';
   row.appendChild(okBtn);
   row.appendChild(cancelBtn);
   card.appendChild(row);
+  if (agentState.writeEnabled === false) {
+    card.appendChild(el('div', 'ac-meta', '⚠️ 线上持久化存储尚未配置（KV），确认按钮已禁用'));
+  }
   log.appendChild(card);
   log.scrollTop = log.scrollHeight;
 
@@ -3180,11 +3231,13 @@ async function doConfirmUpdate(confirm, card, okBtn, evidenceInput) {
     const payload = { taskId: confirm.taskId, evidence, operator: agentState.operator };
     if (confirm.patch) payload.patch = confirm.patch;
     else payload.newStatus = confirm.newStatus;
+    if (agentState.revision != null) payload.baseRevision = agentState.revision;
     const r = await apiFetch('/api/agent/confirm', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
     card.remove();
+    if (r.revision != null) agentState.revision = r.revision;
     if (r.noop) {
       agentBubble('sys', escapeHtml(r.message || '无需变更'));
       return;
@@ -3222,9 +3275,224 @@ async function doConfirmUpdate(confirm, card, okBtn, evidenceInput) {
     await refreshHubData();
     loadHubStatus();
   } catch (e) {
+    if (e && e.status === 409 && e.body && e.body.code === 'REVISION_CONFLICT') {
+      // 乐观锁冲突：数据已被其他会话更新 → 移除旧确认卡，刷新最新数据后请用户重新确认
+      card.remove();
+      if (e.body.revision != null) agentState.revision = e.body.revision;
+      agentBubble('sys', '⚠️ 数据已被其他会话更新，本次确认已取消。请查看最新任务数据后重新发起变更。');
+      await refreshHubData();
+      loadHubStatus();
+      return;
+    }
     okBtn.disabled = false;
     okBtn.textContent = '确认更新';
     agentBubble('sys', '⚠️ 更新失败：' + escapeHtml(e.message));
+  }
+}
+
+/* ---------- 任务选项卡（创建 / 拆解）：多选 + 编辑 + AI 建议标记 ---------- */
+
+const AO_FIELD_LABELS = { title: '任务名称', priority: '星级', owner: '负责人', dueAt: '截止时间', remindAt: '提醒时间', nextAction: '下一步', outputCondition: '输出条件', workstream: '工作流' };
+
+function aoField(labelText, input, suggested) {
+  const wrap = el('label', 'ao-field');
+  wrap.appendChild(el('span', null, labelText));
+  wrap.appendChild(input);
+  if (suggested) {
+    const tag = el('i', 'ao-sug', 'AI');
+    tag.title = 'AI 建议值，可直接修改';
+    wrap.appendChild(tag);
+  }
+  return wrap;
+}
+
+function aoTextInput(value) {
+  const input = el('input');
+  input.type = 'text';
+  input.value = value == null ? '' : String(value);
+  return input;
+}
+
+/* ISO(+08:00) ↔ datetime-local 本地墙钟 */
+function isoToLocalInput(iso) {
+  const m = String(iso || '').match(/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})/);
+  return m ? m[1] + 'T' + m[2] : '';
+}
+function localInputToIso(value) {
+  const m = String(value || '').match(/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})/);
+  return m ? m[1] + 'T' + m[2] + ':00+08:00' : null;
+}
+
+function renderOptionsCard(r) {
+  const log = document.getElementById('agentLog');
+  const options = Array.isArray(r.taskOptions) ? r.taskOptions : [];
+  if (!options.length || !r.proposalId) return;
+  const isDecompose = r.intent === 'decompose_task' || (r.parentTaskId != null && r.kind === 'decompose');
+  const card = el('div', 'agent-options');
+  card.appendChild(el('div', 'ao-title',
+    (isDecompose ? '拆解方案' : '新建任务方案') + '（' + options.length + ' 项，勾选并核对后确认）'));
+
+  // 拆解树（父任务 → 子任务）
+  if (isDecompose && r.parentTaskId) {
+    const tree = el('div', 'ao-tree');
+    const parent = (r.tasks || [])[0];
+    tree.textContent = (parent ? parent.id + '｜' + parent.title : r.parentTaskId) + '\n' +
+      options.map((o, i) => (i + 1) + '. → ' + o.title).join('\n');
+    card.appendChild(tree);
+  }
+
+  const items = options.map((opt, index) => {
+    const sug = opt.suggested || {};
+    const item = el('div', 'ao-item');
+    const check = el('input');
+    check.type = 'checkbox';
+    check.checked = true;
+    check.addEventListener('change', () => item.classList.toggle('off', !check.checked));
+    item.appendChild(check);
+
+    const body = el('div', 'ao-body');
+    const name = el('input', 'ao-name');
+    name.type = 'text';
+    name.value = opt.title || '';
+    name.maxLength = 100;
+    body.appendChild(name);
+
+    const grid = el('div', 'ao-grid');
+    const starSel = el('select');
+    [4, 3, 2, 1].forEach((v) => {
+      const o = el('option', null, v + ' 星');
+      o.value = String(v);
+      if (Number(opt.priority) === v) o.selected = true;
+      starSel.appendChild(o);
+    });
+    const owner = aoTextInput(opt.owner);
+    const due = el('input');
+    due.type = 'datetime-local';
+    due.value = isoToLocalInput(opt.dueAt);
+    const next = aoTextInput(opt.nextAction);
+    grid.appendChild(aoField('星级', starSel, sug.priority));
+    grid.appendChild(aoField('负责人', owner, sug.owner));
+    grid.appendChild(aoField('截止', due, sug.dueAt));
+    grid.appendChild(aoField('下一步', next, sug.nextAction));
+    body.appendChild(grid);
+
+    if (isDecompose && Array.isArray(opt.dependsOnOptions) && opt.dependsOnOptions.length) {
+      body.appendChild(el('div', 'ao-dep', '前置依赖：步骤 ' + opt.dependsOnOptions.map((i) => i + 1).join('、')));
+    }
+    item.appendChild(body);
+    card.appendChild(item);
+    return { index, check, name, starSel, owner, due, next };
+  });
+
+  const actions = el('div', 'ao-actions');
+  const toggle = el('button', 'ao-toggle', '全不选');
+  toggle.type = 'button';
+  const okBtn = el('button', 'btn btn-confirm', isDecompose ? '确认拆解' : '确认创建');
+  okBtn.type = 'button';
+  if (agentState.writeEnabled === false) {
+    okBtn.disabled = true;
+    okBtn.title = '线上持久化存储尚未配置（KV），当前为只读模式';
+  }
+  const cancelBtn = el('button', 'btn btn-outline', '取消');
+  cancelBtn.type = 'button';
+  actions.appendChild(toggle);
+  actions.appendChild(okBtn);
+  actions.appendChild(cancelBtn);
+  card.appendChild(actions);
+  if (agentState.writeEnabled === false) {
+    card.appendChild(el('div', 'ac-meta', '⚠️ 线上持久化存储尚未配置（KV），确认按钮已禁用'));
+  }
+  log.appendChild(card);
+  log.scrollTop = log.scrollHeight;
+
+  toggle.addEventListener('click', () => {
+    const anyChecked = items.some((it) => it.check.checked);
+    items.forEach((it) => {
+      it.check.checked = !anyChecked;
+      it.check.dispatchEvent(new Event('change'));
+    });
+    toggle.textContent = anyChecked ? '全选' : '全不选';
+  });
+  cancelBtn.addEventListener('click', () => {
+    card.remove();
+    agentBubble('sys', '已取消本次' + (isDecompose ? '拆解' : '创建') + '方案。');
+  });
+  okBtn.addEventListener('click', () => doExecuteProposal(r.proposalId, isDecompose, items, card, okBtn));
+}
+
+async function doExecuteProposal(proposalId, isDecompose, items, card, okBtn) {
+  const selected = items.filter((it) => it.check.checked).map((it) => it.index);
+  if (!selected.length) {
+    agentBubble('sys', '请至少勾选一项。');
+    return;
+  }
+  okBtn.disabled = true;
+  okBtn.textContent = '执行中…';
+  const edits = {};
+  items.forEach((it) => {
+    if (!it.check.checked) return;
+    const edit = {};
+    const title = it.name.value.trim();
+    if (title) edit.title = title;
+    edit.priority = Number(it.starSel.value);
+    const owner = it.owner.value.trim();
+    if (owner) edit.owner = owner;
+    const dueIso = localInputToIso(it.due.value);
+    if (dueIso) edit.dueAt = dueIso;
+    const next = it.next.value.trim();
+    if (next) edit.nextAction = next;
+    edits[it.index] = edit;
+  });
+  try {
+    const payload = { proposalId, selected, edits, operator: agentState.operator };
+    if (agentState.revision != null) payload.baseRevision = agentState.revision;
+    const r = await apiFetch('/api/agent/confirm', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    card.remove();
+    if (r.revision != null) agentState.revision = r.revision;
+    const created = Array.isArray(r.created) ? r.created : [];
+    let html = '✅ 已' + (isDecompose ? '拆解' : '创建') + ' <b>' + created.length + '</b> 个任务：<br>' +
+      created.map((t) => '<b>' + escapeHtml(t.id) + '</b>｜' + escapeHtml(t.title) +
+        '（' + escapeHtml(t.owner) + '，' + t.priority + ' 星，截止 ' + escapeHtml(String(t.dueAt).slice(0, 10)) + '）').join('<br>');
+    if (r.warnings && r.warnings.length) {
+      html += '<br><span class="ag-muted">' + r.warnings.map(escapeHtml).join('；') + '</span>';
+    }
+    if (r.notify) {
+      const n = r.notify;
+      if (n.configured === false) {
+        html += '<br><span class="ag-muted">手机通知：' + escapeHtml(n.message || '未配置通知渠道，已跳过') + '</span>';
+      } else if (n.mode === 'dual') {
+        const marks = '企业微信 ' + chanMark(n.wecom) + ' / 飞书 ' + chanMark(n.feishu);
+        if (r.notifyFailed && n.allFailed) {
+          html += '<br><span class="ag-warn">任务已写入，但通知发送失败（' + escapeHtml(marks) + '）。' + escapeHtml(chanErrors(n)) + '</span>';
+        } else if (r.notifyFailed && n.partial) {
+          html += '<br><span class="ag-warn">任务已写入，通知部分发送成功（' + escapeHtml(marks) + '）。' + escapeHtml(chanErrors(n)) + '</span>';
+        } else if (!r.notifyFailed) {
+          html += '<br><span class="ag-ok">手机通知：' + escapeHtml(n.message || '双通道推送成功') + '（' + escapeHtml(marks) + '）</span>';
+        }
+      }
+    }
+    agentBubble('agent', html);
+    if (created.length) {
+      agentState.contextTaskIds = created.map((t) => t.id).slice(0, 5);
+      paintAgentContext(agentState.contextTaskIds);
+    }
+    await refreshHubData();
+    loadHubStatus();
+  } catch (e) {
+    if (e && e.status === 409 && e.body && e.body.code === 'REVISION_CONFLICT') {
+      card.remove();
+      if (e.body.revision != null) agentState.revision = e.body.revision;
+      agentBubble('sys', '⚠️ 数据已被其他会话更新，本次' + (isDecompose ? '拆解' : '创建') + '已取消。请查看最新任务数据后重新发起。');
+      await refreshHubData();
+      loadHubStatus();
+      return;
+    }
+    okBtn.disabled = false;
+    okBtn.textContent = isDecompose ? '确认拆解' : '确认创建';
+    agentBubble('sys', '⚠️ 执行失败：' + escapeHtml(e.message));
   }
 }
 
