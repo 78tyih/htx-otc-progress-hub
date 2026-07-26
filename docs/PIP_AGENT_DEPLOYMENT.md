@@ -53,13 +53,43 @@ npm run dev       # 本地 dev-server（默认 8123 端口可用 python3 -m http
 
 ## 3. Vercel 部署
 
+### 3.0 配置 KV 存储（线上写入的前提，必须先做）
+
+**未配置 KV 时，所有写操作返回 `503 KV_NOT_CONFIGURED`，PIP 助手确认按钮禁用。**
+
+通过 Vercel 控制台配置（推荐）：
+1. 打开 Vercel 项目 → **Storage** 标签 → **Create Database** → 选择 **KV**
+2. 命名（如 `htx-otc-hub-kv`）→ 创建
+3. 创建后点击 **Connect to Project** → 选择当前项目 → 确认
+4. Vercel 会自动注入 `KV_REST_API_URL` 和 `KV_REST_API_TOKEN` 到所有环境
+5. 触发一次 Redeploy（Vercel 控制台 → Deployments → 最新 → Redeploy）
+
+通过 Vercel CLI 配置：
+```bash
+npx vercel login
+npx vercel kv create htx-otc-hub-kv
+npx vercel link                          # 关联到现有项目
+npx vercel kv connect htx-otc-hub-kv     # 连接到项目（自动注入环境变量）
+npx vercel --prod                         # 触发生产部署使环境变量生效
+```
+
+验证 KV 已配置：
+```bash
+curl -s https://htx-otc-progress-hub.vercel.app/api/status | python3 -m json.tool
+# 期望看到 "storage": { "backend": "kv", "kvConfigured": true, "writeEnabled": true }
+```
+
+### 3.1 部署要点
+
 1. Hobby 计划单部署上限 **12 个 Serverless Functions**（不含 `api/_lib`）。本版本未新增函数文件：方案查询折叠进 `GET /api/agent/chat?proposalId=`，方案执行折叠进 `POST /api/agent/confirm`。新增端点前先 `find api -name "*.js" -not -path "*/_lib/*" | wc -l`。
 2. 在 Vercel 项目设置中配置上文环境变量（同 key 多 environment 建议用 REST API v10 upsert，CLI 第二 environment 会静默失败）。
-3. 推送分支触发部署；部署后用 `GET /api/status` 验证：
+3. 推送 `main` 分支自动触发 Production 部署；部署后用 `GET /api/status` 验证：
+   - `deploy.commitSha` 与 main HEAD 一致
+   - `deploy.env === "production"`（非 preview）
    - `storage.kvConfigured === true` 且 `storage.writeEnabled === true`
    - `api.tokenConfigured` 与预期一致
    - `channels.wecom.configured` / `channels.feishu.configured` 与预期一致
-4. 首次访问会自动用部署包内 `data/*.json` 播种 KV（`hub:state`），之后以 KV 为真相源；看板静态展示层仍读部署包内 JSON，Agent 写操作实时生效于 API 层，随下次部署合入静态数据。
+4. 首次访问会自动用部署包内 `data/*.json` 播种 KV（`hub:state`），之后以 KV 为真相源。看板前端初始加载 `data/*.json` 快速首屏后立即调用 `/api/tasks` 覆盖为 KV 最新数据，保证刷新 / 跨浏览器 / 跨设备一致。
 
 ## 4. 安全验收清单
 
