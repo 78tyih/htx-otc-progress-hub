@@ -7,8 +7,10 @@
  *   - FS（本地 dev）：直接读写 data/*.json（与 CLI 共用同一真相源），
  *     通知状态额外落在 data/.hub-notify.json（不入库）
  *
- * 状态结构：{ version, seededAt, tasks, pipeline, weeklyLog, weeklyReviews, audit, notify:{ dedupe, lastTest, lastSuccessAt } }
+ * 状态结构：{ version, revision, seededAt, tasks, pipeline, weeklyLog, weeklyReviews, audit,
+ *             notify:{ dedupe, ... }, sessions:{}, proposals:{ items:[] } }
  * 写操作复用 agent/schema 校验，非法数据永不落盘。
+ * revision 为任务数据乐观锁版本号：confirm/proposals 等写操作 +1，客户端带回不一致返回 409。
  */
 'use strict';
 
@@ -28,6 +30,7 @@ const useKv = () => !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TO
 function seedState() {
   return {
     version: 1,
+    revision: 1, // 任务数据乐观锁版本号：每次任务写操作 +1，冲突返回 409
     seededAt: new Date().toISOString(),
     tasks: require('../../data/tasks.json'),
     pipeline: require('../../data/pipeline.json'),
@@ -35,7 +38,25 @@ function seedState() {
     weeklyReviews: require('../../data/weekly-reviews.json'),
     audit: require('../../data/audit-log.json'),
     notify: { dedupe: {}, dualDedupe: {}, channelStatus: {}, lastTest: null, lastSuccessAt: null },
+    sessions: {}, // PIP 助手短期会话上下文（sessionId → 上下文，含过期时间）
+    proposals: { items: [] }, // 待确认任务方案（创建/拆解），服务端统一生成任务 ID
   };
+}
+
+/** 兼容旧状态：补齐 v2 新增顶层字段 */
+function ensureV2Shape(state) {
+  if (typeof state.revision !== 'number' || !Number.isInteger(state.revision) || state.revision < 1) state.revision = 1;
+  if (!state.sessions || typeof state.sessions !== 'object' || Array.isArray(state.sessions)) state.sessions = {};
+  if (!state.proposals || typeof state.proposals !== 'object' || !Array.isArray(state.proposals.items)) {
+    state.proposals = { items: [] };
+  }
+  return state;
+}
+
+/** 任务数据写操作后调用：版本号 +1（通知状态保存不 bump） */
+function bumpRevision(state) {
+  state.revision = (typeof state.revision === 'number' ? state.revision : 1) + 1;
+  return state.revision;
 }
 
 /* ---------------- KV 后端 ---------------- */
@@ -87,12 +108,15 @@ async function loadState() {
     if (!state.weeklyReviews || !Array.isArray(state.weeklyReviews.reviews)) {
       state.weeklyReviews = { version: 1, reviews: [] };
     }
-    return state;
+    return ensureV2Shape(state);
   }
-  let notify = { dedupe: {}, dualDedupe: {}, channelStatus: {}, lastTest: null, lastSuccessAt: null };
+  let sidecar = null; // .hub-notify.json：通知状态 + 会话上下文 + 待确认方案（均不入库）
   try {
-    notify = JSON.parse(fs.readFileSync(NOTIFY_FILE, 'utf8'));
-  } catch { /* 首次运行无通知状态 */ }
+    sidecar = JSON.parse(fs.readFileSync(NOTIFY_FILE, 'utf8'));
+  } catch { /* 首次运行无侧边状态 */ }
+  let notify = sidecar && sidecar.notify ? sidecar.notify : { dedupe: {}, dualDedupe: {}, channelStatus: {}, lastTest: null, lastSuccessAt: null };
+  // 兼容旧格式（notify 字段直接平铺在文件顶层）
+  if (!sidecar || (!sidecar.notify && (sidecar.dedupe || sidecar.dualDedupe))) notify = sidecar || notify;
   if (!notify.dedupe) notify.dedupe = {};
   if (!notify.dualDedupe) notify.dualDedupe = {};
   if (!notify.channelStatus) notify.channelStatus = {};
@@ -100,8 +124,9 @@ async function loadState() {
   try {
     weeklyReviews = fsRead('weekly-reviews.json');
   } catch { /* 首次运行无复盘数据 */ }
-  return {
+  return ensureV2Shape({
     version: 1,
+    revision: sidecar && Number.isInteger(sidecar.revision) ? sidecar.revision : 1,
     seededAt: null,
     tasks: fsRead('tasks.json'),
     pipeline: fsRead('pipeline.json'),
@@ -109,7 +134,9 @@ async function loadState() {
     weeklyReviews,
     audit: fsRead('audit-log.json'),
     notify,
-  };
+    sessions: sidecar && sidecar.sessions && typeof sidecar.sessions === 'object' ? sidecar.sessions : {},
+    proposals: sidecar && sidecar.proposals && Array.isArray(sidecar.proposals.items) ? sidecar.proposals : { items: [] },
+  });
 }
 
 /** 保存状态（先过 schema 校验，非法抛错不落盘） */
@@ -132,7 +159,13 @@ async function saveState(state) {
   fsWriteAtomic('audit-log.json', state.audit);
   // 展示层 todo.json 全量投影（与 CLI 的 syncPresentation 行为一致）
   fsWriteAtomic('todo.json', projectTodoRows(state.tasks.tasks));
-  fs.writeFileSync(NOTIFY_FILE, JSON.stringify(state.notify, null, 2) + '\n', 'utf8');
+  ensureV2Shape(state);
+  fs.writeFileSync(NOTIFY_FILE, JSON.stringify({
+    notify: state.notify,
+    revision: state.revision,
+    sessions: state.sessions,
+    proposals: state.proposals,
+  }, null, 2) + '\n', 'utf8');
   syncFallbackQuiet();
 }
 
@@ -173,4 +206,4 @@ function recentAgentUpdates(state, limit = 8) {
     });
 }
 
-module.exports = { useKv, loadState, saveState, appendAuditEntry, recentAgentUpdates };
+module.exports = { useKv, loadState, saveState, appendAuditEntry, recentAgentUpdates, bumpRevision, ensureV2Shape };

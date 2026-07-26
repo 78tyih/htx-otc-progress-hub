@@ -2264,6 +2264,117 @@ a.res-card { text-decoration: none; color: inherit; cursor: pointer; }
 }
 .btn-confirm:disabled { opacity: .6; cursor: not-allowed; }
 
+/* 当前关联任务条 */
+.agent-context {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 6px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.agent-context .ctx-chip {
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--navy-border);
+  background: var(--navy-dim);
+  color: var(--navy-text);
+  font-weight: 600;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 任务选项卡（创建 / 拆解） */
+.agent-options {
+  align-self: stretch;
+  background: var(--navy-dim);
+  border: 1px solid var(--navy-border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ao-title { font-size: 13px; font-weight: 600; }
+.ao-tree {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  white-space: pre-wrap;
+  line-height: 1.6;
+  border-left: 2px solid var(--navy-border);
+  padding-left: 10px;
+}
+.ao-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.ao-item.off { opacity: .45; }
+.ao-item input[type="checkbox"] { margin-top: 4px; accent-color: var(--accent-navy); }
+.ao-body { flex: 1; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.ao-name {
+  width: 100%;
+  height: 30px;
+  padding: 0 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--text-main);
+  font-size: 12.5px;
+  font-weight: 600;
+  outline: none;
+}
+.ao-name:hover, .ao-name:focus { border-color: var(--border); background: var(--bg-solid); }
+.ao-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 10px;
+}
+.ao-field { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-muted); min-width: 0; }
+.ao-field > span { flex-shrink: 0; }
+.ao-field input, .ao-field select {
+  flex: 1;
+  min-width: 0;
+  height: 26px;
+  padding: 0 8px;
+  background: var(--bg-solid);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-main);
+  font-size: 11.5px;
+  outline: none;
+}
+.ao-field input:focus, .ao-field select:focus { border-color: var(--navy-text); }
+.ao-sug {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--navy-text);
+  background: var(--navy-dim);
+  border: 1px solid var(--navy-border);
+  border-radius: 4px;
+  padding: 0 4px;
+  line-height: 16px;
+}
+.ao-dep { font-size: 10.5px; color: var(--text-muted); }
+.ao-actions { display: flex; gap: 8px; align-items: center; }
+.ao-toggle {
+  background: none;
+  border: none;
+  color: var(--navy-text);
+  font-size: 11.5px;
+  cursor: pointer;
+  padding: 0;
+  margin-right: auto;
+}
+.ao-toggle:hover { text-decoration: underline; }
+
 .agent-inputbar {
   display: flex;
   gap: 8px;
