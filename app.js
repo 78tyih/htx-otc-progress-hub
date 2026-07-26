@@ -3056,6 +3056,9 @@ async function init() {
   initTaskModal();
   initAgent();
   loadHubStatus();
+  // 线上数据源优先：静态 data/*.json 仅作首次快照，立即从 /api/tasks 拉取 KV 最新数据覆盖
+  // 这样刷新页面 / 跨浏览器 / 跨设备都能看到同一份线上任务，Agent 写入后也立即反映
+  refreshHubData();
   applyDeepLink();
 }
 
@@ -3632,6 +3635,9 @@ async function loadHubStatus() {
   try {
     const s = await apiFetch('/api/status');
     agentState.apiOnline = true;
+    // 同步乐观锁版本号与写入开关（线上未配 KV 时禁用一切写入按钮）
+    if (typeof s.revision === 'number') agentState.revision = s.revision;
+    if (s.storage && typeof s.storage.writeEnabled === 'boolean') agentState.writeEnabled = s.storage.writeEnabled;
     paintHubStatus(s);
   } catch (e) {
     agentState.apiOnline = false;

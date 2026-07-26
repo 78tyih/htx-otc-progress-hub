@@ -39,6 +39,13 @@ module.exports = async (req, res) => {
     sendJson(res, 200, {
       ok: true,
       at: new Date().toISOString(),
+      // 当前部署来源（Vercel 自动注入；本地为 null）
+      deploy: {
+        commitSha: process.env.VERCEL_GIT_COMMIT_SHA ? String(process.env.VERCEL_GIT_COMMIT_SHA).slice(0, 12) : null,
+        commitMessage: process.env.VERCEL_GIT_COMMIT_MESSAGE || null,
+        ref: process.env.VERCEL_GIT_COMMIT_REF || null,
+        env: process.env.VERCEL_ENV || (process.env.VERCEL ? 'production' : 'development'),
+      },
       agent: {
         online: true,
         llmConfigured: llmConfigured(),
