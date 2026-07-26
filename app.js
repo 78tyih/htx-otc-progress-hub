@@ -3353,7 +3353,7 @@ function paintHubStatus(s) {
     paintChannel('feishu', null, true);
     return;
   }
-  const agentText = s.agent.llmConfigured ? 'PIP 助手在线（规则+LLM）' : 'PIP 助手在线（规则模式）';
+  const agentText = s.agent.llmConfigured ? 'PIP 助手在线（对话+LLM）' : 'PIP 助手在线（对话模式）';
   setChip('stAgent', 'st-on', agentText);
   const channels = s.channels || {};
   paintChannel('wecom', channels.wecom, false);
