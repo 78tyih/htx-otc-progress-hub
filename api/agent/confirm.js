@@ -1,51 +1,61 @@
 /**
- * POST /api/agent/confirm — 确认执行任务状态变更（写操作唯一入口）
+ * POST /api/agent/confirm — 确认执行 PIP 任务变更（写操作唯一入口）
  *
- * body: { taskId, newStatus, evidence?, operator? }
- * 流程：校验状态机 → 应用变更 → 记录 updatedAt/updatedBy/previousStatus/newStatus/
- *       completionEvidence/changeSource → 审计 → 展示层投影 → 手机通知（失败不阻断）
+ * body: { taskId, patch?: { status?, progress?, nextAction? }, newStatus?, evidence?, operator? }
+ * newStatus 为旧版兼容字段。所有字段经过白名单、状态机和 schema 校验。
  */
 'use strict';
 
 const { sendJson, readBody, methodGuard, dashboardUrl } = require('../_lib/http');
-const { loadState, saveState, appendAuditEntry, recentAgentUpdates } = require('../_lib/store');
+const { loadState, saveState, appendAuditEntry, recentAgentUpdates, useKv } = require('../_lib/store');
 const { sendPipNotification } = require('../_lib/dual');
 const { beijingNow } = require('../_lib/wecom');
-const { STATUS_TRANSITIONS, TASK_STATUSES } = require('../../agent/schema');
 const { projectPresentation } = require('../../agent/presenter');
+const { patchFromRequest } = require('../_lib/copilot');
+
+function displayValue(field, value) {
+  if (value == null || value === '') return '—';
+  return field === 'progress' ? String(value) + '%' : String(value);
+}
 
 module.exports = async (req, res) => {
   if (!methodGuard(req, res, 'POST')) return;
   try {
+    // Vercel 的函数文件系统不可持久写入，提前返回可操作的配置提示。
+    if (process.env.VERCEL && !useKv()) {
+      return sendJson(res, 503, {
+        ok: false,
+        error: '线上任务写入尚未配置 KV。请在 Vercel 设置 KV_REST_API_URL 和 KV_REST_API_TOKEN 后重新部署。',
+      });
+    }
+
     const body = await readBody(req);
     const taskId = String(body.taskId || '').toUpperCase();
-    const newStatus = String(body.newStatus || '');
     const evidence = typeof body.evidence === 'string' ? body.evidence.trim() : '';
     const operator = String(body.operator || '').trim() || 'Sera';
 
-    if (!TASK_STATUSES.includes(newStatus)) {
-      return sendJson(res, 400, { ok: false, error: `非法目标状态「${newStatus}」` });
-    }
-
     const state = await loadState();
-    const task = state.tasks.tasks.find((t) => t.id === taskId);
-    if (!task) return sendJson(res, 404, { ok: false, error: `未找到任务 ${taskId}` });
+    const task = state.tasks.tasks.find((item) => item.id === taskId);
+    if (!task) return sendJson(res, 404, { ok: false, error: '未找到任务 ' + taskId });
 
     const previousStatus = task.status;
-    if (previousStatus === newStatus) {
-      return sendJson(res, 200, { ok: true, noop: true, message: `${taskId} 已处于「${newStatus}」`, task });
-    }
-    const allowed = STATUS_TRANSITIONS[previousStatus] || [];
-    if (!allowed.includes(newStatus)) {
-      return sendJson(res, 409, { ok: false, error: `不允许从「${previousStatus}」迁移到「${newStatus}」` });
+    const candidate = patchFromRequest(body, task);
+    if (candidate.error) return sendJson(res, 409, { ok: false, error: candidate.error });
+    if (!candidate.changes.length) {
+      return sendJson(res, 200, {
+        ok: true,
+        noop: true,
+        message: taskId + ' 的任务数据没有变化',
+        task,
+      });
     }
 
-    // 应用变更
     const nowIso = new Date().toISOString();
-    task.status = newStatus;
-    if (newStatus === '已完成') {
+    for (const field of Object.keys(candidate.patch)) task[field] = candidate.patch[field];
+
+    if (task.status === '已完成') {
       task.progress = 100;
-      task.completedAt = nowIso;
+      task.completedAt = task.completedAt || nowIso;
       if (evidence) {
         task.completionEvidence = evidence;
         task.result = evidence;
@@ -55,7 +65,6 @@ module.exports = async (req, res) => {
     task.updatedAt = nowIso;
     state.tasks.updatedAt = nowIso;
 
-    // 审计（changeSource: agent）
     appendAuditEntry(state, {
       actor: 'web',
       action: 'agent-update',
@@ -63,36 +72,40 @@ module.exports = async (req, res) => {
       detail: JSON.stringify({
         operator,
         previousStatus,
-        newStatus,
+        newStatus: task.status,
+        changes: candidate.changes,
         completionEvidence: task.completionEvidence || null,
         changeSource: 'agent',
       }),
     });
 
-    // 展示层投影（todo 读取时实时投影，这里更新 pipeline / weekly-log）
-    const projected = projectPresentation({ tasks: state.tasks.tasks, pipeline: state.pipeline, weeklyLog: state.weeklyLog });
+    const projected = projectPresentation({
+      tasks: state.tasks.tasks,
+      pipeline: state.pipeline,
+      weeklyLog: state.weeklyLog,
+    });
     state.pipeline = projected.pipeline;
     state.weeklyLog = projected.weeklyLog;
 
-    // 先落库（校验失败则不会有任何通知，杜绝“幽灵推送”）
+    // 先落库，成功后才通知，避免出现“通知已发但任务未写入”。
     await saveState(state);
 
-    // 双通道手机通知：企业微信（Sera）+ 飞书（Simon），失败不影响已落库的状态更新
+    const changeText = candidate.changes
+      .map((change) => change.label + '：' + displayValue(change.field, change.previousValue) + ' → ' + displayValue(change.field, change.newValue))
+      .join('；');
     const dual = await sendPipNotification(state, {
-      eventId: `task-status:${task.id}:${newStatus}:${nowIso.slice(0, 13)}`, // 小时分桶：同时段防重，后续真实变更仍可推送
-      title: '【PIP 任务状态更新】',
+      eventId: 'task-update:' + task.id + ':' + nowIso,
+      title: '【PIP 任务进度更新】',
       lines: [
-        `任务：${task.id}｜${task.title}`,
-        `原状态：${previousStatus}`,
-        `新状态：${newStatus}`,
-        `负责人：${task.owner || '—'}`,
-        `操作人：${operator}`,
-        `时间：${beijingNow()}（北京时间）`,
+        '任务：' + task.id + '｜' + task.title,
+        '变更：' + changeText,
+        '负责人：' + (task.owner || '—'),
+        '操作人：' + operator,
+        '时间：' + beijingNow() + '（北京时间）',
       ],
       linkBase: dashboardUrl(req),
       linkParams: { taskId: task.id },
     });
-    // 通知防重复/分渠道最近成功时间有变更时尽力二次落库
     if (dual.wecom.success || dual.feishu.success) {
       try { await saveState(state); } catch { /* 通知状态丢失不阻断 */ }
     }
@@ -102,7 +115,8 @@ module.exports = async (req, res) => {
       ok: true,
       task,
       previousStatus,
-      newStatus,
+      newStatus: task.status,
+      changes: candidate.changes,
       notify: !anyConfigured
         ? { configured: false, message: '未配置通知渠道（WECHAT_WEBHOOK_URL / FEISHU_WEBHOOK_URL），已跳过通知' }
         : {
