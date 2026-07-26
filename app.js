@@ -3063,7 +3063,7 @@ async function init() {
  * PIP 助手（服务端 /api/* 驱动；纯静态托管时自动降级提示）
  * 安全约定：前端不含任何密钥；状态变更必须经确认卡二次确认。
  * ============================================================ */
-const agentState = { open: false, busy: false, apiOnline: null, operator: 'Sera' };
+const agentState = { open: false, busy: false, apiOnline: null, operator: 'Sera', contextTaskId: null };
 
 function escapeHtml(s) {
   return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -3129,13 +3129,22 @@ function renderAgentTaskCards(tasks) {
   log.scrollTop = log.scrollHeight;
 }
 
-/* 状态变更确认卡：用户点「确认更新」后才调用写接口 */
+/* 任务变更确认卡：用户点「确认更新」后才调用写接口 */
 function renderConfirmCard(confirm) {
   const log = document.getElementById('agentLog');
   const card = el('div', 'agent-confirm');
+  const changes = Array.isArray(confirm.changes) && confirm.changes.length
+    ? confirm.changes
+    : [{ field: 'status', label: '状态', previousValue: confirm.previousStatus, newValue: confirm.newStatus }];
+  const changeHtml = changes.map((change) => {
+    const before = change.field === 'progress' ? String(change.previousValue) + '%' : String(change.previousValue == null ? '—' : change.previousValue);
+    const after = change.field === 'progress' ? String(change.newValue) + '%' : String(change.newValue == null ? '—' : change.newValue);
+    return '<div class="ac-meta">' + escapeHtml(change.label || change.field) + '：' + escapeHtml(before) + ' → ' + escapeHtml(after) + '</div>';
+  }).join('');
   card.innerHTML =
-    '<div class="ac-title">确认把 <b>' + escapeHtml(confirm.taskId) + '｜' + escapeHtml(confirm.title) + '</b> 修改为「' + escapeHtml(confirm.newStatus) + '」吗？</div>' +
-    '<div class="ac-meta">当前状态：' + escapeHtml(confirm.previousStatus) + ' ｜ 负责人：' + escapeHtml(confirm.owner || '—') + ' ｜ 操作人：' + escapeHtml(agentState.operator) + '</div>';
+    '<div class="ac-title">确认更新 <b>' + escapeHtml(confirm.taskId) + '｜' + escapeHtml(confirm.title) + '</b> 吗？</div>' +
+    changeHtml +
+    '<div class="ac-meta">负责人：' + escapeHtml(confirm.owner || '—') + ' ｜ 操作人：' + escapeHtml(agentState.operator) + '</div>';
 
   let evidenceInput = null;
   if (confirm.needsEvidence) {
@@ -3158,7 +3167,7 @@ function renderConfirmCard(confirm) {
 
   cancelBtn.addEventListener('click', () => {
     card.remove();
-    agentBubble('sys', '已取消本次状态变更。');
+    agentBubble('sys', '已取消本次任务变更。');
   });
   okBtn.addEventListener('click', () => doConfirmUpdate(confirm, card, okBtn, evidenceInput));
 }
@@ -3168,16 +3177,26 @@ async function doConfirmUpdate(confirm, card, okBtn, evidenceInput) {
   okBtn.textContent = '更新中…';
   const evidence = evidenceInput ? evidenceInput.value.trim() : '';
   try {
+    const payload = { taskId: confirm.taskId, evidence, operator: agentState.operator };
+    if (confirm.patch) payload.patch = confirm.patch;
+    else payload.newStatus = confirm.newStatus;
     const r = await apiFetch('/api/agent/confirm', {
       method: 'POST',
-      body: JSON.stringify({ taskId: confirm.taskId, newStatus: confirm.newStatus, evidence, operator: agentState.operator }),
+      body: JSON.stringify(payload),
     });
     card.remove();
     if (r.noop) {
       agentBubble('sys', escapeHtml(r.message || '无需变更'));
       return;
     }
-    let html = '✅ 已更新：<b>' + escapeHtml(r.task.id) + '｜' + escapeHtml(r.task.title) + '</b> 「' + escapeHtml(r.previousStatus) + '」→「' + escapeHtml(r.newStatus) + '」';
+    agentState.contextTaskId = r.task.id;
+    const changed = (r.changes || []).map((change) => {
+      const before = change.field === 'progress' ? String(change.previousValue) + '%' : String(change.previousValue == null ? '—' : change.previousValue);
+      const after = change.field === 'progress' ? String(change.newValue) + '%' : String(change.newValue == null ? '—' : change.newValue);
+      return escapeHtml(change.label || change.field) + '：' + escapeHtml(before) + ' → ' + escapeHtml(after);
+    });
+    let html = '✅ 已更新：<b>' + escapeHtml(r.task.id) + '｜' + escapeHtml(r.task.title) + '</b>';
+    if (changed.length) html += '<br>' + changed.join('<br>');
     if (r.notify) {
       const n = r.notify;
       if (n.configured === false) {
@@ -3216,8 +3235,12 @@ async function agentSend(text) {
   agentBubble('user', escapeHtml(msg));
   const thinking = agentBubble('agent', '<span class="ag-muted">思考中…</span>');
   try {
-    const r = await apiFetch('/api/agent/chat', { method: 'POST', body: JSON.stringify({ message: msg }) });
+    const r = await apiFetch('/api/agent/chat', {
+      method: 'POST',
+      body: JSON.stringify({ message: msg, contextTaskId: agentState.contextTaskId }),
+    });
     thinking.remove();
+    if (r.contextTaskId) agentState.contextTaskId = r.contextTaskId;
     if (r.reply) agentBubble('agent', mdLite(r.reply));
     if (r.tasks && r.tasks.length) renderAgentTaskCards(r.tasks);
     if (r.confirm) renderConfirmCard(r.confirm);
@@ -3384,7 +3407,7 @@ function initAgent() {
   document.getElementById('btnAgentTestAll').addEventListener('click', () => runNotifyTestAll());
 
   agentBubble('agent',
-    '我是 PIP 助手，可以帮你核对已完成、未完成、逾期和阻塞任务，也可以更新任务状态并发送手机通知。');
+    '我是 PIP 助手。你可以直接告诉我某项任务的当前进度和下一步，我会整理成确认卡；也可以问“接下来该做什么”，让我按优先级和截止时间规划。');
 }
 
 document.addEventListener('DOMContentLoaded', init);
