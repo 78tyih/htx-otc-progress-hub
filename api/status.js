@@ -40,7 +40,7 @@ module.exports = async (req, res) => {
         online: true,
         llmConfigured: llmConfigured(),
         model: llmConfigured() ? (process.env.LLM_MODEL || 'gpt-4o-mini') : null,
-        mode: llmConfigured() ? 'rules+llm' : 'rules',
+        mode: llmConfigured() ? 'copilot+llm' : 'copilot',
       },
       webhook: {
         configured: wecomConfigured(),
