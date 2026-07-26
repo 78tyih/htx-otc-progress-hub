@@ -29,6 +29,22 @@ module.exports = async (req, res) => {
     // 本地完成对话式任务同步与规划，不把新增上下文发送到外部服务。
     const conversational = routeConversation(message, ctx.tasks, contextTaskId, ctx.now);
     if (conversational) {
+      if (Array.isArray(conversational.tasks) && conversational.tasks.length) {
+        const classified = classifyAll(ctx.tasks, ctx.now);
+        const cards = new Map(classified.map((item) => [item.task.id, {
+          id: item.task.id,
+          title: item.task.title,
+          status: item.task.status,
+          owner: item.task.owner,
+          dueAt: item.task.dueAt,
+          progress: item.task.progress,
+          class: item.class,
+          label: item.label,
+          basis: item.basis,
+          suggestion: item.suggestion,
+        }]));
+        conversational.tasks = conversational.tasks.map((task) => cards.get(task.id)).filter(Boolean);
+      }
       return sendJson(res, 200, { ok: true, source: 'copilot', ...conversational });
     }
 
