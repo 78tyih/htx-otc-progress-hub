@@ -29,13 +29,16 @@ const INTENTS = [
   'query_tasks',
   'update_task',
   'create_task',
+  'create_if_not_found',
   'decompose_task',
   'plan_tasks',
+  'query_projects',
+  'create_project',
   'clarify',
   'no_action',
 ];
 
-const OPERATIONS = ['update', 'create', 'decompose'];
+const OPERATIONS = ['update', 'create', 'decompose', 'create_project'];
 
 /** update patch 允许写入的字段（白名单；其余字段一律丢弃） */
 const PATCH_FIELDS = [
@@ -98,6 +101,7 @@ function sanitizeProtocol(raw) {
       : [],
     operations: [],
     taskOptions: [],
+    projectOption: null,
     warnings,
     missingFields: Array.isArray(raw.missingFields) ? raw.missingFields.map(String).slice(0, 10) : [],
   };
@@ -132,6 +136,12 @@ function sanitizeProtocol(raw) {
     out.taskOptions = raw.taskOptions.slice(0, 12).map((opt) => sanitizeTaskOption(opt)).filter(Boolean);
   }
 
+  // create_project：项目选项单独清洗
+  if (raw.intent === 'create_project' && raw.projectOption) {
+    out.projectOption = sanitizeProjectOption(raw.projectOption);
+    if (out.projectOption) out.operations.push({ operation: 'create_project' });
+  }
+
   return out;
 }
 
@@ -139,6 +149,13 @@ function sanitizeProtocol(raw) {
 const OPTION_FIELDS = [
   'title', 'status', 'priority', 'workstream', 'owner', 'dueAt', 'remindAt',
   'progress', 'nextAction', 'outputCondition', 'dependencies', 'parentTaskId', 'note',
+  'projectId', 'blockedReason', 'rawUserMessage',
+];
+
+/** 项目选项字段白名单（create_project） */
+const PROJECT_OPTION_FIELDS = [
+  'title', 'aliases', 'status', 'owner', 'priority', 'summary', 'blockers',
+  'nextAction', 'suggested', 'rawUserMessage',
 ];
 
 function sanitizeTaskOption(opt) {
@@ -161,6 +178,27 @@ function sanitizeTaskOption(opt) {
   return out;
 }
 
+/** 清洗 create_project 的项目选项（白名单 + 类型收敛） */
+function sanitizeProjectOption(opt) {
+  if (!opt || typeof opt !== 'object' || Array.isArray(opt)) return null;
+  const out = { suggested: {} };
+  const src = opt.suggested && typeof opt.suggested === 'object' ? opt.suggested : {};
+  for (const field of PROJECT_OPTION_FIELDS) {
+    if (hasOwn(opt, field) && opt[field] !== undefined) out[field] = opt[field];
+    if (src[field] === true) out.suggested[field] = true;
+  }
+  if (typeof opt.title !== 'string' || !opt.title.trim()) return null;
+  out.title = out.title.trim().slice(0, 100);
+  if (!Array.isArray(out.aliases)) out.aliases = [];
+  else out.aliases = out.aliases.map(String).map((s) => s.trim()).filter(Boolean).slice(0, 20);
+  if (!Array.isArray(out.blockers)) out.blockers = [];
+  else out.blockers = out.blockers.map(String).map((s) => s.trim()).filter(Boolean).slice(0, 20);
+  if (typeof out.summary !== 'string') out.summary = '';
+  if (typeof out.nextAction !== 'string') out.nextAction = '';
+  if (typeof out.owner !== 'string' || !out.owner.trim()) out.owner = 'Sera';
+  return out;
+}
+
 /** 统一成功响应包装（保留调用方附加字段，协议字段置顶） */
 function protocolResponse(proto, extra) {
   return Object.assign(
@@ -173,6 +211,7 @@ function protocolResponse(proto, extra) {
       contextTaskIds: proto.contextTaskIds || [],
       operations: proto.operations || [],
       taskOptions: proto.taskOptions || [],
+      projectOption: proto.projectOption || null,
       warnings: proto.warnings || [],
       missingFields: proto.missingFields || [],
     },
@@ -187,9 +226,11 @@ module.exports = {
   PATCH_FIELDS,
   FIELD_LABELS,
   OPTION_FIELDS,
+  PROJECT_OPTION_FIELDS,
   newRequestId,
   newProposalId,
   sanitizeProtocol,
   sanitizeTaskOption,
+  sanitizeProjectOption,
   protocolResponse,
 };

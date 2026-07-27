@@ -15,7 +15,7 @@ const { sendJson, readBody, methodGuard, dashboardUrl } = require('../../_lib/ht
 const { loadState, saveState } = require('../../_lib/store');
 const { wecomConfigured, beijingNow } = require('../../_lib/wecom');
 const { feishuConfigured } = require('../../_lib/feishu');
-const { sendPipNotification } = require('../../_lib/dual');
+const { sendDirect } = require('../../_lib/dual');
 
 const MAX_LEN = 500;
 const MAX_ITEMS = 10;
@@ -101,7 +101,7 @@ module.exports = async (req, res) => {
       section: parseSection(body),
     };
     const state = await loadState();
-    const dual = await sendPipNotification(state, {
+    const dual = await sendDirect(state, {
       eventId: `summary:${beijingNow().slice(0, 13)}:${parsed.scope}`, // 小时分桶防重
       title: '【PIP 看板优化完成】',
       lines: buildSummaryLines(parsed),

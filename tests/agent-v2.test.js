@@ -275,7 +275,7 @@ async function main() {
   delete process.env.PIP_AGENT_API_TOKEN;
   delete process.env.WECHAT_WEBHOOK_URL;
 
-  // 19. 通知只在写入成功后发送（本地 HTTP 桩捕获 POST）
+  // 19. 通知分级：写入失败不发送；普通更新入队不即时发送；critical 即时发送；flush 发送汇总
   const posts = [];
   const stub = http.createServer((req, res2) => {
     let raw = '';
@@ -293,8 +293,30 @@ async function main() {
   check('notify: 写入失败不发送通知', r.status === 409 && posts.length === 0, `posts=${posts.length}`);
   state = await store.loadState();
   r = await callConfirm({ taskId: 'T-0006', patch: { progress: 66 }, baseRevision: state.revision, operator: 'Sera' });
-  check('notify: 写入成功后发送通知', r.status === 200 && posts.length === 1 && posts[0].includes('T-0006') && posts[0].includes('markdown'), `posts=${posts.length}`);
-  check('notify: 通知结果随响应返回渠道状态', r.data.notify && r.data.notify.configured === true && r.data.notify.wecom && r.data.notify.wecom.success === true, JSON.stringify(r.data.notify || {}).slice(0, 200));
+  // 普通任务进度更新 → normal → 入队，不即时发送
+  check('notify: 普通更新入队不即时发送', r.status === 200 && posts.length === 0, `posts=${posts.length}`);
+  check('notify: 响应报告 queued 状态', r.data.notify && r.data.notify.configured === true && r.data.notify.queued === true, JSON.stringify(r.data.notify || {}).slice(0, 200));
+
+  // flush 汇总 → 发送一条汇总消息
+  const notifyBus = require('../api/_lib/notify-bus');
+  const { sendDirect } = require('../api/_lib/dual');
+  state = await store.loadState();
+  console.log('DEBUG: queue len before flush:', state.notify.queue.length, 'sendDirect type:', typeof sendDirect);
+  const flushRes = await notifyBus.flush(state, { sender: sendDirect, force: true });
+  console.log('DEBUG: flushRes:', JSON.stringify({ sent: flushRes.sent, reason: flushRes.reason, items: flushRes.items, dualOk: flushRes.dual && flushRes.dual.ok, dualPartial: flushRes.dual && flushRes.dual.partial }));
+  check('notify: flush 发送汇总成功', flushRes.sent === true && posts.length === 1, `sent=${flushRes.sent}, posts=${posts.length}`);
+  check('notify: 汇总消息包含 30 分钟工作摘要标题', posts[0].includes('30 分钟工作摘要'), `post=${posts[0].slice(0, 100)}`);
+  try { await store.saveState(state); } catch { /* 状态保存不阻断测试 */ }
+
+  // critical 事件 → 即时发送
+  state = await store.loadState();
+  const criticalResult = await notifyBus.enqueue(state, {
+    type: 'task', op: 'blocked', taskId: 'T-0006', title: '测试阻塞',
+    reason: '测试即时推送', suggestedAction: '确认后继续',
+  }, { sender: sendDirect });
+  check('notify: critical 事件即时推送', criticalResult.action === 'sent-immediate' && posts.length === 2, `action=${criticalResult.action}, posts=${posts.length}`);
+  check('notify: 即时推送标题为【PIP｜需要你处理】', posts[1].includes('需要你处理'), `post=${posts[1].slice(0, 100)}`);
+
   delete process.env.WECHAT_WEBHOOK_URL;
   await new Promise((resolve) => stub.close(resolve));
 

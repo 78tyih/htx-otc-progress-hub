@@ -3506,15 +3506,60 @@ async function agentSend(text) {
   agentBubble('user', escapeHtml(msg));
   const thinking = agentBubble('agent', '<span class="ag-muted">思考中…</span>');
   try {
+    const payload = { message: msg, operator: agentState.operator };
+    if (agentState.sessionId) payload.sessionId = agentState.sessionId;
+    if (agentState.contextTaskId) payload.contextTaskId = agentState.contextTaskId;
     const r = await apiFetch('/api/agent/chat', {
       method: 'POST',
-      body: JSON.stringify({ message: msg, contextTaskId: agentState.contextTaskId }),
+      body: JSON.stringify(payload),
     });
     thinking.remove();
-    if (r.contextTaskId) agentState.contextTaskId = r.contextTaskId;
+    // 同步乐观锁版本号、写入开关、会话上下文
+    if (typeof r.revision === 'number') agentState.revision = r.revision;
+    if (typeof r.writeEnabled === 'boolean') agentState.writeEnabled = r.writeEnabled;
+    if (r.sessionId) agentState.sessionId = r.sessionId;
+    const ctxIds = Array.isArray(r.contextTaskIds) && r.contextTaskIds.length
+      ? r.contextTaskIds
+      : (r.contextTaskId ? [r.contextTaskId] : []);
+    if (ctxIds.length) {
+      agentState.contextTaskIds = ctxIds.slice(0, 5);
+      agentState.contextTaskId = ctxIds[0];
+      paintAgentContext(agentState.contextTaskIds);
+    }
+    // 警告条（只读模式等）
+    if (Array.isArray(r.warnings) && r.warnings.length) {
+      agentBubble('sys', r.warnings.map(escapeHtml).join('；'));
+    }
+    // 条件新建元数据（告诉用户匹配结果）
+    if (r.createIfNotFound && !r.taskOptions.length && !r.confirm) {
+      const cif = r.createIfNotFound;
+      let m = '<b>条件新建</b>：';
+      m += cif.matched ? '已匹配到现有任务，生成更新卡。' : '未找到匹配任务，生成新建卡。';
+      if (cif.matchedTaskId) m += '（命中 ' + escapeHtml(cif.matchedTaskId) + '）';
+      agentBubble('agent', m);
+    }
+    // 项目候选（多候选时展示可点击列表）
+    if (r.candidates && Array.isArray(r.candidates) && r.candidates.length) {
+      renderCandidatesCard(r.candidates);
+    }
+    // 项目列表（query_projects 意图）
+    if (r.projects && Array.isArray(r.projects) && r.projects.length) {
+      renderProjectListCard(r.projects);
+    }
+    // 文本回复
     if (r.reply) agentBubble('agent', mdLite(r.reply));
+    // 任务卡片（查询结果）
     if (r.tasks && r.tasks.length) renderAgentTaskCards(r.tasks);
+    // 更新确认卡（update_task 意图）
     if (r.confirm) renderConfirmCard(r.confirm);
+    // 新建/拆解/条件新建任务方案卡（create_task / decompose_task / create_if_not_found）
+    if (r.taskOptions && r.taskOptions.length && r.proposalId) {
+      renderOptionsCard(r);
+    }
+    // 新建项目方案卡（create_project 意图）
+    if (r.projectOption && r.proposalId && r.intent === 'create_project') {
+      renderProjectCreateCard(r);
+    }
     if (r.notifyTest) await runNotifyTestAll();
   } catch (e) {
     thinking.remove();
@@ -3525,6 +3570,156 @@ async function agentSend(text) {
     }
   } finally {
     agentState.busy = false;
+  }
+}
+
+/* ---------- 项目列表卡（query_projects 意图） ---------- */
+function renderProjectListCard(projects) {
+  const log = document.getElementById('agentLog');
+  const card = el('div', 'agent-options');
+  card.appendChild(el('div', 'ao-title', '我正在跟进的项目（' + projects.length + '）'));
+  projects.forEach((p) => {
+    const row = el('div', 'ao-item');
+    row.style.cursor = 'pointer';
+    const body = el('div', 'ao-body');
+    const name = el('div', 'ao-dep', p.id + '｜' + p.title + (p.status ? '（' + p.status + '）' : ''));
+    body.appendChild(name);
+    if (p.owner) body.appendChild(el('div', 'ac-meta', '负责人：' + p.owner));
+    if (p.nextAction) body.appendChild(el('div', 'ac-meta', '下一步：' + p.nextAction));
+    if (Array.isArray(p.taskIds) && p.taskIds.length) {
+      body.appendChild(el('div', 'ac-meta', '关联任务：' + p.taskIds.join('、')));
+    }
+    row.appendChild(body);
+    row.addEventListener('click', () => agentSend('打开 ' + p.id));
+    card.appendChild(row);
+  });
+  log.appendChild(card);
+  log.scrollTop = log.scrollHeight;
+}
+
+/* ---------- 多候选卡（项目/任务候选，可点击选择） ---------- */
+function renderCandidatesCard(candidates) {
+  const log = document.getElementById('agentLog');
+  const card = el('div', 'agent-options');
+  card.appendChild(el('div', 'ao-title', '找到多个候选，点击选择（最多 3 项）'));
+  candidates.slice(0, 3).forEach((c) => {
+    const row = el('div', 'ao-item');
+    row.style.cursor = 'pointer';
+    const body = el('div', 'ao-body');
+    const label = c.id ? c.id + '｜' + (c.title || c.name || '') : (c.title || c.name || '');
+    body.appendChild(el('div', 'ao-dep', escapeHtml(label)));
+    if (c.reason) body.appendChild(el('div', 'ac-meta', escapeHtml(c.reason)));
+    row.appendChild(body);
+    row.addEventListener('click', () => agentSend('打开 ' + c.id));
+    card.appendChild(row);
+  });
+  log.appendChild(card);
+  log.scrollTop = log.scrollHeight;
+}
+
+/* ---------- 新建项目确认卡（create_project 意图） ---------- */
+function renderProjectCreateCard(r) {
+  const log = document.getElementById('agentLog');
+  const opt = r.projectOption || {};
+  const card = el('div', 'agent-options');
+  card.appendChild(el('div', 'ao-title', '新建项目方案（核对后确认）'));
+  const body = el('div', 'ao-body');
+  const name = el('input', 'ao-name');
+  name.type = 'text';
+  name.value = opt.title || '';
+  name.maxLength = 60;
+  body.appendChild(name);
+  const grid = el('div', 'ao-grid');
+  const owner = aoTextInput(opt.owner);
+  const starSel = el('select');
+  [4, 3, 2, 1].forEach((v) => {
+    const o = el('option', null, v + ' 星');
+    o.value = String(v);
+    if (Number(opt.priority) === v) o.selected = true;
+    starSel.appendChild(o);
+  });
+  const statusSel = el('select');
+  ['待启动', '进行中', '受阻', '已交付', '已暂停'].forEach((v) => {
+    const o = el('option', null, v);
+    o.value = v;
+    if (opt.status === v) o.selected = true;
+    statusSel.appendChild(o);
+  });
+  const aliases = aoTextInput(Array.isArray(opt.aliases) ? opt.aliases.join('、') : (opt.aliases || ''));
+  aliases.placeholder = '别名（用、分隔）';
+  grid.appendChild(aoField('星级', starSel, (opt.suggested || {}).priority));
+  grid.appendChild(aoField('负责人', owner, (opt.suggested || {}).owner));
+  grid.appendChild(aoField('状态', statusSel, (opt.suggested || {}).status));
+  grid.appendChild(aoField('别名', aliases, (opt.suggested || {}).aliases));
+  body.appendChild(grid);
+  const next = aoTextInput(opt.nextAction);
+  next.placeholder = '下一步行动';
+  body.appendChild(aoField('下一步', next, (opt.suggested || {}).nextAction));
+  card.appendChild(body);
+
+  const actions = el('div', 'ao-actions');
+  const okBtn = el('button', 'btn btn-confirm', '确认创建项目');
+  okBtn.type = 'button';
+  if (agentState.writeEnabled === false) {
+    okBtn.disabled = true;
+    okBtn.title = '线上持久化存储尚未配置（KV），当前为只读模式';
+  }
+  const cancelBtn = el('button', 'btn btn-outline', '取消');
+  cancelBtn.type = 'button';
+  actions.appendChild(okBtn);
+  actions.appendChild(cancelBtn);
+  card.appendChild(actions);
+  if (agentState.writeEnabled === false) {
+    card.appendChild(el('div', 'ac-meta', '⚠️ 线上持久化存储尚未配置（KV），确认按钮已禁用'));
+  }
+  log.appendChild(card);
+  log.scrollTop = log.scrollHeight;
+
+  cancelBtn.addEventListener('click', () => {
+    card.remove();
+    agentBubble('sys', '已取消本次项目创建方案。');
+  });
+  okBtn.addEventListener('click', () => doExecuteProjectProposal(r.proposalId, name, starSel, owner, statusSel, aliases, next, card, okBtn));
+}
+
+async function doExecuteProjectProposal(proposalId, name, starSel, owner, statusSel, aliases, next, card, okBtn) {
+  okBtn.disabled = true;
+  okBtn.textContent = '执行中…';
+  const edits = {
+    0: {
+      title: name.value.trim(),
+      priority: Number(starSel.value),
+      owner: owner.value.trim(),
+      status: statusSel.value,
+      aliases: aliases.value.trim() ? aliases.value.trim().split(/[、,，\s]+/).filter(Boolean) : [],
+      nextAction: next.value.trim(),
+    },
+  };
+  try {
+    const payload = { proposalId, edits, operator: agentState.operator };
+    if (agentState.revision != null) payload.baseRevision = agentState.revision;
+    const r = await apiFetch('/api/agent/confirm', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    card.remove();
+    if (r.revision != null) agentState.revision = r.revision;
+    const p = r.project || (r.created && r.created[0]) || {};
+    agentBubble('agent', '✅ 已创建项目 <b>' + escapeHtml(p.id || '') + '｜' + escapeHtml(p.title || name.value) + '</b>');
+    await refreshHubData();
+    loadHubStatus();
+  } catch (e) {
+    if (e && e.status === 409 && e.body && e.body.code === 'REVISION_CONFLICT') {
+      card.remove();
+      if (e.body.revision != null) agentState.revision = e.body.revision;
+      agentBubble('sys', '⚠️ 数据已被其他会话更新，本次项目创建已取消。请重新发起。');
+      await refreshHubData();
+      loadHubStatus();
+      return;
+    }
+    okBtn.disabled = false;
+    okBtn.textContent = '确认创建项目';
+    agentBubble('sys', '⚠️ 创建失败：' + escapeHtml(e.message));
   }
 }
 
@@ -3620,12 +3815,22 @@ function paintChannel(channel, ch, offline) {
 function paintHubStatus(s) {
   if (!s) {
     setChip('stAgent', 'st-off', 'PIP 助手未连接');
+    setChip('stKv', 'st-off', 'KV 未连接');
     paintChannel('wecom', null, true);
     paintChannel('feishu', null, true);
     return;
   }
   const agentText = s.agent.llmConfigured ? 'PIP 助手在线（对话+LLM）' : 'PIP 助手在线（对话模式）';
   setChip('stAgent', 'st-on', agentText);
+  // KV 状态：成功请求 /api/status 后必须给出明确结论，不得长期卡在"检测中"
+  const storage = s.storage || {};
+  if (storage.kvConfigured) {
+    setChip('stKv', 'st-on', 'KV 已连接');
+  } else if (storage.writeEnabled) {
+    setChip('stKv', 'st-on', '本地存储已连接');
+  } else {
+    setChip('stKv', 'st-off', 'KV 未配置（只读）');
+  }
   const channels = s.channels || {};
   paintChannel('wecom', channels.wecom, false);
   paintChannel('feishu', channels.feishu, false);
@@ -3681,7 +3886,7 @@ function initAgent() {
   document.getElementById('btnAgentTestAll').addEventListener('click', () => runNotifyTestAll());
 
   agentBubble('agent',
-    '我是 PIP 助手。你可以直接告诉我某项任务的当前进度和下一步，我会整理成确认卡；也可以问“接下来该做什么”，让我按优先级和截止时间规划。');
+    '告诉我你正在推进什么项目、发生了什么变化或下一步想做什么。我会先匹配项目和任务，再给你确认卡；找不到时可按你的描述新建。');
 }
 
 document.addEventListener('DOMContentLoaded', init);

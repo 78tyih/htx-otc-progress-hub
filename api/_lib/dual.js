@@ -1,23 +1,24 @@
 /**
  * 统一双通道通知服务（服务端专用）
  *
- * sendPipNotification：同一事件同时推送企业微信（Sera）与飞书（Simon）。
- *   - Promise.allSettled 并行发送：一个渠道失败绝不阻塞另一个渠道；
- *   - 每个渠道最多重试一次；单次请求超时由渠道模块控制（8s）；
- *   - 同一 eventId 同渠道不重复发送（dualDedupe 随 hub state 持久化，TTL 7 天）；
- *   - 永不抛异常；通知失败不得回滚任务数据。
+ * 两层职责：
+ *   1. sendDirect：底层直发（dualDedupe 幂等 + 双通道并行 + 失败重试一次）。
+ *      供 notify-bus 的 sender 回调、显式测试端点、汇总 flush 使用。
+ *   2. sendPipNotification：业务统一入口。先经 notify-bus 分级（critical 即时 / normal 入队 /
+ *      silent 静默 / deduped 去重），再决定是否即时发送。返回值在 sendDirect 基础上增加
+ *      { queued, action } 字段，供 confirm/archive/weekly 等调用方统一判断。
  *
- * 返回：
- *   { wecom: { success, configured, skipped, code, message, httpStatus, durationMs, error, attempts },
- *     feishu: { ...同上 },
- *     ok,          // 双通道全部成功
- *     partial,     // 仅一个渠道成功（部分发送成功）
- *     allFailed }  // 两个渠道都失败（且至少一个已配置）
+ * 事件来源：调用方传入 { eventId, title, lines, ... }；本模块从 eventId 前缀推导 bus 事件
+ * （task-update / task-create / task-decompose / task-archive / discover-blocked / discover-overdue /
+ * weekly-archived / project-create / dual-test / commit）。也支持显式 busEvent 字段。
+ *
+ * 安全约定：永不抛异常；通知失败不得回滚业务数据；永不把 Webhook URL / Token 写入日志或消息。
  */
 'use strict';
 
-const { sendWecomMarkdown } = require('./wecom');
-const { sendFeishuPost } = require('./feishu');
+const { sendWecomMarkdown, wecomConfigured } = require('./wecom');
+const { sendFeishuPost, feishuConfigured } = require('./feishu');
+const notifyBus = require('./notify-bus');
 
 const DEDUPE_TTL_MS = 7 * 24 * 3600 * 1000;
 
@@ -81,11 +82,11 @@ async function sendChannel(channel, eventId, sendOnce, dedupe) {
 }
 
 /**
- * 统一入口。
+ * 底层直发函数（供 notify-bus sender 回调和显式测试端点使用）。
+ * 仅做 dualDedupe 幂等 + 双通道并行发送，不做分级 / 去重 / 静默判断。
  * opts: { eventId, title, lines, linkBase, linkParams }
- *   linkBase: dashboardUrl（已校验非本机）；linkParams: { section | taskId | week, ... }（source 自动按渠道覆盖）
  */
-async function sendPipNotification(state, opts) {
+async function sendDirect(state, opts) {
   const eventId = String(opts.eventId || '').slice(0, 200);
   const title = String(opts.title || 'PIP 项目更新');
   const lines = Array.isArray(opts.lines) ? opts.lines.map((l) => String(l)) : [];
@@ -105,7 +106,6 @@ async function sendPipNotification(state, opts) {
     ? feishuSettled.value
     : { success: false, configured: true, skipped: false, code: null, message: null, httpStatus: null, durationMs: null, error: String(feishuSettled.reason), attempts: 1 };
 
-  // 分渠道最近成功时间（供系统状态展示）
   if (!state.notify.channelStatus) state.notify.channelStatus = {};
   for (const [ch, r] of [['wecom', wecom], ['feishu', feishu]]) {
     if (r.success && !r.skipped) {
@@ -120,32 +120,109 @@ async function sendPipNotification(state, opts) {
   return { wecom, feishu, ok, partial, allFailed };
 }
 
+/** 从 lines[0]（形如「任务：T-0006｜标题」）解析任务标题 */
+function taskTitleFromLines(lines) {
+  if (!Array.isArray(lines) || !lines[0]) return null;
+  const m = String(lines[0]).match(/[^｜]*｜(.+)$/);
+  return m ? m[1] : null;
+}
+
 /**
- * Agent 查询发现阻塞/逾期任务 → 双通道逐个推送（最多 3 条）。
- * eventId 按小时分桶：同一任务同一类发现一小时内不重复推送；永不抛异常。
- * 返回 { sent }：sent 为至少一个渠道真实发送成功（非跳过）的条数。
+ * 从调用方 opts 推导 notify-bus 事件。调用方（confirm/archive/weekly）按历史约定只传
+ * eventId + title + lines，故由 eventId 前缀编码事件类型；也支持显式 busEvent。
+ */
+function eventFromOpts(opts) {
+  if (opts && opts.busEvent) return Object.assign({}, opts.busEvent);
+  const eventId = String((opts && opts.eventId) || '');
+
+  let m = eventId.match(/^task-update:([^:]+):/);
+  if (m) {
+    return {
+      type: 'task', op: 'update', taskId: m[1],
+      title: opts.taskTitle || taskTitleFromLines(opts.lines),
+      statusBecame: opts.statusBecame || opts.status || null,
+      changeText: opts.changeText || null,
+      progress: typeof opts.progress === 'number' ? opts.progress : null,
+    };
+  }
+  m = eventId.match(/^task-(create|decompose):/);
+  if (m) {
+    return { type: 'task', op: m[1], taskId: opts.taskId || null, title: opts.taskTitle || taskTitleFromLines(opts.lines), decomposedTo: opts.decomposedTo || null };
+  }
+  m = eventId.match(/^task-archive:([^:]+):/);
+  if (m) {
+    return { type: 'task', op: 'archive', taskId: m[1], completed: opts.completed === true, title: opts.taskTitle || taskTitleFromLines(opts.lines) };
+  }
+  m = eventId.match(/^discover-(blocked|overdue):([^:]+)/);
+  if (m) {
+    const op = m[1];
+    const reason = op === 'blocked' ? '任务已阻塞，等待确认' : '任务已逾期';
+    return { type: 'task', op, taskId: m[2], title: opts.taskTitle || null, reason, suggestedAction: '查看看板后处理' };
+  }
+  if (/^weekly-archived:/.test(eventId)) return { type: 'task', op: 'weekly', title: opts.taskTitle || opts.title };
+  if (/^project-create:/.test(eventId)) return { type: 'project', op: 'create', title: opts.taskTitle || taskTitleFromLines(opts.lines) || opts.title };
+  if (/^dual-test:|^notification-test:/.test(eventId)) return { type: 'notification-test' };
+  if (opts && opts.commitSha) return { type: 'commit', commitSha: opts.commitSha, commitMsg: opts.commitMsg || '', project: opts.project || null };
+  return null;
+}
+
+/** 跳过态（queued / silenced / deduped）下返回给调用方的渠道占位（保留 configured 诊断） */
+function skippedResult() {
+  return {
+    wecom: { success: false, configured: wecomConfigured(), skipped: true, code: null, message: null, httpStatus: null, durationMs: null, error: null, attempts: 0 },
+    feishu: { success: false, configured: feishuConfigured(), skipped: true, code: null, message: null, httpStatus: null, durationMs: null, error: null, attempts: 0 },
+    ok: false, partial: false, allFailed: false,
+  };
+}
+
+/**
+ * 统一业务入口：经 notify-bus 分级后决定即时发送 / 入队汇总 / 静默 / 去重。
+ * 返回 { wecom, feishu, ok, partial, allFailed, queued, action }。
+ *   - sent-immediate：已即时双通道发送（critical）
+ *   - queued / queued-paused：普通事项已入 30 分钟汇总队列（不即时发送）
+ *   - silenced：test/chore/通知链路测试，仅日志
+ *   - deduped：30 分钟内重复事件
+ *   - sent-direct：未识别事件，直接发送（向后兼容）
+ */
+async function sendPipNotification(state, opts) {
+  const event = eventFromOpts(opts);
+  if (!event) {
+    const dual = await sendDirect(state, { eventId: opts.eventId, title: opts.title, lines: opts.lines, linkBase: opts.linkBase, linkParams: opts.linkParams });
+    return Object.assign({}, dual, { queued: false, action: dual.ok ? 'sent-direct' : (dual.allFailed ? 'sent-failed' : 'sent-partial') });
+  }
+  if (!event.linkBase) event.linkBase = opts.linkBase;
+  if (!event.linkParams) event.linkParams = opts.linkParams;
+
+  const r = await notifyBus.enqueue(state, event, { sender: sendDirect, linkBase: opts.linkBase });
+
+  if (r.action === 'sent-immediate') {
+    const dual = r.dual || Object.assign(skippedResult(), { ok: false });
+    return Object.assign({}, dual, { queued: false, action: 'sent-immediate' });
+  }
+  if (r.action === 'queued' || r.action === 'queued-paused') {
+    return Object.assign(skippedResult(), { queued: true, action: r.action });
+  }
+  // silenced / deduped
+  return Object.assign(skippedResult(), { queued: false, action: r.action });
+}
+
+/**
+ * Agent 查询发现阻塞 / 逾期任务 → 经 notify-bus 即时推送（critical）。
+ * 同一任务同一类发现由 bus seen 表 30 分钟内幂等。返回 { sent }：即时发送成功的条数。
  */
 async function notifyDiscoveries(state, classified, kind, dashboardUrl) {
-  const label = kind === 'blocked' ? '阻塞' : '逾期';
-  const bucket = new Date().toISOString().slice(0, 13);
   let sent = 0;
   for (const c of classified.slice(0, 3)) {
     const t = c.task;
     const r = await sendPipNotification(state, {
-      eventId: `discover-${kind}:${t.id}:${bucket}`,
-      title: `【PIP ${label}提醒】`,
-      lines: [
-        `PIP 助手发现${label}任务`,
-        `任务：${t.id}｜${t.title}`,
-        `状态：${t.status}`,
-        `负责人：${t.owner}`,
-      ],
+      eventId: `discover-${kind}:${t.id}`,
+      busEvent: { type: 'task', op: kind, taskId: t.id, title: t.title, linkBase: dashboardUrl, linkParams: { taskId: t.id } },
       linkBase: dashboardUrl,
       linkParams: { taskId: t.id },
     });
-    if ((r.wecom.success && !r.wecom.skipped) || (r.feishu.success && !r.feishu.skipped)) sent += 1;
+    if (r.action === 'sent-immediate' && (r.wecom.success || r.feishu.success)) sent += 1;
   }
   return { sent };
 }
 
-module.exports = { sendPipNotification, channelLink, notifyDiscoveries };
+module.exports = { sendPipNotification, sendDirect, channelLink, notifyDiscoveries };

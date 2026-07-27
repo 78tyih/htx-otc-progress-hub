@@ -11,7 +11,7 @@
     "dev": "node tests/dev-server.js",
     "task": "node agent/cli.js",
     "validate": "node agent/validate.js",
-    "test": "node tests/e2e.js && node tests/copilot.test.js && node tests/agent-v2.test.js",
+    "test": "node tests/e2e.js && node tests/copilot.test.js && node tests/agent-v2.test.js && node tests/project-agent.test.js && node tests/notify-bus.test.js",
     "sync": "python3 .dev-scripts/sync_fallback.py",
     "sync:check": "python3 .dev-scripts/sync_fallback.py --check",
     "reminder:scan": "node scheduler/reminder-worker.js scan",
