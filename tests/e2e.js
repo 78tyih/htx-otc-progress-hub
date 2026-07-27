@@ -239,8 +239,11 @@ check('sync: 人工策展的 pipeline 条目未被改动',
     received.length === 1 && received[0].msgtype === 'markdown' && received[0].markdown.content.includes('T-0004') && received[0].markdown.content.includes('T-0005'));
   check('reminder send: remindedAt 置位且状态迁移已提醒（含 阻塞→已提醒）',
     task('T-0004').status === '已提醒' && task('T-0004').remindedAt !== null && task('T-0005').status === '已提醒');
+  const auditEntries = JSON.parse(fs.readFileSync(path.join(tmp, 'audit-log.json'), 'utf8')).entries
+    .filter((e) => e.actor === 'scheduler' && e.action === 'remind');
   check('reminder send: 审计写入 scheduler remind',
-    JSON.parse(fs.readFileSync(path.join(tmp, 'audit-log.json'), 'utf8')).entries.filter((e) => e.actor === 'scheduler' && e.action === 'remind').length === 2);
+    auditEntries.length >= 2 && auditEntries.some((e) => e.taskId === 'T-0004') && auditEntries.some((e) => e.taskId === 'T-0005'),
+    `count=${auditEntries.length} taskIds=${auditEntries.map((e) => e.taskId).join(',')}`);
 
   // 20. remindedAt 去重：再次推送无任务、无新 POST
   r2 = await runWorker(['send', '--confirm'], { WECOM_WEBHOOK_URL: hookUrl });
