@@ -67,14 +67,20 @@ async function kvGet() {
   });
   if (!res.ok) throw new Error(`KV GET 失败：HTTP ${res.status}`);
   const body = await res.json();
-  return body && body.result ? JSON.parse(body.result) : null;
+  if (!body || !body.result) return null;
+  let result = JSON.parse(body.result);
+  // 兼容历史双重 stringify 的值：parse 后仍为 string 则再 parse 一次
+  if (typeof result === 'string') {
+    try { result = JSON.parse(result); } catch { /* 非 JSON 字符串，原样返回 */ }
+  }
+  return result;
 }
 
 async function kvSet(value) {
   const res = await fetch(`${process.env.KV_REST_API_URL}/set/${encodeURIComponent(KV_KEY)}`, {
     method: 'POST',
     headers: { authorization: `Bearer ${process.env.KV_REST_API_TOKEN}`, 'content-type': 'application/json' },
-    body: JSON.stringify(JSON.stringify(value)),
+    body: JSON.stringify(value),
   });
   if (!res.ok) throw new Error(`KV SET 失败：HTTP ${res.status}`);
 }
