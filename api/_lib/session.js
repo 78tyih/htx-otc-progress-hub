@@ -39,6 +39,7 @@ function touchSession(state, sessionId, operator) {
   if (!s || Date.parse(s.expiresAt) < now) {
     s = {
       activeTaskIds: [],
+      currentProjectId: null,
       lastIntent: null,
       pendingProposalId: null,
       recentMessages: [],
@@ -81,6 +82,10 @@ function updateSession(state, sessionId, patch) {
   if (typeof patch.lastIntent === 'string') s.lastIntent = patch.lastIntent.slice(0, 40);
   if (patch.pendingProposalId === null || typeof patch.pendingProposalId === 'string') {
     s.pendingProposalId = patch.pendingProposalId;
+  }
+  // v3：当前项目上下文（「刚才那个项目」「给这个项目新增任务」）
+  if (patch.currentProjectId === null || (typeof patch.currentProjectId === 'string' && /^P-\d{4}$/.test(patch.currentProjectId))) {
+    s.currentProjectId = patch.currentProjectId;
   }
 }
 

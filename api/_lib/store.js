@@ -16,7 +16,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { validateTasksFile, validateAuditFile } = require('../../agent/schema');
+const { validateTasksFile, validateAuditFile, validateProjectsFile, PROJECT_ID_RE } = require('../../agent/schema');
 const { projectTodoRows } = require('../../agent/presenter');
 const { validateReviewsFile } = require('./weekly');
 
@@ -33,22 +33,32 @@ function seedState() {
     revision: 1, // 任务数据乐观锁版本号：每次任务写操作 +1，冲突返回 409
     seededAt: new Date().toISOString(),
     tasks: require('../../data/tasks.json'),
+    projects: require('../../data/projects.json'),
     pipeline: require('../../data/pipeline.json'),
     weeklyLog: require('../../data/weekly-log.json'),
     weeklyReviews: require('../../data/weekly-reviews.json'),
     audit: require('../../data/audit-log.json'),
-    notify: { dedupe: {}, dualDedupe: {}, channelStatus: {}, lastTest: null, lastSuccessAt: null },
+    notify: { dedupe: {}, dualDedupe: {}, channelStatus: {}, lastTest: null, lastSuccessAt: null, lastSummary: null, queue: [], window: { startedAt: null, endsAt: null }, seen: {}, silentLog: [], pausedUntil: null, lastFlush: null },
     sessions: {}, // PIP 助手短期会话上下文（sessionId → 上下文，含过期时间）
-    proposals: { items: [] }, // 待确认任务方案（创建/拆解），服务端统一生成任务 ID
+    proposals: { items: [] }, // 待确认任务方案（创建/拆解/项目创建），服务端统一生成 ID
   };
 }
 
-/** 兼容旧状态：补齐 v2 新增顶层字段 */
+/** 空 projects 容器（兼容旧 KV 状态：首次访问补齐，不破坏既有任务） */
+function emptyProjects() {
+  return { version: 1, updatedAt: new Date().toISOString(), projects: [] };
+}
+
+/** 兼容旧状态：补齐 v2/v3 新增顶层字段 */
 function ensureV2Shape(state) {
   if (typeof state.revision !== 'number' || !Number.isInteger(state.revision) || state.revision < 1) state.revision = 1;
   if (!state.sessions || typeof state.sessions !== 'object' || Array.isArray(state.sessions)) state.sessions = {};
   if (!state.proposals || typeof state.proposals !== 'object' || !Array.isArray(state.proposals.items)) {
     state.proposals = { items: [] };
+  }
+  // v3：补齐 projects 一级实体（旧 KV 状态可能缺失，视为空项目集，不破坏既有任务）
+  if (!state.projects || typeof state.projects !== 'object' || !Array.isArray(state.projects.projects)) {
+    state.projects = emptyProjects();
   }
   return state;
 }
@@ -107,10 +117,16 @@ async function loadState() {
       state = seedState();
       await kvSet(state);
     }
-    if (!state.notify) state.notify = { dedupe: {}, dualDedupe: {}, channelStatus: {}, lastTest: null, lastSuccessAt: null };
+    if (!state.notify) state.notify = { dedupe: {}, dualDedupe: {}, channelStatus: {}, lastTest: null, lastSuccessAt: null, queue: [], window: { startedAt: null, endsAt: null }, seen: {}, silentLog: [], pausedUntil: null, lastFlush: null };
     if (!state.notify.dedupe) state.notify.dedupe = {};
     if (!state.notify.dualDedupe) state.notify.dualDedupe = {};
     if (!state.notify.channelStatus) state.notify.channelStatus = {};
+    if (!Array.isArray(state.notify.queue)) state.notify.queue = [];
+    if (!state.notify.window) state.notify.window = { startedAt: null, endsAt: null };
+    if (!state.notify.seen) state.notify.seen = {};
+    if (!Array.isArray(state.notify.silentLog)) state.notify.silentLog = [];
+    if (state.notify.pausedUntil === undefined) state.notify.pausedUntil = null;
+    if (state.notify.lastFlush === undefined) state.notify.lastFlush = null;
     if (!state.weeklyReviews || !Array.isArray(state.weeklyReviews.reviews)) {
       state.weeklyReviews = { version: 1, reviews: [] };
     }
@@ -120,21 +136,32 @@ async function loadState() {
   try {
     sidecar = JSON.parse(fs.readFileSync(NOTIFY_FILE, 'utf8'));
   } catch { /* 首次运行无侧边状态 */ }
-  let notify = sidecar && sidecar.notify ? sidecar.notify : { dedupe: {}, dualDedupe: {}, channelStatus: {}, lastTest: null, lastSuccessAt: null };
+  let notify = sidecar && sidecar.notify ? sidecar.notify : { dedupe: {}, dualDedupe: {}, channelStatus: {}, lastTest: null, lastSuccessAt: null, lastSummary: null, queue: [], window: { startedAt: null, endsAt: null }, seen: {}, silentLog: [], pausedUntil: null, lastFlush: null };
   // 兼容旧格式（notify 字段直接平铺在文件顶层）
   if (!sidecar || (!sidecar.notify && (sidecar.dedupe || sidecar.dualDedupe))) notify = sidecar || notify;
   if (!notify.dedupe) notify.dedupe = {};
   if (!notify.dualDedupe) notify.dualDedupe = {};
   if (!notify.channelStatus) notify.channelStatus = {};
+  if (!Array.isArray(notify.queue)) notify.queue = [];
+  if (!notify.window) notify.window = { startedAt: null, endsAt: null };
+  if (!notify.seen) notify.seen = {};
+  if (!Array.isArray(notify.silentLog)) notify.silentLog = [];
+  if (notify.pausedUntil === undefined) notify.pausedUntil = null;
+  if (notify.lastFlush === undefined) notify.lastFlush = null;
   let weeklyReviews = { version: 1, reviews: [] };
   try {
     weeklyReviews = fsRead('weekly-reviews.json');
   } catch { /* 首次运行无复盘数据 */ }
+  let projects = emptyProjects();
+  try {
+    projects = fsRead('projects.json');
+  } catch { /* 首次运行无项目数据 */ }
   return ensureV2Shape({
     version: 1,
     revision: sidecar && Number.isInteger(sidecar.revision) ? sidecar.revision : 1,
     seededAt: null,
     tasks: fsRead('tasks.json'),
+    projects,
     pipeline: fsRead('pipeline.json'),
     weeklyLog: fsRead('weekly-log.json'),
     weeklyReviews,
@@ -149,6 +176,24 @@ async function loadState() {
 async function saveState(state) {
   const taskErrors = validateTasksFile(state.tasks);
   if (taskErrors.length) throw new Error(`tasks 校验未通过：\n${taskErrors.join('\n')}`);
+  ensureV2Shape(state);
+  const projectErrors = validateProjectsFile(state.projects);
+  if (projectErrors.length) throw new Error(`projects 校验未通过：\n${projectErrors.join('\n')}`);
+  // 交叉引用校验：task.projectId 必须指向已存在项目；project.taskIds 必须指向已存在任务
+  const projectIds = new Set((state.projects.projects || []).map((p) => p.id));
+  const taskIds = new Set((state.tasks.tasks || []).map((t) => t.id));
+  for (const t of state.tasks.tasks || []) {
+    if (t.projectId && PROJECT_ID_RE.test(t.projectId) && !projectIds.has(t.projectId)) {
+      throw new Error(`tasks 校验未通过：\n${t.id}.projectId 引用了不存在的项目 ${t.projectId}`);
+    }
+  }
+  for (const p of state.projects.projects || []) {
+    for (const tid of p.taskIds || []) {
+      if (!taskIds.has(tid)) {
+        throw new Error(`projects 校验未通过：\n${p.id}.taskIds 引用了不存在的任务 ${tid}`);
+      }
+    }
+  }
   const auditErrors = validateAuditFile(state.audit);
   if (auditErrors.length) throw new Error(`audit 校验未通过：\n${auditErrors.join('\n')}`);
   const reviewErrors = validateReviewsFile(state.weeklyReviews || { version: 1, reviews: [] });
@@ -159,13 +204,13 @@ async function saveState(state) {
     return;
   }
   fsWriteAtomic('tasks.json', state.tasks);
+  fsWriteAtomic('projects.json', state.projects);
   fsWriteAtomic('pipeline.json', state.pipeline);
   fsWriteAtomic('weekly-log.json', state.weeklyLog);
   fsWriteAtomic('weekly-reviews.json', state.weeklyReviews || { version: 1, reviews: [] });
   fsWriteAtomic('audit-log.json', state.audit);
   // 展示层 todo.json 全量投影（与 CLI 的 syncPresentation 行为一致）
   fsWriteAtomic('todo.json', projectTodoRows(state.tasks.tasks));
-  ensureV2Shape(state);
   fs.writeFileSync(NOTIFY_FILE, JSON.stringify({
     notify: state.notify,
     revision: state.revision,

@@ -82,18 +82,33 @@ module.exports = async (req, res) => {
       linkBase: dashboardUrl(req),
       linkParams: { taskId: task.id },
     });
-    if (dual.wecom.success || dual.feishu.success) {
+    if (dual.wecom && (dual.wecom.success || dual.feishu.success)) {
       try { await saveState(state); } catch { /* 通知状态丢失不阻断 */ }
     }
+    if (dual.queued) {
+      try { await saveState(state); } catch { /* 队列状态持久化失败不阻断 */ }
+    }
 
+    const anyConfigured = (dual.wecom && dual.wecom.configured) || (dual.feishu && dual.feishu.configured);
     sendJson(res, 200, {
       ok: true,
       task,
       archived: true,
       completed,
-      notify: dual && dual.wecom && dual.wecom.configured === false && dual.feishu && dual.feishu.configured === false
+      notify: !anyConfigured
         ? { configured: false, message: '未配置通知渠道，已跳过通知' }
-        : { configured: true, ok: dual.ok, partial: dual.partial },
+        : {
+            configured: true,
+            mode: dual.queued ? 'summary' : 'dual',
+            ok: dual.ok || false,
+            queued: dual.queued || false,
+            action: dual.action || null,
+            message: dual.queued
+              ? '已进入 30 分钟汇总队列'
+              : dual.action === 'sent-immediate'
+                ? 'critical 事件已即时推送'
+                : dual.ok ? '双通道推送成功' : '部分发送成功',
+          },
       recentUpdates: recentAgentUpdates(state, 8),
     });
   } catch (e) {

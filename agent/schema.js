@@ -32,6 +32,8 @@ const STATUS_TRANSITIONS = {
 
 const ISO_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?(\.\d{1,3})?([+-]\d{2}:\d{2}|Z)$/;
 const TASK_ID_RE = /^T-\d{4}$/;
+const PROJECT_ID_RE = /^P-\d{4}$/;
+const PROJECT_STATUSES = ['待启动', '进行中', '受阻', '已交付', '已暂停'];
 
 function isIso(v) {
   return typeof v === 'string' && ISO_RE.test(v) && !Number.isNaN(Date.parse(v));
@@ -78,6 +80,12 @@ function validateTask(task, index) {
   }
   if (task.proposalId !== undefined && task.proposalId !== null && typeof task.proposalId !== 'string') {
     errors.push(`${where}.proposalId: 须为字符串或 null`);
+  }
+  // 项目关联（v3 新增可选字段）：存量任务允许缺省（视为 null），不为空时须为 P-xxxx
+  if (task.projectId !== undefined && task.projectId !== null) {
+    if (typeof task.projectId !== 'string' || !PROJECT_ID_RE.test(task.projectId)) {
+      errors.push(`${where}.projectId: 须为项目 ID（形如 P-0001）或 null`);
+    }
   }
   if (task.blockedReason !== undefined && task.blockedReason !== null && typeof task.blockedReason !== 'string') {
     errors.push(`${where}.blockedReason: 须为字符串或 null`);
@@ -136,6 +144,65 @@ function validateTasksFile(data) {
       errors.push(`tasks[${i}](${t.id}).parentTaskId: 引用了不存在的任务 ${t.parentTaskId}`);
     }
   });
+  // projectId 引用校验：可选，若提供则需在 projects.json 校验时交叉检查（此处仅校验格式）
+  return errors;
+}
+
+/* ---------------- 项目（Project，v3 一级实体） ---------------- */
+
+/** 校验单个项目对象，返回错误数组（空数组 = 通过） */
+function validateProject(project, index) {
+  const where = `projects[${index}]${project && project.id ? `(${project.id})` : ''}`;
+  const errors = [];
+  if (!project || typeof project !== 'object' || Array.isArray(project)) {
+    return [`${where}: 必须是对象`];
+  }
+  if (typeof project.id !== 'string' || !PROJECT_ID_RE.test(project.id)) errors.push(`${where}.id: 须形如 P-0001`);
+  if (typeof project.title !== 'string' || !project.title.trim() || project.title.length > 100) errors.push(`${where}.title: 必填且 ≤100 字`);
+  if (!PROJECT_STATUSES.includes(project.status)) errors.push(`${where}.status: 非法项目状态 "${project.status}"，允许值：${PROJECT_STATUSES.join('/')}`);
+  if (!TASK_PRIORITIES.includes(project.priority)) errors.push(`${where}.priority: 须为 1-4 整数星`);
+  if (typeof project.owner !== 'string' || !project.owner.trim()) errors.push(`${where}.owner: 必填`);
+  if (!isIso(project.createdAt)) errors.push(`${where}.createdAt: 须为 ISO 时间`);
+  if (!isIso(project.updatedAt)) errors.push(`${where}.updatedAt: 须为 ISO 时间`);
+  if (typeof project.summary !== 'string') errors.push(`${where}.summary: 须为字符串`);
+  if (typeof project.nextAction !== 'string') errors.push(`${where}.nextAction: 须为字符串`);
+  if (!Array.isArray(project.aliases)) {
+    errors.push(`${where}.aliases: 须为字符串数组`);
+  } else if (project.aliases.some((a) => typeof a !== 'string' || !a.trim())) {
+    errors.push(`${where}.aliases: 元素须为非空字符串`);
+  }
+  if (!Array.isArray(project.blockers)) {
+    errors.push(`${where}.blockers: 须为字符串数组`);
+  } else if (project.blockers.some((b) => typeof b !== 'string' || !b.trim())) {
+    errors.push(`${where}.blockers: 元素须为非空字符串`);
+  }
+  if (!Array.isArray(project.taskIds)) {
+    errors.push(`${where}.taskIds: 须为任务 ID 数组`);
+  } else if (project.taskIds.some((id) => typeof id !== 'string' || !TASK_ID_RE.test(id))) {
+    errors.push(`${where}.taskIds: 元素须为合法任务 ID（形如 T-0001）`);
+  }
+  if (!Number.isInteger(project.revision) || project.revision < 1) errors.push(`${where}.revision: 须为 ≥1 整数`);
+  return errors;
+}
+
+/** 校验 projects.json 整体结构，返回错误数组 */
+function validateProjectsFile(data) {
+  const errors = [];
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return ['projects.json: 顶层必须是对象'];
+  if (data.version !== 1) errors.push('projects.json.version: 当前仅支持 1');
+  if (!isIso(data.updatedAt)) errors.push('projects.json.updatedAt: 须为 ISO 时间');
+  if (!Array.isArray(data.projects)) {
+    errors.push('projects.json.projects: 必须是数组');
+    return errors;
+  }
+  const seen = new Set();
+  data.projects.forEach((p, i) => {
+    errors.push(...validateProject(p, i));
+    if (p && typeof p.id === 'string') {
+      if (seen.has(p.id)) errors.push(`projects[${i}].id: ${p.id} 重复`);
+      seen.add(p.id);
+    }
+  });
   return errors;
 }
 
@@ -166,8 +233,12 @@ module.exports = {
   AUDIT_ACTORS,
   STATUS_TRANSITIONS,
   TASK_ID_RE,
+  PROJECT_ID_RE,
+  PROJECT_STATUSES,
   isIso,
   validateTask,
   validateTasksFile,
+  validateProject,
+  validateProjectsFile,
   validateAuditFile,
 };

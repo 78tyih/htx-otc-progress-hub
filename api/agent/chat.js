@@ -55,13 +55,24 @@ function toCards(tasks, allTasks, now) {
 /** 会话上下文 → copilot 的 context 形态 */
 function contextOf(session, legacyContextTaskId, operator) {
   const ids = session && Array.isArray(session.activeTaskIds) ? session.activeTaskIds : [];
-  if (ids.length) return { taskIds: ids, operator };
-  if (legacyContextTaskId) return { taskIds: [legacyContextTaskId], operator };
-  return { taskIds: [], operator };
+  const projectId = session && session.currentProjectId ? session.currentProjectId : null;
+  const base = { taskIds: ids, operator, projectId };
+  if (ids.length) return base;
+  if (legacyContextTaskId) return { taskIds: [legacyContextTaskId], operator, projectId };
+  return { taskIds: [], operator, projectId };
 }
 
 /** 把 copilot/LLM 产出的候选方案固化为服务端 proposal（返回 proposal 或 null） */
 function persistProposal(state, result, operator) {
+  // v3：项目创建方案（projectOption 单独承载）
+  if (result.intent === 'create_project' && result.projectOption) {
+    return addProposal(state, {
+      kind: 'create_project',
+      options: [],
+      projectOption: result.projectOption,
+      operator,
+    });
+  }
   if (!Array.isArray(result.taskOptions) || !result.taskOptions.length) return null;
   const kind = result.intent === 'decompose_task' ? 'decompose' : 'create';
   return addProposal(state, {
@@ -78,6 +89,8 @@ async function respond(res, state, req, { proto, extras, session, sessionId, use
     updateSession(state, sessionId, {
       activeTaskIds: proto.contextTaskIds,
       lastIntent: proto.intent,
+      // v3：识别到项目时写入会话上下文，支持「刚才那个项目」连续对话
+      ...(extras && extras.project && extras.project.id ? { currentProjectId: extras.project.id } : {}),
       ...(extras && extras.proposalId ? { pendingProposalId: extras.proposalId } : {}),
     });
     pushMessages(state, sessionId, [
@@ -155,7 +168,8 @@ module.exports = async (req, res) => {
     const context = contextOf(session, /^T-\d{4}$/.test(legacyContextTaskId) ? legacyContextTaskId : null, operator);
 
     /* -------- 1. 本地对话解析（copilot，零外部依赖） -------- */
-    const conversational = routeConversation(message, tasks, context, now);
+    const projects = (state.projects && Array.isArray(state.projects.projects)) ? state.projects.projects : [];
+    const conversational = routeConversation(message, tasks, context, now, projects);
     if (conversational) {
       const proposal = writeEnabled() ? persistProposal(state, conversational, operator) : null;
       const warnings = Array.isArray(conversational.warnings) ? conversational.warnings.slice() : [];
@@ -171,6 +185,7 @@ module.exports = async (req, res) => {
           contextTaskIds: conversational.contextTaskIds || (conversational.contextTaskId ? [conversational.contextTaskId] : []),
           operations: conversational.operations || [],
           taskOptions: conversational.taskOptions || [],
+          projectOption: conversational.projectOption || null,
           warnings,
           missingFields: conversational.missingFields || [],
         },
@@ -182,6 +197,11 @@ module.exports = async (req, res) => {
           contextTaskId: conversational.contextTaskId || (cards.length === 1 ? cards[0].id : null),
           proposalId: proposal ? proposal.id : null,
           parentTaskId: conversational.parentTaskId || null,
+          // v3：项目上下文 + 条件新建元数据
+          project: conversational.project || null,
+          candidates: conversational.candidates || null,
+          createIfNotFound: conversational.createIfNotFound || null,
+          projects: conversational.projects || null,
         },
         session,
         sessionId,
@@ -198,7 +218,7 @@ module.exports = async (req, res) => {
           const classified = byClass(classifyAll(tasks, now), routed.discover);
           const r = await notifyDiscoveries(state, classified, routed.discover, dashboardUrl(req));
           if (r.sent > 0) {
-            routed.reply += '\n\n_（已推送 ' + r.sent + ' 条手机提醒）_';
+            routed.reply += '\n\n_（已即时推送 ' + r.sent + ' 条 critical 提醒）_';
           }
         } catch { /* 通知失败不影响查询 */ }
       }

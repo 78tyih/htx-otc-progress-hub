@@ -21,10 +21,13 @@ const { beijingNow } = require('../_lib/wecom');
 const { projectPresentation } = require('../../agent/presenter');
 const { patchFromRequest } = require('../_lib/copilot');
 const { guardAgentAccess, corsHeaders, readLimitedBody } = require('../_lib/security');
-const { getProposal, nextTaskIds, validateOption, buildTaskFromOption } = require('../_lib/proposals');
+const { getProposal, nextTaskIds, validateOption, buildTaskFromOption, nextProjectId, validateProjectOption, buildProjectFromOption } = require('../_lib/proposals');
 
 /** 方案执行时允许用户编辑的选项字段 */
-const OPTION_EDITABLE = ['title', 'priority', 'owner', 'dueAt', 'remindAt', 'nextAction', 'outputCondition', 'workstream'];
+const OPTION_EDITABLE = ['title', 'priority', 'owner', 'dueAt', 'remindAt', 'nextAction', 'outputCondition', 'workstream', 'projectId'];
+
+/** 项目选项允许用户编辑的字段（v3 create_project） */
+const PROJECT_OPTION_EDITABLE = ['title', 'aliases', 'status', 'owner', 'priority', 'summary', 'nextAction'];
 
 function displayValue(field, value) {
   if (value == null || value === '') return '—';
@@ -179,11 +182,14 @@ async function executeUpdate(req, res, body, operator, requestId) {
     linkBase: dashboardUrl(req),
     linkParams: { taskId: task.id },
   });
-  if (dual.wecom.success || dual.feishu.success) {
+  if (dual.wecom && (dual.wecom.success || dual.feishu.success)) {
     try { await saveState(state); } catch { /* 通知状态丢失不阻断 */ }
   }
+  if (dual.queued) {
+    try { await saveState(state); } catch { /* 队列状态持久化失败不阻断 */ }
+  }
 
-  const anyConfigured = dual.wecom.configured || dual.feishu.configured;
+  const anyConfigured = (dual.wecom && dual.wecom.configured) || (dual.feishu && dual.feishu.configured);
   sendJson(res, 200, {
     ok: true,
     task,
@@ -196,15 +202,23 @@ async function executeUpdate(req, res, body, operator, requestId) {
       ? { configured: false, message: '未配置通知渠道（WECHAT_WEBHOOK_URL / FEISHU_WEBHOOK_URL），已跳过通知' }
       : {
           configured: true,
-          mode: 'dual',
-          ok: dual.ok,
-          partial: dual.partial,
-          allFailed: dual.allFailed,
-          message: dual.ok ? '双通道推送成功' : dual.partial ? '部分发送成功' : '双通道均发送失败',
+          mode: dual.queued ? 'summary' : 'dual',
+          ok: dual.ok || false,
+          queued: dual.queued || false,
+          action: dual.action || null,
+          partial: dual.partial || false,
+          allFailed: dual.allFailed || false,
+          message: dual.queued
+            ? '已进入 30 分钟汇总队列（普通事项不即时推送）'
+            : dual.action === 'silenced'
+              ? '已静默（test/chore/重复）'
+              : dual.action === 'deduped'
+                ? '30 分钟内已去重'
+                : dual.ok ? '双通道推送成功' : dual.partial ? '部分发送成功' : '双通道均发送失败',
           wecom: dual.wecom,
           feishu: dual.feishu,
         },
-    notifyFailed: anyConfigured && !dual.ok,
+    notifyFailed: anyConfigured && !dual.ok && !dual.queued,
     recentUpdates: recentAgentUpdates(state, 8),
   });
 }
@@ -218,6 +232,11 @@ async function executeProposal(req, res, body, operator, requestId) {
   const proposal = getProposal(state, String(body.proposalId));
   if (!proposal) {
     return sendJson(res, 404, { ok: false, error: '方案不存在或已过期（有效期 2 小时），请重新生成', requestId });
+  }
+
+  // v3：项目创建方案单独分支（无任务选项）
+  if (proposal.kind === 'create_project') {
+    return executeCreateProject(req, res, body, state, proposal, operator, requestId);
   }
 
   // 选中项：默认全选；越界下标拒绝
@@ -271,6 +290,17 @@ async function executeProposal(req, res, body, operator, requestId) {
   state.tasks.tasks.push(...created);
   state.tasks.updatedAt = nowIso;
 
+  // v3：关联项目——把新建任务的 ID 回填到 project.taskIds，保持双向引用一致
+  for (const task of created) {
+    if (task.projectId) {
+      const proj = (state.projects.projects || []).find((p) => p.id === task.projectId);
+      if (proj && !(proj.taskIds || []).includes(task.id)) {
+        proj.taskIds = (proj.taskIds || []).concat(task.id);
+        proj.updatedAt = nowIso;
+      }
+    }
+  }
+
   const action = proposal.kind === 'decompose' ? 'agent-decompose' : 'agent-create';
   for (const task of created) {
     appendAuditEntry(state, {
@@ -285,6 +315,7 @@ async function executeProposal(req, res, body, operator, requestId) {
         priority: task.priority,
         dueAt: task.dueAt,
         dependencies: task.dependencies,
+        projectId: task.projectId || null,
         createdFromConversation: true,
         changeSource: 'agent',
         requestId,
@@ -320,11 +351,14 @@ async function executeProposal(req, res, body, operator, requestId) {
     linkBase: dashboardUrl(req),
     linkParams: parent ? { taskId: parent.id } : {},
   });
-  if (dual.wecom.success || dual.feishu.success) {
+  if (dual.wecom && (dual.wecom.success || dual.feishu.success)) {
     try { await saveState(state); } catch { /* 通知状态丢失不阻断 */ }
   }
+  if (dual.queued) {
+    try { await saveState(state); } catch { /* 队列状态持久化失败不阻断 */ }
+  }
 
-  const anyConfigured = dual.wecom.configured || dual.feishu.configured;
+  const anyConfigured = (dual.wecom && dual.wecom.configured) || (dual.feishu && dual.feishu.configured);
   sendCorsJson(res, req, 200, {
     ok: true,
     kind: proposal.kind,
@@ -338,6 +372,7 @@ async function executeProposal(req, res, body, operator, requestId) {
       dueAt: t.dueAt,
       dependencies: t.dependencies,
       parentTaskId: t.parentTaskId,
+      projectId: t.projectId || null,
     })),
     tasks: created,
     warnings,
@@ -347,15 +382,117 @@ async function executeProposal(req, res, body, operator, requestId) {
       ? { configured: false, message: '未配置通知渠道（WECHAT_WEBHOOK_URL / FEISHU_WEBHOOK_URL），已跳过通知' }
       : {
           configured: true,
-          mode: 'dual',
-          ok: dual.ok,
-          partial: dual.partial,
-          allFailed: dual.allFailed,
-          message: dual.ok ? '双通道推送成功' : dual.partial ? '部分发送成功' : '双通道均发送失败',
+          mode: dual.queued ? 'summary' : 'dual',
+          ok: dual.ok || false,
+          queued: dual.queued || false,
+          action: dual.action || null,
+          partial: dual.partial || false,
+          allFailed: dual.allFailed || false,
+          message: dual.queued
+            ? '已进入 30 分钟汇总队列（普通事项不即时推送）'
+            : dual.action === 'silenced'
+              ? '已静默（test/chore/重复）'
+              : dual.action === 'deduped'
+                ? '30 分钟内已去重'
+                : dual.ok ? '双通道推送成功' : dual.partial ? '部分发送成功' : '双通道均发送失败',
           wecom: dual.wecom,
           feishu: dual.feishu,
         },
-    notifyFailed: anyConfigured && !dual.ok,
+    notifyFailed: anyConfigured && !dual.ok && !dual.queued,
+    recentUpdates: recentAgentUpdates(state, 8),
+  });
+}
+
+/* ================= 模式 C：项目创建方案执行（v3） ================= */
+
+async function executeCreateProject(req, res, body, state, proposal, operator, requestId) {
+  if (!proposal.projectOption) {
+    return sendJson(res, 400, { ok: false, error: '项目方案缺少 projectOption', requestId });
+  }
+
+  // 用户编辑：仅白名单字段，合并后整体校验
+  const patch = body.edits && typeof body.edits === 'object' && !Array.isArray(body.edits) ? body.edits : {};
+  const opt = JSON.parse(JSON.stringify(proposal.projectOption));
+  for (const field of PROJECT_OPTION_EDITABLE) {
+    if (Object.prototype.hasOwnProperty.call(patch, field) && patch[field] !== undefined) opt[field] = patch[field];
+  }
+
+  // 服务端重新完整校验（不信任任何回传值）
+  const errors = validateProjectOption(opt, { projects: state.projects.projects });
+  if (errors.length) return sendJson(res, 409, { ok: false, error: errors.join('；'), requestId });
+
+  const nowIso = new Date().toISOString();
+  const id = nextProjectId(state.projects.projects);
+  const project = buildProjectFromOption(opt, { id, operator, nowIso, proposalId: proposal.id });
+  state.projects.projects.push(project);
+  state.projects.updatedAt = nowIso;
+
+  appendAuditEntry(state, {
+    actor: 'web',
+    action: 'agent-create-project',
+    taskId: null,
+    detail: JSON.stringify({
+      operator,
+      proposalId: proposal.id,
+      projectId: project.id,
+      title: project.title,
+      aliases: project.aliases,
+      changeSource: 'agent',
+      requestId,
+    }),
+  });
+  proposal.status = 'executed';
+
+  bumpRevision(state);
+  await saveState(state);
+
+  // 落库成功后才通知
+  const dual = await sendPipNotification(state, {
+    eventId: 'project-create:' + proposal.id,
+    title: '【PIP 新建项目】',
+    lines: [
+      '项目：' + project.id + '｜' + project.title,
+      '负责人：' + project.owner,
+      '优先级：' + project.priority + ' 星',
+      ...(project.aliases.length ? ['别名：' + project.aliases.join('、')] : []),
+      '操作人：' + operator,
+      '时间：' + beijingNow() + '（北京时间）',
+    ],
+    linkBase: dashboardUrl(req),
+    linkParams: {},
+  });
+  if (dual.wecom && (dual.wecom.success || dual.feishu.success)) {
+    try { await saveState(state); } catch { /* 通知状态丢失不阻断 */ }
+  }
+  if (dual.queued) {
+    try { await saveState(state); } catch { /* 队列状态持久化失败不阻断 */ }
+  }
+
+  const anyConfigured = (dual.wecom && dual.wecom.configured) || (dual.feishu && dual.feishu.configured);
+  sendCorsJson(res, req, 200, {
+    ok: true,
+    kind: 'create_project',
+    proposalId: proposal.id,
+    project,
+    revision: state.revision,
+    requestId,
+    notify: !anyConfigured
+      ? { configured: false, message: '未配置通知渠道（WECHAT_WEBHOOK_URL / FEISHU_WEBHOOK_URL），已跳过通知' }
+      : {
+          configured: true,
+          mode: dual.queued ? 'summary' : 'dual',
+          ok: dual.ok || false,
+          queued: dual.queued || false,
+          action: dual.action || null,
+          partial: dual.partial || false,
+          allFailed: dual.allFailed || false,
+          message: dual.queued
+            ? '已进入 30 分钟汇总队列'
+            : dual.ok ? '双通道推送成功' : dual.partial ? '部分发送成功' : '双通道均发送失败',
+          wecom: dual.wecom,
+          feishu: dual.feishu,
+        },
+    notifyFailed: anyConfigured && !dual.ok && !dual.queued,
     recentUpdates: recentAgentUpdates(state, 8),
   });
 }

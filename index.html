@@ -329,6 +329,9 @@
     </div>
     <div class="agent-context" id="agentContext" hidden></div>
     <div class="agent-quick">
+      <button type="button" data-q="我在跟进哪些项目？">我的项目</button>
+      <button type="button" data-q="新建项目：OTC 设计交付包">新建项目</button>
+      <button type="button" data-q="更新项目进展">更新项目进展</button>
       <button type="button" data-q="今日进度">今日进度</button>
       <button type="button" data-q="哪些任务还没有完成？">未完成任务</button>
       <button type="button" data-q="Simon 的任务">Simon 的任务</button>
@@ -339,7 +342,7 @@
     </div>
     <div class="agent-log" id="agentLog" aria-live="polite"></div>
     <form class="agent-inputbar" id="agentForm">
-      <input type="text" id="agentText" placeholder="问点什么，如：哪些任务已经逾期？" autocomplete="off">
+      <input type="text" id="agentText" placeholder="说说项目进展或下一步，如：首单测试顺延两天" autocomplete="off">
       <button type="submit" class="btn btn-agent">发送</button>
     </form>
   </aside>

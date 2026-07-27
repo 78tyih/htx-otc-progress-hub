@@ -207,6 +207,22 @@ function resolveTask(message, tasks, context) {
     .sort((a, b) => normalizeText(b.title).length - normalizeText(a.title).length);
   if (matches.length) return matches[0];
 
+  // 关键词回退：消息中的 CJK 短语（≥4 字）作为关键词匹配任务标题，选最长命中
+  const phrases = extractCjkPhrases(text).filter((p) => p.length >= 4);
+  if (phrases.length) {
+    const keywordMatches = (tasks || [])
+      .filter((task) => !task.archivedAt && task.title)
+      .map((task) => {
+        const tn = normalizeText(task.title);
+        const hit = phrases.map((p) => ({ p, len: p.length, hit: tn.includes(normalizeText(p)) }))
+          .filter((x) => x.hit).sort((a, b) => b.len - a.len)[0];
+        return hit ? { task, len: hit.len } : null;
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.len - a.len);
+    if (keywordMatches.length) return keywordMatches[0].task;
+  }
+
   for (const id of resolveContextTaskIds(context)) {
     const hit = (tasks || []).find((task) => task.id === id);
     if (hit) return hit;
@@ -486,7 +502,13 @@ function isCreateRequest(message) {
 /** 从创建语句中提取任务标题 */
 function extractCreateTitle(message) {
   let text = String(message || '').trim();
-  let m = text.match(/任务\s*[：:]\s*([^，,。.!！]+)/);
+  // 引号/书名号包裹的标题：「新建任务'Blast 通道首单测试'」「新建任务：XX」
+  let m = text.match(/(?:新增|新建|创建|添加)\s*(?:一个|一项|个)?\s*任务\s*[''""「」『』()（）:：、]?\s*([^，,。.!！；;'"」」』\)]{2,60}?)(?:[''""」』）\)]|，|,|。|\.|！|!|；|;|$)/);
+  if (m && m[1]) {
+    const t = m[1].trim().replace(/^[:：、\s]+/, '');
+    if (t) return t.slice(0, 100);
+  }
+  m = text.match(/任务\s*[：:]\s*([^，,。.!！]+)/);
   if (m) return m[1].trim();
   m = text.match(/(?:新增|新建|创建|添加|帮我创建|帮我建)\s*(?:一个|一项|个)?\s*(?:跟进)?\s*([^，,。.!！]+?)\s*的任务/);
   if (m) {
@@ -630,6 +652,441 @@ function buildDecomposeOptions(message, tasks, context, now) {
   return { parent, options, missingFields: [], treeText: treeLines.join('\n') };
 }
 
+/* ---------------- 同义词/别名与模糊匹配（v3） ---------------- */
+
+/**
+ * 内建同义词组（渠道名/常见笔误）。用户明确指出 Blast 与 Bivast 互为同义词/笔误。
+ * 匹配时大小写不敏感；命中同组即视为同一实体。
+ */
+const SYNONYM_GROUPS = [
+  ['blast', 'bivast'],
+  ['otc', 'htx otc'],
+];
+
+/** 构建同义词索引：token → 同组 token 集合（含自身，均为小写） */
+function buildSynonymIndex() {
+  const idx = new Map();
+  for (const group of SYNONYM_GROUPS) {
+    const lower = group.map((t) => String(t).toLowerCase());
+    for (const t of lower) {
+      if (!idx.has(t)) idx.set(t, new Set());
+      for (const o of lower) idx.get(t).add(o);
+    }
+  }
+  return idx;
+}
+const SYNONYM_INDEX = buildSynonymIndex();
+
+/** 合并项目别名进同义词索引（运行时）：同一项目的 title 与 aliases 互为同义 */
+function withProjectAliases(projects) {
+  const idx = new Map(SYNONYM_INDEX);
+  for (const p of projects || []) {
+    const names = [p.title, ...((p.aliases) || [])].map((s) => String(s || '').toLowerCase().trim()).filter(Boolean);
+    for (const n of names) {
+      if (!idx.has(n)) idx.set(n, new Set());
+      for (const o of names) idx.get(n).add(o);
+    }
+  }
+  return idx;
+}
+
+/** 两个 token 是否同义（含自身相等，大小写不敏感） */
+function tokensMatch(a, b, synonymIdx) {
+  const la = String(a || '').toLowerCase().trim();
+  const lb = String(b || '').toLowerCase().trim();
+  if (!la || !lb) return false;
+  if (la === lb) return true;
+  const syn = synonymIdx || SYNONYM_INDEX;
+  const group = syn.get(la);
+  return !!(group && group.has(lb));
+}
+
+/** 提取标题中的拉丁/字母数字 token（差异项，如 Blast、Michael） */
+function extractLatinTokens(text) {
+  return String(text || '')
+    .match(/[A-Za-z]{2,}/g) || [];
+}
+
+/** 提取标题中的 CJK 子串（长度 ≥3，作为活动短语） */
+function extractCjkPhrases(text) {
+  const segments = String(text || '').match(/[\u4e00-\u9fa5]{3,}/g) || [];
+  const phrases = new Set();
+  for (const seg of segments) {
+    // 滑窗生成 3~8 字子串，覆盖「首单测试」「通道首单测试」等
+    for (let len = 3; len <= Math.min(8, seg.length); len += 1) {
+      for (let i = 0; i + len <= seg.length; i += 1) phrases.add(seg.slice(i, i + len));
+    }
+  }
+  return [...phrases];
+}
+
+/* ---------------- 项目解析（v3 一级实体） ---------------- */
+
+/** 从消息中解析项目：P-xxxx ID / title / alias / 模糊标题，返回项目或 null */
+function resolveProject(message, projects, context) {
+  const list = Array.isArray(projects) ? projects : ((projects && projects.projects) || []);
+  if (!list.length) return null;
+  const text = String(message || '');
+
+  // 1. 显式 P-xxxx
+  const idMatch = text.toUpperCase().match(/P-\d{4}/);
+  if (idMatch) {
+    const hit = list.find((p) => p.id === idMatch[0]);
+    if (hit) return hit;
+  }
+
+  // 2. 会话上下文 currentProjectId
+  const ctxProjectId = context && typeof context === 'object' && !Array.isArray(context) && context.projectId;
+  if (ctxProjectId) {
+    const hit = list.find((p) => p.id === String(ctxProjectId).toUpperCase());
+    if (hit) return hit;
+  }
+
+  const synIdx = withProjectAliases(list);
+  const normalizedTokens = text.toLowerCase().split(/[\s，,。.!！?？:：;；、()（）【】\[\]]+/).filter(Boolean);
+
+  // 3. 完整标题或别名命中（同义词感知）
+  for (const p of list) {
+    const names = [p.title, ...((p.aliases) || [])].map((s) => String(s || '').toLowerCase().trim()).filter(Boolean);
+    for (const n of names) {
+      if (text.toLowerCase().includes(n)) return p;
+    }
+  }
+  // 4. token 级别同义词命中（如消息含 "HTX" 命中项目 "HTX OTC"）
+  for (const p of list) {
+    const names = [p.title, ...((p.aliases) || [])].map((s) => String(s || '').toLowerCase().trim()).filter(Boolean);
+    for (const n of names) {
+      if (normalizedTokens.some((tok) => tokensMatch(tok, n, synIdx))) return p;
+    }
+  }
+  return null;
+}
+
+/* ---------------- 条件新建（create_if_not_found） ---------------- */
+
+/** 检测「若找不到…则新建…」类显式条件授权 */
+function isCreateIfNotFoundRequest(message) {
+  const text = String(message || '');
+  return /(?:若|如果|要是|假如)?\s*(?:找不到|没有|不存在|无)(?:匹配|合适|对应)?(?:的)?(?:任务|项目)?[\s\S]{0,20}?(?:则|就|便)?\s*(?:新建|创建|新增|添加)\s*(?:任务|项目)?/.test(text)
+    || /(?:新建|创建|新增|添加)\s*任务[\s\S]{0,30}?(?:找不到|没有|不存在)/.test(text)
+    || /(?:若|如果).{0,10}?(?:找不到|没有|不存在).{0,10}?(?:则|就).{0,10}?(?:新建|创建)/.test(text);
+}
+
+/**
+ * 从条件新建语句中提取任务标题。
+ * 覆盖：则新建任务'XX' / 新建任务"XX" / 新建任务「XX」 / 新建任务：XX / 新建任务 XX
+ */
+function extractConditionalCreateTitle(message) {
+  const text = String(message || '');
+  const quoted = text.match(/(?:新建|创建|新增|添加)\s*任务\s*[''""「」『』()（）:：]?\s*([^，,。.!！；;'"」」』\)]{2,60}?)(?:[''""」』）\)]|，|,|。|\.|！|!|；|;|$)/);
+  if (quoted && quoted[1]) {
+    const t = quoted[1].trim().replace(/^[:：、\s]+/, '');
+    if (t) return t.slice(0, 100);
+  }
+  // 兜底：新建任务 XX（到下一个标点）
+  const m2 = text.match(/(?:新建|创建|新增|添加)\s*任务\s*[:：、]?\s*([^\s，,。.!！；;]{2,40})/);
+  if (m2 && m2[1]) return m2[1].trim().slice(0, 100);
+  return null;
+}
+
+/** 提取顺延天数：「顺延两天」「往后推 2 天」「推迟三天」→ 数字 */
+function extractPostponeDays(message) {
+  const text = String(message || '');
+  const m = text.match(/(?:顺延|往后推|推迟|延后|延期|推)[\s]*?([一二两三四五六七八九\d]+)\s*天/);
+  if (!m) return null;
+  const raw = m[1];
+  if (/^\d+$/.test(raw)) return Number(raw);
+  const map = { 一: 1, 二: 2, 两: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9 };
+  return map[raw] || null;
+}
+
+/** 在日期上加减天数，返回 +08:00 ISO（保留原时刻） */
+function shiftIsoDays(iso, days) {
+  if (!iso || !isIso(iso)) return null;
+  const d = new Date(Date.parse(iso) + (Number(days) || 0) * 86400000);
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}+00:00`;
+}
+
+/**
+ * 为「条件新建」查找匹配任务。返回 { match, candidates, sourceTask }。
+ *  - match: 唯一高置信度匹配（含差异项 Blast/Bivast 同义词）→ 走更新卡
+ *  - candidates: 多个高置信度候选（≤3）→ 走候选卡
+ *  - sourceTask: 用于推算新任务 dueAt 的最近相关任务（含核心活动短语但无差异项）
+ */
+function findMatchingTasksForTitle(newTitle, tasks, projects) {
+  const list = (tasks || []).filter((t) => !t.archivedAt);
+  const synIdx = withProjectAliases(projects);
+  const diffTokens = extractLatinTokens(newTitle).map((s) => s.toLowerCase());
+  const activityPhrases = extractCjkPhrases(newTitle);
+
+  const scored = list.map((task) => {
+    const hay = `${task.title || ''} ${task.workstream || ''} ${task.nextAction || ''}`.toLowerCase();
+    let activityHit = false;
+    for (const ph of activityPhrases) {
+      if (hay.includes(ph.toLowerCase())) { activityHit = true; break; }
+    }
+    // 无 CJK 短语时退化为标题包含关系
+    if (!activityPhrases.length && task.title && newTitle && normalizeText(task.title) && normalizeText(newTitle)
+      && normalizeText(task.title).includes(normalizeText(newTitle))) activityHit = true;
+
+    let diffHit = false;
+    const matchedDiff = [];
+    if (diffTokens.length) {
+      for (const dt of diffTokens) {
+        // 在 hay 中查找拉丁词，或同义词命中
+        const hayLatin = hay.match(/[a-z]{2,}/g) || [];
+        if (hayLatin.some((h) => tokensMatch(h, dt, synIdx))) {
+          diffHit = true;
+          matchedDiff.push(dt);
+        }
+      }
+    }
+    // 无差异项（纯中文标题）时，diffHit 视为 true，仅靠活动短语区分
+    if (!diffTokens.length) diffHit = activityHit;
+
+    let score = 0;
+    if (activityHit) score += 2;
+    if (diffHit) score += 3;
+    if (task.title && newTitle && task.title === newTitle) score += 4; // 完全一致
+    return { task, activityHit, diffHit, score, matchedDiff };
+  });
+
+  const highConfidence = scored.filter((s) => s.activityHit && s.diffHit && s.score >= 5)
+    .sort((a, b) => b.score - a.score);
+
+  let match = null;
+  let candidates = [];
+  if (highConfidence.length === 1) {
+    match = highConfidence[0].task;
+  } else if (highConfidence.length > 1) {
+    candidates = highConfidence.slice(0, 3).map((s) => ({
+      taskId: s.task.id, title: s.task.title, status: s.task.status, score: s.score,
+      reason: s.matchedDiff.length ? `命中差异项：${s.matchedDiff.join('/')}` : '标题与活动短语命中',
+    }));
+  }
+
+  // sourceTask：含核心活动短语但无差异项的最近任务，用于推算 dueAt
+  const sourceCandidates = scored.filter((s) => s.activityHit && !s.diffHit)
+    .sort((a, b) => b.score - a.score);
+  const sourceTask = sourceCandidates.length ? sourceCandidates[0].task : null;
+
+  return { match, candidates, sourceTask };
+}
+
+/**
+ * 构建 create_if_not_found 结构化结果。
+ * 决策：唯一高置信度匹配 → 更新卡；多个 → 候选卡；无 → 新建卡（绝不追问已给标题）。
+ */
+function buildCreateIfNotFound(message, tasks, projects, context, operator) {
+  const projectList = Array.isArray(projects) ? projects : ((projects && projects.projects) || []);
+  const project = resolveProject(message, projects, context);
+  const title = extractConditionalCreateTitle(message);
+  const ctxIds = resolveContextTaskIds(context);
+  const rawUserMessage = String(message || '').slice(0, 1000);
+
+  if (!title) {
+    // 标题缺失才追问（仅在条件新建但未给标题时）
+    return {
+      kind: 'clarify', intent: 'clarify',
+      reply: '你提到「找不到就新建」，但我没看到新任务的名称。请补充任务标题，例如「若找不到则新建任务：Blast 通道首单测试」。',
+      missingFields: ['title'], contextTaskIds: ctxIds,
+    };
+  }
+
+  const { match, candidates, sourceTask } = findMatchingTasksForTitle(title, tasks, projectList);
+
+  // 提取用户已给字段
+  const postponeDays = extractPostponeDays(message);
+  const blockedReason = /等待研发|等研发|研发测试/.test(message) ? '等待研发测试' : extractBlockedReason(message);
+  const nextAction = /跟进研发|跟进.*排期|确认.*排期/.test(message)
+    ? (message.match(/(?:提醒我|跟进|确认)([^，,。.!！；;]*)/)?.[1]?.trim() || '确认并跟进研发测试排期')
+    : (extractNextAction(message) || `推进「${title.slice(0, 60)}」`);
+  const userStatus = inferStatus(message);
+  const priority = extractPriority(message);
+  const projectId = project ? project.id : null;
+
+  // ---- 唯一匹配：生成更新卡（含顺延/阻塞等变更）----
+  if (match) {
+    const patch = {};
+    if (postponeDays && match.dueAt) {
+      const shifted = shiftIsoDays(match.dueAt, postponeDays);
+      if (shifted) patch.dueAt = shifted;
+    }
+    if (blockedReason) { patch.blockedReason = blockedReason; if (match.status !== '阻塞') patch.status = '阻塞'; }
+    if (nextAction) patch.nextAction = nextAction;
+    if (userStatus) patch.status = userStatus;
+    if (priority != null) patch.priority = priority;
+
+    const proposal = buildProposal({ taskId: match.id, patch }, tasks);
+    const reasonText = `已识别项目「${project ? project.title : '未指定'}」；找到唯一匹配任务 ${match.id}「${match.title}」，生成更新确认卡。`;
+    if (proposal.error) {
+      return {
+        kind: 'answer', intent: 'no_action',
+        reply: `${reasonText}\n但变更未通过校验：${proposal.error}`,
+        tasks: [match], contextTaskId: match.id, contextTaskIds: [match.id],
+        project: project ? { id: project.id, title: project.title } : null,
+        createIfNotFound: { matched: true, taskId: match.id, reason: '唯一高置信度匹配' },
+      };
+    }
+    return {
+      kind: 'update', intent: 'update_task',
+      reply: reasonText + '\n请核对后确认写入。',
+      tasks: [match], contextTaskId: match.id, contextTaskIds: [match.id],
+      operations: [{ operation: 'update', taskId: match.id, patch: proposal.patch }],
+      requiresConfirmation: true, confirm: proposal.confirm,
+      project: project ? { id: project.id, title: project.title } : null,
+      createIfNotFound: { matched: true, taskId: match.id, reason: '唯一高置信度匹配（差异项/活动短语命中）' },
+    };
+  }
+
+  // ---- 多候选：返回候选卡 + 仍可新建 ----
+  if (candidates.length) {
+    const candLines = candidates.map((c, i) => `${i + 1}. ${c.taskId}｜${c.title}（${c.status}）— ${c.reason}`).join('\n');
+    const createOption = buildCreateOptionFromFields(title, projectId, message, operator, postponeDays, sourceTask, blockedReason, nextAction, userStatus, priority, rawUserMessage);
+    return {
+      kind: 'candidates', intent: 'create_if_not_found',
+      reply: `已识别项目「${project ? project.title : '未指定'}」；找到 ${candidates.length} 个候选任务，请选择关联项，或直接确认新建：\n${candLines}`,
+      candidates, taskOptions: [createOption], requiresConfirmation: true,
+      contextTaskIds: candidates.map((c) => c.taskId).slice(0, 3),
+      project: project ? { id: project.id, title: project.title } : null,
+      createIfNotFound: { matched: false, candidates, reason: '存在多个高置信度候选，需用户选择' },
+      missingFields: [],
+    };
+  }
+
+  // ---- 无匹配：直接生成新建确认卡（不追问）----
+  const createOption = buildCreateOptionFromFields(title, projectId, message, operator, postponeDays, sourceTask, blockedReason, nextAction, userStatus, priority, rawUserMessage);
+  const sug = createOption.suggested;
+  const sugLines = Object.keys(sug).filter((k) => sug[k]).map((k) => FIELD_LABELS[k] || k);
+  const reasonText = `已识别项目「${project ? project.title : '未指定'}」；未找到匹配「${title}」的任务，按你的授权生成新建确认卡${sugLines.length ? `（AI 建议：${sugLines.join('、')}）` : ''}。`;
+  return {
+    kind: 'create', intent: 'create_if_not_found',
+    reply: reasonText + '\n确认后由我统一分配任务 ID 并写入。',
+    taskOptions: [createOption], requiresConfirmation: true,
+    contextTaskIds: ctxIds,
+    project: project ? { id: project.id, title: project.title } : null,
+    createIfNotFound: { matched: false, reason: sourceTask ? `无含差异项的匹配；已参考 ${sourceTask.id} 推算截止时间` : '无匹配任务' },
+    missingFields: [],
+  };
+}
+
+/** 根据已提取字段组装新建任务选项（含 projectId、AI 建议标记、原始描述） */
+function buildCreateOptionFromFields(title, projectId, message, operator, postponeDays, sourceTask, blockedReason, nextAction, userStatus, priority, rawUserMessage) {
+  const suggested = {};
+  const finalPriority = priority == null ? 4 : priority; // 首单测试默认高优先级
+  if (priority == null) suggested.priority = true;
+
+  // dueAt：顺延天数 + 参考任务截止日；无则 null（待确认，不虚构）
+  let dueAt = null;
+  if (postponeDays && sourceTask && sourceTask.dueAt) {
+    dueAt = shiftIsoDays(sourceTask.dueAt, postponeDays);
+    suggested.dueAt = true;
+  } else if (postponeDays && sourceTask) {
+    suggested.dueAt = true; // 有顺延意图但无源日期 → 待确认
+  } else {
+    suggested.dueAt = true;
+  }
+  // 状态：等待研发 → 建议受阻/待启动
+  let status = userStatus || '待启动';
+  if (!userStatus && blockedReason) {
+    status = '待启动'; // 默认待启动，blockedReason 单独标记，AI 建议在 reply 说明
+    suggested.status = true;
+  }
+  const remindAt = dueAt ? dueAt.slice(0, 11) + '09:00:00+00:00' : null;
+  if (!remindAt) suggested.remindAt = true;
+  suggested.nextAction = !extractNextAction(message);
+  suggested.outputCondition = true;
+
+  const option = {
+    title: title.slice(0, 100),
+    status,
+    priority: finalPriority,
+    workstream: null,
+    owner: (message.match(/([A-Za-z]{2,}|[一-龥]{2,3})\s*负责|负责人\s*(?:是|为)?\s*([A-Za-z]{2,}|[一-龥]{2,3})/)?.slice(1).find(Boolean)) || operator || 'Sera',
+    dueAt,
+    remindAt,
+    progress: 0,
+    nextAction: nextAction || `推进「${title.slice(0, 60)}」`,
+    outputCondition: `完成「${title.slice(0, 60)}」并同步结果`,
+    dependencies: [],
+    projectId: projectId || null,
+    blockedReason: blockedReason || null,
+    suggested,
+    rawUserMessage,
+  };
+  return option;
+}
+
+/* ---------------- 项目对话意图（v3） ---------------- */
+
+function isProjectListRequest(message) {
+  const text = String(message || '');
+  if (/(?:新建|创建|新增|添加|更新|同步)\s*(?:一个)?\s*项目/.test(text)) return false;
+  return /(?:我现在)?(?:在)?(?:跟进|跟进着|手头|负责).{0,6}?(?:哪些|什么)项目|(?:有|列出|看看|查看).{0,4}?(?:哪些|什么)?项目|我的项目|项目列表/.test(text);
+}
+
+function isProjectCreateRequest(message) {
+  const text = String(message || '');
+  return /(?:新建|创建|新增|添加)\s*(?:一个)?\s*项目/.test(text);
+}
+
+function isProjectUpdateRequest(message) {
+  const text = String(message || '');
+  if (!/(?:更新|同步)\s*[\s\S]{0,20}?项目|项目.{0,8}?(?:进展|进度|状态|情况)/.test(text)) return false;
+  // 含任务字段更新信号时交由任务更新处理（项目仅用于范围限定）
+  return true;
+}
+
+function buildProjectList(projects) {
+  const list = Array.isArray(projects) ? projects : ((projects && projects.projects) || []);
+  if (!list.length) {
+    return { kind: 'answer', intent: 'query_projects', reply: '当前没有任何项目。可以告诉我「新建项目：XX」来创建第一个项目。', projects: [], contextTaskIds: [] };
+  }
+  const lines = list.map((p) => {
+    const taskCount = (p.taskIds || []).length;
+    return `- **${p.id}｜${p.title}**（${p.status}，负责人 ${p.owner}，${p.priority} 星，${taskCount} 项任务）${p.nextAction ? '｜下一步：' + p.nextAction : ''}`;
+  });
+  return {
+    kind: 'answer', intent: 'query_projects',
+    reply: `你当前在跟进 ${list.length} 个项目：\n${lines.join('\n')}`,
+    projects: list.map((p) => ({ id: p.id, title: p.title, status: p.status, owner: p.owner, priority: p.priority, taskIds: (p.taskIds || []).slice() })),
+    contextTaskIds: [],
+  };
+}
+
+/** 从「新建项目：XX」中提取项目标题 */
+function extractProjectTitle(message) {
+  const text = String(message || '');
+  let m = text.match(/项目\s*[：:]\s*([^，,。.!！；;]+)/);
+  if (m) return m[1].trim().slice(0, 100);
+  m = text.match(/(?:新建|创建|新增|添加)\s*(?:一个)?\s*项目\s*[''""「」()（）:：]?\s*([^，,。.!！；;'"」）]{2,60})/);
+  if (m) return m[1].trim().slice(0, 100);
+  return null;
+}
+
+/** 新建项目选项（不直接写入，交确认卡） */
+function buildProjectCreateOptions(message, operator) {
+  const title = extractProjectTitle(message);
+  if (!title) {
+    return { kind: 'clarify', intent: 'clarify', reply: '新项目叫什么？请告诉我项目名称，例如「新建项目：OTC 设计交付包」。', missingFields: ['title'] };
+  }
+  const aliases = [];
+  const aliasMatch = String(message || '').match(/别名[:：\s]?\s*([^，,。.!！；;]+)/);
+  if (aliasMatch) aliases.push(...aliasMatch[1].split(/[、/]/).map((s) => s.trim()).filter(Boolean));
+  const ownerMatch = String(message || '').match(/([A-Za-z]{2,}|[一-龥]{2,3})\s*负责|负责人\s*(?:是|为)?\s*([A-Za-z]{2,}|[一-龥]{2,3})/);
+  const priority = extractPriority(message);
+  const option = {
+    title, aliases, status: '进行中',
+    owner: (ownerMatch && ownerMatch.slice(1).find(Boolean)) || operator || 'Sera',
+    priority: priority == null ? 3 : priority,
+    summary: '', blockers: [], nextAction: `推进「${title.slice(0, 60)}」`,
+    suggested: { priority: priority == null, nextAction: true, summary: true },
+    rawUserMessage: String(message || '').slice(0, 1000),
+  };
+  return { kind: 'create_project', intent: 'create_project', projectOption: option, requiresConfirmation: true, missingFields: [] };
+}
+
 /* ---------------- 对话路由主入口 ---------------- */
 
 /** 「打开 T-0006」「查看 XX 任务」→ 展示任务卡并写入上下文 */
@@ -649,23 +1106,40 @@ function buildOpenTask(message, tasks, context) {
 }
 
 /**
- * 本地对话路由。context 支持：string（旧版 contextTaskId）/ 数组 / { taskIds, operator }。
+ * 本地对话路由。context 支持：string（旧版 contextTaskId）/ 数组 / { taskIds, operator, projectId }。
  * 返回对象带协议字段（intent/contextTaskIds/taskOptions/missingFields/requiresConfirmation），
  * 同时保留旧字段（kind/reply/tasks/confirm/contextTaskId）兼容现有前端。
+ *
+ * v3：projects（可选第 5 参）为项目一级实体，支持项目查询/新建与 create_if_not_found。
  */
-function routeConversation(message, tasks, context, now) {
+function routeConversation(message, tasks, context, now, projects) {
   const ctxIds = resolveContextTaskIds(context);
   const operator = (context && typeof context === 'object' && !Array.isArray(context) && context.operator) || 'Sera';
   const current = Number(now) || Date.now();
+  const projectList = Array.isArray(projects) ? projects : ((projects && projects.projects) || []);
 
   // 0. 协助查询（「哪些任务需要 Simon 协助？」）
   const assist = buildAssistQuery(message, tasks);
   if (assist) return assist;
 
-  // 1. 任务规划（只读）
+  // 0b. 项目查询（「我在跟进哪些项目？」）
+  if (isProjectListRequest(message)) return buildProjectList(projectList);
+
+  // 0c. 新建项目（「新建项目：OTC 设计交付包」）
+  if (isProjectCreateRequest(message)) {
+    const pc = buildProjectCreateOptions(message, operator);
+    return pc;
+  }
+
+  // 1. 条件新建（create_if_not_found，显式授权优先级最高）
+  if (isCreateIfNotFoundRequest(message)) {
+    return buildCreateIfNotFound(message, tasks, projectList, context, operator);
+  }
+
+  // 2. 任务规划（只读）
   if (isPlanningRequest(message)) return buildPlan(tasks, current, { count: planCount(message) });
 
-  // 2. 任务拆解
+  // 3. 任务拆解
   if (isDecomposeRequest(message)) {
     const d = buildDecomposeOptions(message, tasks, context, current);
     if (d.question) return { kind: 'clarify', intent: 'clarify', reply: d.question, missingFields: d.missingFields, contextTaskIds: ctxIds };
@@ -684,7 +1158,7 @@ function routeConversation(message, tasks, context, now) {
     };
   }
 
-  // 3. 创建任务
+  // 4. 创建任务
   if (isCreateRequest(message)) {
     const c = buildCreateOptions(message, tasks, operator, current);
     if (c.question) return { kind: 'clarify', intent: 'clarify', reply: c.question, missingFields: c.missingFields, contextTaskIds: ctxIds };
@@ -703,7 +1177,7 @@ function routeConversation(message, tasks, context, now) {
     };
   }
 
-  // 4. 字段更新（状态/进度/下一步/截止/提醒/星级/阻塞原因/完成结果）
+  // 5. 字段更新（状态/进度/下一步/截止/提醒/星级/阻塞原因/完成结果）
   const progress = extractProgress(message);
   const nextAction = extractNextAction(message);
   const status = inferStatus(message);
@@ -712,16 +1186,27 @@ function routeConversation(message, tasks, context, now) {
   const remindAt = extractRemindAt(message, current);
   const blockedReason = extractBlockedReason(message);
   const result = extractResult(message);
-  const hasPatch = progress != null || !!nextAction || !!status || priority != null || !!dueAt || !!remindAt || !!blockedReason || !!result;
+  // 顺延天数也视为字段更新信号（「首单测试往后推两天」→ dueAt 变更）
+  const postponeDays = extractPostponeDays(message);
+  const hasPatch = progress != null || !!nextAction || !!status || priority != null || !!dueAt || !!remindAt || !!blockedReason || !!result || postponeDays != null;
   if (hasPatch) {
-    const task = resolveTask(message, tasks, context);
+    // 项目范围限定：消息提及项目时优先在该项目任务中解析
+    const project = resolveProject(message, projectList, context);
+    const scopedTasks = project
+      ? (tasks || []).filter((t) => (t.projectId && t.projectId === project.id) || (project.taskIds || []).includes(t.id))
+      : tasks;
+    // 先在项目范围内找，找不到再全局找
+    const task = (project && scopedTasks.length ? resolveTask(message, scopedTasks, context) : null) || resolveTask(message, tasks, context);
     if (!task) {
       return {
         kind: 'clarify',
         intent: 'clarify',
-        reply: '我识别到你要同步任务，但还不知道是哪一项。请补充任务 ID（例如 T-0006）或完整任务名称。',
+        reply: project
+          ? `我识别到你在更新项目「${project.title}」的任务，但没找到对应任务。请补充任务 ID（例如 T-0006）或完整任务名称。`
+          : '我识别到你要同步任务，但还不知道是哪一项。请补充任务 ID（例如 T-0006）或完整任务名称。',
         missingFields: ['taskId'],
         contextTaskIds: ctxIds,
+        project: project ? { id: project.id, title: project.title } : null,
       };
     }
     const patch = {};
@@ -733,6 +1218,10 @@ function routeConversation(message, tasks, context, now) {
     if (remindAt) patch.remindAt = remindAt;
     if (blockedReason) patch.blockedReason = blockedReason;
     if (result) patch.result = result;
+    if (postponeDays && !dueAt && task.dueAt) {
+      const shifted = shiftIsoDays(task.dueAt, postponeDays);
+      if (shifted) patch.dueAt = shifted;
+    }
     const proposal = buildProposal({ taskId: task.id, patch }, tasks);
     if (proposal.error) {
       return {
@@ -754,12 +1243,25 @@ function routeConversation(message, tasks, context, now) {
       operations: [{ operation: 'update', taskId: task.id, patch: proposal.patch }],
       requiresConfirmation: true,
       confirm: proposal.confirm,
+      project: project ? { id: project.id, title: project.title } : null,
     };
   }
 
-  // 5. 打开/聚焦任务
+  // 6. 打开/聚焦任务
   const opened = buildOpenTask(message, tasks, context);
   if (opened) return opened;
+
+  // 7. 纯项目进展查询（无任务字段信号时，如「更新项目进展」快捷按钮）
+  if (isProjectUpdateRequest(message)) {
+    const list = buildProjectList(projectList);
+    return {
+      kind: 'answer',
+      intent: 'query_projects',
+      reply: list.reply + '\n\n告诉我哪个项目发生了什么变化（如「HTX OTC 项目首单测试往后推两天」），我会先匹配任务再给确认卡。',
+      projects: list.projects,
+      contextTaskIds: [],
+    };
+  }
 
   return null;
 }
@@ -789,7 +1291,23 @@ module.exports = {
   buildAssistQuery,
   isCreateRequest,
   buildCreateOptions,
+  extractCreateTitle,
   isDecomposeRequest,
   buildDecomposeOptions,
+  // v3：项目一级实体 + create_if_not_found + 别名/模糊匹配
+  SYNONYM_GROUPS,
+  tokensMatch,
+  resolveProject,
+  isCreateIfNotFoundRequest,
+  extractConditionalCreateTitle,
+  extractPostponeDays,
+  shiftIsoDays,
+  findMatchingTasksForTitle,
+  buildCreateIfNotFound,
+  isProjectListRequest,
+  isProjectCreateRequest,
+  isProjectUpdateRequest,
+  buildProjectList,
+  buildProjectCreateOptions,
   routeConversation,
 };

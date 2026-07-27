@@ -10,7 +10,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { validateTasksFile, validateAuditFile } = require('./schema');
+const { validateTasksFile, validateAuditFile, validateProjectsFile } = require('./schema');
 
 const DATA_DIR = process.env.HUB_DATA_DIR || path.join(__dirname, '..', 'data');
 
@@ -50,6 +50,20 @@ function main() {
       failed = true;
     } else {
       console.log(`OK: audit-log.json（${audit.entries.length} 条日志）`);
+    }
+  }
+
+  const projects = loadJson(path.join(DATA_DIR, 'projects.json'));
+  if (projects.__error) {
+    console.error(`FAIL: ${projects.__error}`);
+    failed = true;
+  } else {
+    const errors = validateProjectsFile(projects);
+    if (errors.length) {
+      errors.forEach((e) => console.error(`FAIL: ${e}`));
+      failed = true;
+    } else {
+      console.log(`OK: projects.json（${projects.projects.length} 个项目）`);
     }
   }
 

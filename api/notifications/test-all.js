@@ -15,7 +15,7 @@ const { sendJson, readBody, methodGuard, dashboardUrl } = require('../_lib/http'
 const { loadState, saveState } = require('../_lib/store');
 const { wecomConfigured, beijingNow } = require('../_lib/wecom');
 const { feishuConfigured } = require('../_lib/feishu');
-const { sendPipNotification } = require('../_lib/dual');
+const { sendDirect } = require('../_lib/dual');
 
 module.exports = async (req, res) => {
   if (!methodGuard(req, res, 'POST')) return;
@@ -32,7 +32,7 @@ module.exports = async (req, res) => {
     }
 
     const state = await loadState();
-    const dual = await sendPipNotification(state, {
+    const dual = await sendDirect(state, {
       eventId: `dual-test:${beijingNow().slice(0, 16)}`, // 分钟分桶：连点防重，稍后仍可再测
       title: '【PIP 双通道通知测试】',
       lines: [

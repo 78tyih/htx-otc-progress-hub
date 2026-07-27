@@ -9,7 +9,7 @@
  */
 'use strict';
 
-const { TASK_PRIORITIES, TASK_ID_RE, isIso } = require('../../agent/schema');
+const { TASK_PRIORITIES, TASK_ID_RE, PROJECT_ID_RE, PROJECT_STATUSES, isIso } = require('../../agent/schema');
 const { newProposalId } = require('./agent-protocol');
 
 const PROPOSAL_TTL_MS = 2 * 3600 * 1000;
@@ -30,18 +30,21 @@ function gcProposals(state) {
 }
 
 /**
- * 新增待确认方案。kind: 'create' | 'decompose'
+ * 新增待确认方案。kind: 'create' | 'decompose' | 'create_project'
  * options 为 copilot/LLM 生成的候选任务（含 suggested 标记；decompose 含 dependsOnOptions）。
+ * create_project 用 projectOption 承载单个项目选项。
  */
-function addProposal(state, { kind, options, parentTaskId, operator }) {
+function addProposal(state, { kind, options, parentTaskId, operator, projectOption }) {
   gcProposals(state);
   const now = Date.now();
+  const normalizedKind = kind === 'decompose' ? 'decompose' : kind === 'create_project' ? 'create_project' : 'create';
   const proposal = {
     id: newProposalId(),
-    kind: kind === 'decompose' ? 'decompose' : 'create',
+    kind: normalizedKind,
     status: 'pending',
     parentTaskId: parentTaskId || null,
     options: (options || []).slice(0, 12),
+    projectOption: normalizedKind === 'create_project' && projectOption ? projectOption : null,
     operator: operator || 'Sera',
     createdAt: new Date(now).toISOString(),
     expiresAt: new Date(now + PROPOSAL_TTL_MS).toISOString(),
@@ -137,7 +140,75 @@ function buildTaskFromOption(option, { id, operator, nowIso, proposalId, parentT
     parentTaskId: parentTaskId || null,
     createdFromConversation: true,
     proposalId: proposalId || null,
+    // v3：项目关联 + 阻塞原因（可选，缺省视为 null，向后兼容）
+    projectId: option.projectId && PROJECT_ID_RE.test(String(option.projectId)) ? String(option.projectId) : null,
+    blockedReason: option.blockedReason ? String(option.blockedReason).trim().slice(0, 500) : null,
   };
 }
 
-module.exports = { PROPOSAL_TTL_MS, gcProposals, addProposal, getProposal, nextTaskIds, validateOption, buildTaskFromOption };
+/* ---------------- create_project 方案：项目选项校验与物化 ---------------- */
+
+/** 生成下一个项目 ID（P-0001 递增，基于现有最大编号） */
+function nextProjectId(projects) {
+  let max = 0;
+  for (const p of projects || []) {
+    const m = /^P-(\d{4})$/.exec(String((p && p.id) || ''));
+    if (m) max = Math.max(max, Number(m[1]));
+  }
+  return `P-${String(max + 1).padStart(4, '0')}`;
+}
+
+/** 项目选项服务端校验（执行前最后一道关卡），返回错误数组 */
+function validateProjectOption(option, { projects }) {
+  const errors = [];
+  const label = option && option.title ? `项目「${String(option.title).slice(0, 30)}」` : '（未命名项目）';
+  if (!option || typeof option !== 'object') return [`${label}: 必须是对象`];
+  if (typeof option.title !== 'string' || !option.title.trim() || option.title.length > 100) {
+    errors.push(`${label}: 项目名称必填且 ≤100 字`);
+  }
+  if (!TASK_PRIORITIES.includes(Number(option.priority))) errors.push(`${label}: 优先级必须是 1-4 的整数星`);
+  if (typeof option.owner !== 'string' || !option.owner.trim()) errors.push(`${label}: 负责人必填`);
+  if (option.status && !PROJECT_STATUSES.includes(option.status)) {
+    errors.push(`${label}: 项目状态非法，允许值：${PROJECT_STATUSES.join('/')}`);
+  }
+  if (option.aliases != null && (!Array.isArray(option.aliases) || option.aliases.some((a) => typeof a !== 'string' || !a.trim()))) {
+    errors.push(`${label}: 别名须为非空字符串数组`);
+  }
+  // 同名项目去重：标题或别名与已有项目冲突时拒绝（避免重复创建）
+  const existing = projects || [];
+  const normTitle = String(option.title || '').trim().toLowerCase();
+  const normAliases = Array.isArray(option.aliases) ? option.aliases.map((a) => String(a).trim().toLowerCase()).filter(Boolean) : [];
+  for (const p of existing) {
+    const pNames = [p.title, ...((p.aliases) || [])].map((s) => String(s || '').trim().toLowerCase()).filter(Boolean);
+    if (pNames.includes(normTitle) || normAliases.some((a) => pNames.includes(a))) {
+      errors.push(`${label}: 已存在同名/同别名的项目 ${p.id}「${p.title}」`);
+      break;
+    }
+  }
+  return errors;
+}
+
+/** 把校验通过的项目选项物化为完整项目对象 */
+function buildProjectFromOption(option, { id, operator, nowIso, proposalId }) {
+  const status = option.status && PROJECT_STATUSES.includes(option.status) ? option.status : '进行中';
+  return {
+    id,
+    title: String(option.title).trim().slice(0, 100),
+    aliases: Array.isArray(option.aliases) ? option.aliases.map(String).map((s) => s.trim()).filter(Boolean).slice(0, 20) : [],
+    status,
+    owner: String(option.owner).trim(),
+    priority: Number(option.priority),
+    summary: typeof option.summary === 'string' ? option.summary.slice(0, 1000) : '',
+    blockers: Array.isArray(option.blockers) ? option.blockers.map(String).map((s) => s.trim()).filter(Boolean).slice(0, 20) : [],
+    nextAction: typeof option.nextAction === 'string' ? option.nextAction.trim().slice(0, 500) : '',
+    taskIds: [],
+    revision: 1,
+    createdAt: nowIso,
+    updatedAt: nowIso,
+  };
+}
+
+module.exports = {
+  PROPOSAL_TTL_MS, gcProposals, addProposal, getProposal, nextTaskIds, validateOption, buildTaskFromOption,
+  nextProjectId, validateProjectOption, buildProjectFromOption,
+};

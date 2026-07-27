@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "updatedAt": "2026-07-25T03:42:33+08:00",
+  "projects": [
+    {
+      "id": "P-0001",
+      "title": "HTX OTC",
+      "aliases": ["HTX", "HTX OTC 项目", "OTC"],
+      "status": "进行中",
+      "owner": "Sera",
+      "priority": 4,
+      "summary": "HTX OTC 渠道商出金首单测试与客户推进主线",
+      "blockers": [],
+      "nextAction": "推进 Bivast/Blast 通道首单测试，跟进研发测试排期",
+      "taskIds": ["T-0004", "T-0006"],
+      "revision": 1,
+      "createdAt": "2026-07-21T09:00:00+08:00",
+      "updatedAt": "2026-07-25T03:42:33+08:00"
+    }
+  ]
+}
